@@ -1,0 +1,783 @@
+<template>
+  <view class="container">
+    <view class="header">
+      <view class="title">{{evaluationTitle}}</view>
+      <view class="test_time">
+        <view class="label">测试时间：</view>
+        <view class="date">{{createTime}}</view>
+      </view>
+    </view>
+    <view class="content">
+      <view class="uerinfo">
+        <image src="{{memberPic}}" class="avatar" />
+        <view class="name">{{memberName}}</view>
+      </view>
+      <view class="line20"></view>
+      <view class="echarts">
+        <view class="analyze_r header_i">测评得分</view>
+        <echar :height.sync="yAxisHight1" :ec.sync="ec" />
+      </view>
+      <view class="line20"></view>
+      <view class="analyze_c">
+        <view class="analyze_n header_i">测评结果</view>
+        <repeat for="{{evaluationResult}}">
+          <view class="analyze_i">
+            <view class="title">
+              {{index + 1}}）{{item.categoryName}}得分为：
+              <text class="status">{{item.memberScore}}（{{item.resultName}}）</text>
+            </view>
+            <view class="intro">
+              <!-- <text class="intro"
+                    space="nbsp"> {{item.resultName}}：{{item.content}}。
+                    </text
+              >-->
+              <rich-text class="intro" nodes="{{item.content}}"></rich-text>
+            </view>
+            <view class="description">
+              <!-- <text class="description"
+              space="nbsp"> {{item.specialDesc}}</text>-->
+              <rich-text class="description" nodes="{{item.specialDesc}}"></rich-text>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      
+    </view>
+    <view class="back_button" @tap="back">返回</view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import echar from '../components/ec'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+function compare(value1, value2) {
+  if (value1 < value2) {
+    return -1
+  } else if (value1 > value2) {
+    return 1
+  } else {
+    return 0
+  }
+}
+var option = null
+option = {
+  // title: {
+  //     text: '世界人口总量',
+  //     subtext: '数据来自网络'
+  // },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    }
+  },
+  // legend: {
+  //     data: ['2011年', '2012年']
+  // },
+  grid: {
+    left: '3%',
+    bottom: '5%',
+    containLabel: true
+  },
+  xAxis: {
+    type: 'value',
+    boundaryGap: [0, 0.1],
+    max: 20,
+    name: '分',
+    axisTick: {
+      show: false,
+      // 刻度线，字体旁边那个点
+      lineStyle: {}
+    },
+    axisLine: {
+      // 轴线
+      lineStyle: {
+        color: '#D8E8FF'
+      }
+    },
+    splitLine: {
+      // 分割线
+      show: true,
+      lineStyle: {
+        type: 'dashed',
+        color: '#EEEEEE'
+      }
+    },
+    axisLabel: {
+      // 分
+      show: true,
+      textStyle: {
+        color: '#999999'
+        // fontSize: 16
+      }
+    },
+    nameTextStyle: {
+      // 数字 轴数
+      color: '#999999'
+      // fontSize: 16
+    },
+    splitNumber: 10 //
+    // [ default: 5 ]
+    // 坐标轴的分割段数，需要注意的是这个分割段数只是个预估值，最后实际显示的段数会在这个基础上根据分割后坐标轴刻度显示的易读程度作调整。
+  },
+  yAxis: {
+    nameTextStyle: {
+      color: '#2565C3'
+      // fontSize: 16
+    },
+    axisLabel: {
+      show: true,
+      textStyle: {
+        color: '#2565C3'
+        // fontSize: 16
+      }
+    },
+    axisTick: {
+      lineStyle: {
+        type: 'dashed',
+        color: '#EEEEEE'
+      }
+    },
+    axisLine: {
+      // 轴线
+      lineStyle: {
+        color: '#D8E8FF'
+      }
+    },
+
+    // inverse: true
+    type: 'category',
+    name: '因素',
+    data: [].reverse()
+  },
+  series: [
+    {
+      type: 'bar',
+      data: [],
+      itemStyle: {
+        normal: {
+          // 随机显示
+          // color:function(d){return "#"+Math.floor(Math.random()*(256*256*256-1)).toString(16);}
+          // 定制显示（按顺序）
+          color: function(params) {
+            var colorList = [
+              '#50C4CC',
+              '#3694AE',
+              '#F27E88',
+              '#68C7BE',
+              '#2392D0',
+              '#50C4CC',
+              '#3694AE',
+              '#F27E88',
+              '#68C7BE',
+              '#2392D0'
+            ]
+            return colorList[params.dataIndex]
+          }
+        }
+      },
+      label: {
+        normal: {
+          show: true,
+          position: 'insideRight'
+        }
+      },
+      barWidth: '20rpx',
+      barCategoryGap: '20rpx',
+      barGap: '20rpx'
+    }
+  ]
+}
+
+export default class Test_result extends wepy.page {
+  config = {
+    navigationBarTitleText: '测试结果',
+    disableSwipeBack: true
+  };
+
+  components = {
+    echar: echar
+  };
+  onUnload = function() {
+    // 如果页面被卸载时被执行
+    this.gotoHomePage()
+  };
+  // 在订单详情 点击小程序的返回 自定其他跳页方法
+  gotoHomePage = function() {
+    console.log('gotoHomePage')
+
+    // 自定义页面跳转方法
+    let that = this
+    // that.clickFlag = true
+    if (that.clickFlag) {
+      wx.navigateBack()
+    } else {
+      // that.setData({ clickFlag: true })
+    }
+    // wx.navigateBack()
+    // wx.navigateTo({
+    //     url: '../My_order/My_order',
+    // });
+  };
+  computed = {
+    yAxisHight1() {
+     
+      console.log(this.yAxisHight)
+
+      return this.yAxisHight
+    }
+  };
+  data = {
+    clickFlag: false,
+    ec: {
+      lazyLoad: true,
+      option: ''
+    },
+    evaluationScoreDetail: '',
+    evaluationResult: '',
+    id: '',
+    answerIds: '',
+    userInfo: '',
+    artiles: '',
+    createTime: '',
+    evaluationTitle: '',
+    memberName: '',
+    memberPic: '',
+    option: {
+      // title: {
+      //     text: '世界人口总量',
+      //     subtext: '数据来自网络'
+      // },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },
+        formatter: function(params) {
+          var tar = params[0]
+          // console.log(params, tar.value)
+          if (tar.value == '') {
+            tar.value = 0
+          }
+          return tar.name + ' ' + tar.value
+        }
+      },
+      // legend: {
+      //     data: ['2011年', '2012年']
+      // },
+      grid: {
+        left: '3%',
+        bottom: '5%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'value',
+        // boundaryGap: [0, 0.1],
+        boundaryGap: ['0', '10%'],
+        // max: 10,
+        name: '分',
+        axisTick: {
+          show: false,
+          // 刻度线，字体旁边那个点
+          lineStyle: {}
+        },
+        axisLine: {
+          // 轴线
+          lineStyle: {
+            color: '#D8E8FF'
+          }
+        },
+        splitLine: {
+          // 分割线
+          show: true,
+          lineStyle: {
+            type: 'dashed',
+            color: '#EEEEEE'
+          }
+        },
+        axisLabel: {
+          // 分
+          formatter: function(params) {
+            return params
+           
+          },
+          show: true,
+          textStyle: {
+            color: '#999999'
+            // fontSize: 16
+          }
+        },
+        nameTextStyle: {
+          // 数字 轴数
+          color: '#999999',
+          rich: {} // 解决真机上字体小的问题 https://github.com/ecomfe/echarts-for-weixin/issues/449
+          // fontSize: 16
+        }
+        // splitNumber: 10 //
+        // [ default: 5 ]
+        // 坐标轴的分割段数，需要注意的是这个分割段数只是个预估值，最后实际显示的段数会在这个基础上根据分割后坐标轴刻度显示的易读程度作调整。
+      },
+      yAxis: {
+        nameTextStyle: {
+          color: '#2565C3',
+          rich: {} // https://github.com/ecomfe/echarts-for-weixin/issues/449
+          // fontSize: 16
+        },
+        axisLabel: {
+          interval: 0,
+          show: true,
+          textStyle: {
+            color: '#2565C3'
+            // fontSize: 16
+          }
+        },
+        axisTick: {
+          lineStyle: {
+            type: 'dashed',
+            color: '#EEEEEE'
+          }
+        },
+        axisLine: {
+          // 轴线
+          lineStyle: {
+            color: '#D8E8FF'
+          }
+        },
+
+        inverse: true,
+        nameLocation: 'start',
+        type: 'category',
+        name: '因素',
+        data: [].reverse()
+      },
+      series: [
+        {
+          type: 'bar',
+          data: [],
+          itemStyle: {
+            normal: {
+              // 随机显示
+              // color:function(d){return "#"+Math.floor(Math.random()*(256*256*256-1)).toString(16);}
+              // 定制显示（按顺序）
+              color: function(params) {
+                var list = [
+                  '#50C4CC',
+                  '#3694AE',
+                  '#F27E88',
+                  '#68C7BE',
+                  '#2392D0',
+                  '#50C4CC',
+                  '#3694AE',
+                  '#F27E88',
+                  '#68C7BE',
+                  '#2392D0'
+                ]
+                var colorList = [...list, ...list, ...list]
+                return colorList[params.dataIndex]
+              }
+            }
+          },
+          label: {
+            normal: {
+              show: true,
+              position: 'insideRight',
+              formatter: function(params) {
+                // console.log(params.value)
+                if (params.value == 0) params.value = ''
+                return params.value
+              }
+            }
+          }
+          // barWidth: '20rpx',
+          // barCategoryGap: '20rpx',
+          // barGap: '20rpx'
+        }
+      ]
+    },
+    categoryNameList: [],
+    memberScore: [],
+    yAxisHight: '' // 高度
+  };
+
+  methods = {
+    back() {
+      wx.navigateBack({
+        delta: 2
+      })
+    }
+  };
+  getEvaluationScoreDetail(scoreId) {
+    // (用户测评列表的)用户测评结果
+    let { getEvaluationScoreDetail } = api
+    getEvaluationScoreDetail(scoreId).then(res => {
+      if (res) {
+        this.evaluationResult = res.data.resultList
+        this.createTime = res.data.createTime
+        this.evaluationTitle = res.data.evaluationTitle
+        this.memberName = res.data.memberName
+        this.memberPic = res.data.memberPic
+        this.evaluationResult.forEach((item, i) => {
+
+          if (item.content) {
+            this.evaluationResult[i].content = item.content
+              .replace(
+                /<img/gi,
+                '<img style="max-width:100%;height:auto;display:block" '
+              )
+              .replace(/<section/g, '<div')
+              .replace(/\/section>/g, 'div>')
+          }
+        
+          if (item.specialDesc) {
+            this.evaluationResult[i].specialDesc = item.specialDesc
+              .replace(
+                /<img/gi,
+                '<img style="max-width:100%;height:auto;display:block" '
+              )
+              .replace(/<section/g, '<div')
+              .replace(/\/section>/g, 'div>')
+          }
+
+          this.evaluationResult[i].resultName2 = item.resultName.slice(0, 2)
+          this.categoryNameList.push(item.categoryName)
+          this.memberScore.push(item.memberScore)
+        })
+
+        this.option.yAxis.data = this.categoryNameList
+        this.option.series[0].data = this.memberScore
+
+        let max = Object.assign([], this.option.series[0].data).sort(compare)[
+          this.memberScore.length - 1
+        ]
+ 
+        this.yAxisHight = this.categoryNameList.length * 28
+        this.ec.option = this.option
+        this.$invoke('echar', 'init')
+        this.$apply()
+      }
+    })
+  }
+
+  getEvaluationResult({
+    jsonQuestionnaires,
+    memberName,
+    age,
+    department
+  } = {}) {
+    // 提交测试答案获取结果
+    let { getEvaluationResult } = api
+    let data = {}
+    if (jsonQuestionnaires && memberName != 'undefined') {
+      data = {
+        evaluationId: this.id,
+        answerIds: this.answerIds,
+        jsonQuestionnaires: jsonQuestionnaires,
+        memberName,
+        age,
+        department
+      }
+    } else if (memberName != 'undefined') {
+
+      data = {
+        evaluationId: this.id,
+        answerIds: this.answerIds,
+        memberName,
+        age,
+        department
+      }
+    } else if (jsonQuestionnaires) {
+      data = {
+        evaluationId: this.id,
+        answerIds: this.answerIds,
+        jsonQuestionnaires: jsonQuestionnaires
+      }
+    } else {
+      data = {
+        evaluationId: this.id,
+        answerIds: this.answerIds
+      }
+    }
+
+    wepy.showLoading({
+      title: '加载中',
+    })
+
+    getEvaluationResult(data).then(res => {
+      var that = this
+      wepy.hideLoading();
+      if (res) {
+        this.evaluationResult = res.data.resultList
+        this.createTime = res.data.createTime
+        this.evaluationTitle = res.data.evaluationTitle
+        this.memberName = res.data.memberName
+        this.memberPic = res.data.memberPic
+
+        this.evaluationResult.forEach((item, i) => {
+          if (item.content) {
+            this.evaluationResult[i].content = item.content
+              .replace(
+                /<img/gi,
+                '<img style="max-width:100%;height:auto;display:block" '
+              )
+              .replace(/<section/g, '<div')
+              .replace(/\/section>/g, 'div>')
+          }
+
+          if (item.specialDesc) {
+            this.evaluationResult[i].specialDesc = item.specialDesc
+              .replace(
+                /<img/gi,
+                '<img style="max-width:100%;height:auto;display:block" '
+              )
+              .replace(/<section/g, '<div')
+              .replace(/\/section>/g, 'div>')
+          }
+          this.evaluationResult[i].resultName2 = item.resultName.slice(0, 2)
+          this.categoryNameList.push(item.categoryName)
+          this.memberScore.push(item.memberScore)
+        })
+        this.option.yAxis.data = this.categoryNameList
+        this.option.series[0].data = this.memberScore
+
+        this.yAxisHight = this.categoryNameList.length * 28
+
+        let max = Object.assign([], this.option.series[0].data).sort(compare)[
+          this.memberScore.length - 1
+        ]
+        this.ec.option = this.option
+        this.$invoke('echar', 'init')
+        this.$apply()
+      }else{
+        wepy.showToast({
+          title: '获取失败结果失败',
+          icon: 'none',
+          duration: 2000
+        })
+      }
+    })
+  }
+
+  deleteHtmlTag(str) {
+    str = str.replace(/<[^>]+>|&[^>]+;/g, '').trim() // 去掉所有的html标签和&nbsp;之类的特殊符合
+    return str
+  }
+
+  async onLoad(option) {
+    let {
+      id,
+      answerIds,
+      type,
+      qresult,
+      age,
+      department,
+      memberName,
+      clickFlag,
+      scoreId
+    } = option
+    this.id = id
+    this.answerIds = answerIds
+    console.log(option)
+    if (clickFlag) {
+      this.clickFlag = true
+    }
+    // this.userInfo =  Object.assign({}, this.$parent.globalData.userInfo)
+    // this.ec.option = this.option
+    // console.log(this.height1)
+    if(option.scoreId != undefined){
+      this.getEvaluationScoreDetail(option.scoreId)
+    }else{
+      this.getEvaluationScoreDetail(option.id)
+    }
+    // if (type) {
+     
+    // } else {
+    //   this.getEvaluationResult({
+    //     jsonQuestionnaires: qresult,
+    //     department,
+    //     age,
+    //     memberName
+    //   })
+    // }
+  }
+
+  echartInit(e) {
+    initChart(e.detail.canvas, e.detail.width, e.detail.height)
+  }
+}
+</script>
+<style lang="less">
+page {
+  background: #ffffff;
+}
+
+.header {
+  padding: 0 29rpx;
+  .title {
+    font-size: 32rpx;
+    color: #333333;
+    margin-top: 32rpx;
+    margin-bottom: 32rpx;
+    font-weight: bold;
+  }
+  .test_time {
+    color: #999999;
+    display: flex;
+    .label {
+      font-size: 24rpx;
+    }
+    .date {
+      font-size: 24rpx;
+    }
+  }
+}
+
+.content {
+  margin: 0 29rpx;
+  margin-top: 6rpx;
+  margin-top: 42rpx;
+  background: #fff;
+  border-radius: 10rpx;
+  box-shadow: 0rpx 0rpx 10px rgba(3, 3, 3, 0.2);
+  .header_i {
+    font-size: 30rpx;
+    padding-left: 22rpx;
+    height: 100rpx;
+    line-height: 100rpx;
+    color: #000000;
+    border-bottom: 1rpx solid #eeeeee;
+    font-weight: bold;
+  }
+  .line20 {
+    height: 20rpx;
+    background: #f6f6fa;
+  }
+  .uerinfo {
+    height: 240rpx;
+    display: flex;
+    flex-direction: column;
+    // justify-content: space-around;
+    align-items: center;
+    .avatar {
+      width: 114rpx;
+      height: 114rpx;
+      border-radius: 100%;
+      margin-top: 46rpx;
+    }
+    .name {
+      margin-top: 26rpx;
+      font-weight: bold;
+      font-size: 30rpx;
+      color: #333333;
+    }
+  }
+  .echarts {
+    // height: 1046rpx;
+    // background: red;
+    // position:absolute;
+    //   top:0;
+    //   bottom:0;
+    //   left:0;
+    //   right:0;p
+    padding-bottom: 30rpx;
+    .analyze_r {
+      font-size: 30rpx;
+      padding-left: 22rpx;
+      height: 100rpx;
+      line-height: 100rpx;
+      color: #000000;
+      border-bottom: 1rpx solid #eeeeee;
+      font-weight: bold;
+    }
+  }
+
+  .analyze_c {
+    .analyze_n {
+      font-size: 30rpx;
+      padding-left: 22rpx;
+      height: 100rpx;
+      line-height: 100rpx;
+      color: #000000;
+      border-bottom: 1rpx solid #eeeeee;
+      font-weight: bold;
+    }
+    .analyze_i {
+      margin: 36rpx 27rpx 18rpx 26rpx;
+      padding-bottom: 26rpx;
+      border-bottom: 1rpx solid #eeeeee;
+      .title {
+        font-size: 28rpx;
+        font-weight: bold;
+        .status {
+          color: #2565c3;
+        }
+      }
+      .intro {
+        font-size: 28rpx;
+      }
+      .description {
+        color: #666666;
+        font-size: 26rpx;
+      }
+    }
+  }
+
+  .evaluation_r {
+    .evaluation_n {
+      font-size: 30rpx;
+      padding-left: 22rpx;
+      height: 100rpx;
+      line-height: 100rpx;
+      color: #000000;
+      border-bottom: 1rpx solid #eeeeee;
+      font-weight: bold;
+    }
+    .evaluation_i {
+      margin: 36rpx 27rpx 18rpx 26rpx;
+      padding-bottom: 26rpx;
+      border-bottom: 1rpx solid #eeeeee;
+      .title {
+        font-size: 28rpx;
+        flex-wrap: bold;
+        .status {
+          color: #2565c3;
+        }
+      }
+      .intro {
+        color: #666666;
+        font-size: 26rpx;
+      }
+      .description {
+        color: #666666;
+        font-size: 26rpx;
+      }
+    }
+  }
+}
+
+.back_button {
+  width: 686rpx;
+  height: 90rpx;
+  background: #2565c3;
+  line-height: 90rpx;
+  margin: 100rpx 32rpx;
+  text-align: center;
+  color: #fff;
+  font-size: 32rpx;
+  border-radius: 10rpx;
+}
+
+.container {
+  padding-bottom: 1rpx;
+  // position:absolute;
+  // top:0;
+  // bottom:0;
+  // left:0;
+  // right:0;
+  // display:flex;
+  // flex-direction:column;
+  // align-items:center;
+  // justify-content:space-between;
+  // box-sizing:border-box;
+}
+</style>

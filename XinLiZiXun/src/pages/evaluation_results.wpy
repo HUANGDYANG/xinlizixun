@@ -1,0 +1,138 @@
+<template>
+  <view class="container">
+    <repeat for="{{loopData}}">
+      <view class="emonth_container">
+        <view class="month">{{index}}</view>
+        <repeat for="{{item}}" index="titleI" item="title">
+          <view class="day_container" @tap="toDetails({{title.id}})">
+            <view class="dt flex flex-a-i-center">
+              <view class="day">{{title.day}}日</view>
+              <view class="title">{{title.evaluationTitle}}</view>
+            </view>
+            <repeat for="{{title.resultList}}" index="resListI" item="resList">
+              <!-- <view class="content">
+                    {{resList.content}}
+              </view>-->
+              <rich-text class="content" nodes="{{resList.content}}" space="emsp"></rich-text>
+            </repeat>
+          </view>
+        </repeat>
+      </view>
+    </repeat>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+
+export default class Evaluation_results extends wepy.page {
+  config = {
+    navigationBarTitleText: '测评结果'
+  };
+  components = {};
+
+  data = {
+    memberId: '',
+    evaluationScoreRecord: '',
+    loopData: {
+      // '': []
+    }
+  };
+  methods = {
+    toDetails(id) {
+
+      goPath('/pages/test_result?id=' + id + '&type=1')
+    }
+  };
+
+  events = {};
+
+  getEvaluationScoreRecord({ memberId, pageNum = 1, pageSize = 10 } = {}) {
+    // 获取用户历史测评
+    let { getEvaluationScoreRecord } = api
+    getEvaluationScoreRecord({
+      memberId: this.memberId,
+      pageNum,
+      pageSize
+    }).then(res => {
+      if (res) {
+        this.evaluationScoreRecord = res.data.list
+
+        this.evaluationScoreRecord.forEach((item, i) => {
+          item.resultList.forEach(item1 => {
+            if (item1.content) {
+              item1.content = item1.content
+                .replace(
+                  /<img/gi,
+                  '<img style="max-width:100%;height:auto;display:block" '
+                )
+                .replace(/<section/g, '<div')
+                .replace(/\/section>/g, 'div>')
+            }
+          })
+          let dayArr = item.createTime.split(' ')[0].split('-')
+          let year = dayArr[0] + '年' + dayArr[1] + '月'
+          if (!this.loopData[year]) this.loopData[year] = []
+          this.loopData[year].push({
+            day: dayArr[2],
+            resultList: item.resultList,
+            evaluationTitle: item.evaluationTitle,
+            id: item.id
+          })
+        })
+        this.$apply()
+      }
+    })
+  }
+
+  onLoad(option) {
+    let { id } = option
+    this.memberId = id
+    this.getEvaluationScoreRecord()
+  }
+}
+</script>
+
+<style lang="less">
+.emonth_container {
+  font-family: PingFang-SC-Bold;
+  .month {
+    font-size: 32rpx;
+    color: #000000;
+    font-weight: bold;
+    height: 110rpx;
+    line-height: 110rpx;
+    margin-left: 32rpx;
+  }
+  .day_container {
+    margin-bottom: 20rpx;
+    background: #fff;
+    padding: 36rpx 24rpx 36rpx 32rpx;
+    .dt {
+      padding-bottom: 26rpx;
+    }
+    .day {
+      background: #2565c3;
+      width: 60rpx;
+      height: 60rpx;
+      border-radius: 100%;
+      color: #fff;
+      font-size: 24rpx;
+      line-height: 60rpx;
+      text-align: center;
+    }
+    .title {
+      font-size: 28rpx;
+      padding-left: 26rpx;
+      color: #000000;
+    }
+    .content {
+      color: #666666;
+      font-size: 24rpx;
+      font-weight: Regular;
+    }
+  }
+}
+</style>

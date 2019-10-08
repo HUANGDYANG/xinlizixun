@@ -1,0 +1,355 @@
+<template>
+  <view class="container">
+    <view class='phone_money_out'>
+      <view class='phone_money_in flex flex-j-c-sb flex-a-i-center'>
+        <view class='phone'>手机号：{{mobile}}</view>
+        <view class='money'>当前余额：{{!balance ? '0.00' : balance}}</view>
+      </view>
+    </view>
+    <view class='this_out' wx:if="{{couponList}}">
+      <repeat for="{{couponList}}">
+        <view class='this'>
+          <!-- <image src='../images/bg_youhuijuan@2x.png' class='bg_youhuijuan'></image> -->
+          <image wx:if="{{index < 2}}" src='../images/icon_new@2x.png' class='icon_new'></image>
+          <view class='this_in'>
+            <view class="top">
+              <view class='flex flex-a-i-center pd34'>
+                <image src='{{item.mainPic}}' class='backe5 com_pic'></image>
+                <view class='com_title'>{{item.shopName}}</view>
+              </view>
+              <view class='flex flex-a-i-center flex-j-c-sb pd36'>
+                <view class='cz'>{{item.name}}</view>
+                <view class='button' @tap='recharge({{item.id}})'>充值</view>
+              </view>
+              <view class="dashed"></view>
+            </view>
+            <view class='pdlr36'>
+              <view class='detail' style="height:118rpx;" wx:if="{{!item.show}}">{{item.rule75}}</view>
+              <view class='detail' wx:if="{{item.show}}">{{item.rule}}</view>
+              <!-- <view class='detail'>每个订单只能使用一张优惠券</view> -->
+            </view>
+          </view>
+          <view class="arrows" wx:if="{{item.select}}" @tap="show_arrows({{index}})">
+            <view class="up {{!item.show ? 'active' : ''}}"></view>
+            <view class="down {{item.show ? 'active' : ''}}"></view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <view class="no_more" wx:else>
+      <text>暂无优惠</text>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class Provice extends wepy.page {
+  config = {
+    navigationBarTitleText: '友优惠'
+  };
+  components = {};
+  data = {
+    balance: '',
+    mobile: '',
+    couponList: [],
+    loaded: false,
+    nextPage: 1
+  };
+
+  computed = {};
+  methods = {
+    recharge(id) {
+      this.purchaseCoupon(id)
+    },
+    show_arrows(index) {
+      this.couponList[index].show = !this.couponList[index].show
+    }
+  };
+  events = {};
+  async onLoad(option) {
+    this.getMemberInfo()
+    this.getCouponList()
+  }
+
+  getMemberInfo() {
+    let { getMemberInfo } = api
+    getMemberInfo().then(res => {
+      this.mobile = res.data.mobile
+      this.balance = res.data.balance
+      this.$apply()
+    })
+  }
+
+  getCouponList({ pageNum = 1, pageSize = 10 } = {}) {
+    let { getCouponList } = api
+    getCouponList({
+      pageNum: this.nextPage,
+      pageSize
+    }).then(res => {
+      // if(!res) return
+      if(res != false){
+        var list = res.data.list;
+        // this.couponList = res.data.list
+        res.data.list.forEach((item, i) => {
+          if (item.rule.length > 75) {
+            item.select = true
+          }
+          // item.rule = `使用优惠券支付的订单，如果退货，优惠券抵扣金额不能退还，只能退还实际支付商品金额；如果部分退货，将按照订单实际成交商品的金额进行结算；退货后订单金额不满足优惠券使用条件时，优惠券失效。本活动最终解释权归广州市博鸿源企业管理有限公司所有`
+          item.show = false
+          item.rule75 = item.rule.slice(0, 75)
+        })
+        if (this.nextPage == 1) {
+          this.couponList = list
+        } else if (this.nextPage > 1) {
+          this.couponList.push(...list)
+        }
+
+        if (res.data.isLastPage) {
+          this.loaded = true
+        } else {
+          this.nextPage = res.data.nextPage
+        }
+      }
+
+      this.$apply();
+    })
+  }
+  onReachBottom() {
+    if (!this.loaded) {
+      this.getCouponList()
+    }
+  }
+  purchaseCoupon(id) {
+    let { purchaseCoupon } = api
+    purchaseCoupon(id).then(res => {
+      // 支付宝的
+      let postData = {
+        timeStamp: '',
+        nonceStr: '',
+        package: '',
+        paySign: ''
+      }
+
+      postData.timeStamp = res.data.timestamp + ''
+      postData.nonceStr = res.data.nonce
+      postData.paySign = res.data.signature
+      postData.package = res.data.pack
+
+
+      let paymentObj = { ...postData, signType: 'MD5' }
+      wx.requestPayment({
+        ...paymentObj,
+        success(res) {
+          this.getMemberInfo()
+          wx.showToast({
+            title: '充值成功',
+            icon: 'success',
+            duration: 2000
+          })
+        },
+        complete(res) {
+        },
+        fail(res) {
+          wx.showToast({
+            title: '支付失败',
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      })
+    })
+  }
+}
+</script>
+<style lang="less">
+.phone_money_out {
+  margin-top: 20rpx;
+  padding: 20rpx 32rpx;
+  background-color: #fff;
+}
+.phone_money_in {
+  height: 60rpx;
+}
+.phone {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  padding-right: 55rpx;
+  border-right: 1rpx solid rgba(238, 238, 238, 1);
+}
+.money {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.this {
+  width: 686rpx;
+  // height: 320rpx;
+  margin: 0 auto;
+  position: relative;
+  margin-bottom: 26rpx;
+  .arrows {
+    // background: red;
+    width: 60rpx;
+    height: 60rpx;
+    position: absolute;
+    right: 0rpx;
+    bottom: 0rpx;
+    // position: relative;
+    // .up{
+    //     width: 0;
+    //     height: 0;
+    //     border: 50px solid;
+    //     border-color: red transparent transparent transparent;
+    //     position: relative;
+    // }
+    // .up::after{
+    //     content: '';
+    //     position: absolute;
+    //     top: -55px;
+    //     left: -50px;
+    //     border: 50px solid;
+    //     border-color: white transparent transparent transparent;
+    // }
+    .up.active::after {
+      display: inline-block;
+      position: absolute;
+      content: '';
+      font-size: 0;
+      line-height: 0;
+      width: 10rpx;
+      height: 10rpx;
+      right: 20rpx;
+      bottom: 26rpx;
+      border: 0rpx solid #2565c3;
+      border-width: 0 0 2rpx 2rpx;
+      transform: rotate(-45deg);
+      z-index: 10;
+    }
+    .down.active::after {
+      display: inline-block;
+      position: absolute;
+      content: '';
+      font-size: 0;
+      line-height: 0;
+      width: 10rpx;
+      height: 10rpx;
+      right: 20rpx;
+      bottom: 20rpx;
+      border: 0rpx solid #2565c3;
+      border-width: 2rpx 2rpx 0 0;
+      transform: rotate(-45deg);
+      z-index: 10;
+    }
+  }
+}
+.bg_youhuijuan {
+  width: 100%;
+  height: 100%;
+}
+.this_out {
+  padding: 46rpx 0 20rpx;
+}
+.this_in {
+  position: relative;
+  width: 686rpx;
+  // background: red;
+  // height: 320rpx;
+  .top {
+    background: #fff;
+    border-radius: 24rpx;
+    // border-bottom: #F7F5F6 dashed 2rpx;
+  }
+  .dashed {
+    width: 100%;
+    height: 2rpx;
+    background-image: linear-gradient(
+      to right,
+      #f7f5f6 0%,
+      #f7f5f6 50%,
+      transparent 50%
+    );
+    background-size: 35rpx 2rpx;
+    background-repeat: repeat-x;
+    padding: 0 24rpx;
+  }
+}
+.com_pic {
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 50%;
+}
+.com_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(37, 101, 195, 1);
+  margin-left: 26rpx;
+}
+.pd34 {
+  padding: 24rpx 36rpx 36rpx;
+}
+.cz {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 1);
+}
+.pd36 {
+  padding: 4rpx 36rpx 36rpx;
+}
+.button {
+  width: 120rpx;
+  height: 52rpx;
+  background: rgba(37, 101, 195, 1);
+  border: 2rpx solid rgba(37, 101, 195, 1);
+  border-radius: 26rpx;
+  font-size: 22rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  line-height: 52rpx;
+}
+.detail {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(153, 153, 153, 1);
+  line-height: 36rpx;
+}
+.pdlr36 {
+  padding: 10rpx 36rpx;
+  background: #fff;
+  border-radius: 24rpx;
+}
+.icon_new {
+  width: 55rpx;
+  height: 39rpx;
+  position: absolute;
+  top: -10rpx;
+  right: -20rpx;
+  z-index: 99;
+}
+.no_records {
+  width: 100%;
+  height: 200rpx;
+  justify-content: center;
+  align-items: center;
+  font-size: 36rpx;
+  color: black;
+}
+
+.no_more {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 90rpx;
+  color: rgba(153, 153, 153, 1);
+}
+</style>

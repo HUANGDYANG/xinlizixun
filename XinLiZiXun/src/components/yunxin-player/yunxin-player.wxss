@@ -1,0 +1,18 @@
+/* components/yunxin-player/yunxin-player.wxss */
+/* .play-container{
+  background: black;
+  display: block;
+  position: absolute;
+} */
+/* .play-container {
+  background-image: url(https://mc.qcloudimg.com/static/img/7da57e0050d308e2e1b1e31afbc42929/bg.png);
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+  overflow: hidden;
+} */
+.sud{
+  background-color: #1B2A38;
+  opacity:0.65; 
+}

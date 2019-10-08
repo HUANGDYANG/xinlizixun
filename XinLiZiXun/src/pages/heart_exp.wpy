@@ -1,0 +1,167 @@
+<template>
+  <view class="container">
+    <repeat for='{{newsList}}'>
+      <view class='this' @tap='to_heart_exp({{item.id}})'>
+      <view class='content flex flex-a-i-center'>
+        <image src="{{item.mainPic}}" class='backe5 img' mode="aspectFill"></image>
+        <view class='flex1'>
+          <view class='title ellipsis2'>{{item.title}}</view>
+          <view class='detail ellipsis2'>{{item.shortMeta}}</view>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb mgt25'>
+        <view></view>
+        <view class='time'>{{item.createTime}}</view>
+      </view>
+    </view>
+    </repeat>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Heart_exp extends wepy.page {
+    config = {
+      navigationBarTitleText: '心速递'
+    }
+    components = {}
+    data = {
+      firstCome: false,
+      loaded: false,
+      nextPage: 1,
+      newsList: [],
+      data_card: [{ // 测试数据
+        mainPic: 'http://image.zhvankelive.com/images/2018/12/23/2018122307111317203639.png',
+        id: 1
+      }, {
+        mainPic: 'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      }, {
+        mainPic: 'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      }, {
+        mainPic: 'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      }, {
+        mainPic: 'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      }]
+    }
+    computed = {}
+    methods = {
+      to_heart_exp(e) {
+        goPath('/pages/heart_exp_detail?id=' + e)
+      }
+    }
+    events = {}
+    async getNewsList(onShow) {
+      var nextPage = this.nextPage
+      let {getNewsList} = api
+      let newsList = await getNewsList({
+        pageNum: onShow ? 1 : nextPage,
+        pageSize: onShow ? this.currentPage * 10 : 10
+      })
+      var list = newsList.data.list
+
+      if (nextPage == 1) {
+        this.newsList = list
+        this.currentPage = 1
+      } else if (nextPage > 1) {
+        if (onShow) {
+              // 当onshow的时候 获取之前显示的页数的全部数量赋值
+          this.list = list
+        } else {
+          this.currentPage = this.nextPage
+          this.newsList.push(...list)
+        }
+      }
+
+      if (newsList.data.isLastPage) {
+        this.loaded = true
+      } else {
+        if (!onShow) this.nextPage = newsList.data.nextPage
+      }
+      this.$apply()
+    }
+    onShow() {
+      this.loaded = false
+
+      if (!this.firstCome) {
+        this.firstCome = true
+        this.getNewsList()
+      } else {
+        this.getNewsList(true)
+      }
+    }
+    async onLoad() {
+      // this.getNewsList()
+    }
+    onReachBottom() {
+      if (!this.loaded) {
+        this.getNewsList()
+      }
+    }
+  }
+</script>
+<style lang="less">
+page{
+  background-color: #fff;
+}
+.this{
+  padding: 46rpx 32rpx 35rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.img{
+  width: 256rpx;
+  height: 144rpx;
+}
+
+.content {
+  >image {
+    flex-shrink: 0;
+  }
+}
+.title{
+  font-size: 28rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color:rgba(51,51,51,1);
+  line-height: 42rpx;
+}
+.detail{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  line-height:36rpx;
+}
+.time{
+  font-size:22rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+}
+.mgt25{
+  margin-top: 25rpx;
+}
+.flex1{
+  height: 144rpx;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: column;
+  width: 400rpx;
+  margin-left: 36rpx;
+  > view {
+    flex-shrink: 0;
+    word-break: break-all;
+  }
+  .title {
+    width: 400rpx;
+  }
+  .detail {
+    width: 400rpx;
+  }
+}
+</style>

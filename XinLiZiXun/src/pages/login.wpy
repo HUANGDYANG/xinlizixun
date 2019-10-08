@@ -1,0 +1,277 @@
+<template>
+  <view class="container">
+    <view class='text_center'>
+      <image src='../images/logo02@2x.png' class='logo02'></image>
+      <view class='text_center1'>欢迎登录</view>
+    </view>
+    <view class='content_out'>
+      <view class='take_phone_out flex flex-a-i-center'>
+        <image src='../images/icon_number@2x.png' class='icon_number'></image>
+        <input value="{{phone}}" maxlength="11" @input="phoneInput" type="number" name="" class="take_phone" placeholder="输入您的手机号码" placeholder-style='font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);' />
+      </view>
+      <view class='take_phone_out flex flex-a-i-center flex-j-c-sb'>
+        <view class='flex flex-a-i-center '>
+          <image src='../images/icon_yanzhengma@2x.png' class='icon_number'></image>
+          <input @input="captchaInput" maxlength="6" type="number" name="" class="take_phone" placeholder="验证码" placeholder-style='font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);' />
+        </view>
+        <view class='get_code' @tap='get_code' wx:if='{{get_code}}'>获取验证码</view>
+        <view class='get_code_second' wx:if='{{!get_code}}'>{{second}}s</view>
+      </view>
+      <view class='take_phone_out flex flex-a-i-center'>
+        <image src='../images/icon_youhuima@2x.png' class='icon_number'></image>
+        <input @input="couponCodeInput" name="" class="take_phone" placeholder="输入您的优惠码" placeholder-style='font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);' />
+      </view>
+    </view>
+    <view class='button' @tap="login">登录</view>
+    <view class='tiaoguo flex flex-j-c-sb'>
+      <view></view>
+      <view class='flex flex-a-i-center'>
+        <view class='tiaoguo_title' @tap="jumpOver">点击跳过</view>
+        <image src='../images/icon_tiaoguo@2x.png' class='icon_tiaoguo'></image>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+import IMController from '../controller/im.js'
+
+export default class Login extends wepy.page {
+  config = {
+    navigationBarTitleText: '登录'
+  };
+  components = {};
+  data = {
+    get_code: true,
+    second: 60,
+    captcha: '', // 验证码
+    phone: '',
+    couponCode: '',
+    navigateBack: true
+  };
+
+  computed = {};
+  methods = {
+    get_code() {
+      if (this.validateTelphone()) return
+      this.getCaptcha(this.phone)
+      var that = this
+      this.get_code = false
+      function inter() {
+        that.second--
+        that.$apply()
+        if (that.second < 1) {
+          clearInterval(secondInterval)
+          that.get_code = true
+          that.$apply()
+          that.second = 60
+        }
+      }
+      var secondInterval = setInterval(inter, 1000)
+    }
+  };
+  events = {};
+  phoneInput(e) {
+    this.phone = e.detail.value
+  }
+  captchaInput(e) {
+    this.captcha = e.detail.value
+  }
+  couponCodeInput(e) {
+    this.couponCode = e.detail.value
+  }
+  getCaptcha(phone) {
+    // 还没成功
+    let { getCaptcha } = api
+    getCaptcha(phone)
+  }
+  login() {
+    // 登录
+    if (this.validateTelphone()) return
+    if (!this.captcha || this.captcha < 6) {
+      // 判断是否有验证码
+      wepy.showToast({
+        icon: 'none',
+        title: '请输入正确的验证码',
+        mask: false
+      })
+      return;
+    }
+
+    let {
+      login,
+      getMemberInfo,
+      searchMemberCustomizationInfo,
+      getMemberImInfo
+    } = api
+
+    let pData = {
+      phone: this.phone,
+      openId: wx.getStorageSync('openid'), // 不要啊
+      captcha: this.captcha
+    }
+
+    if (this.couponCode) pData.couponCode = this.couponCode
+
+
+    // 我去 手机登录啊啊啊
+    login(pData).then(res => {
+
+      if (res) {
+        // 本地存储用户信息 不用了 直接放到全局
+        // wx.setStorageSync('userInfo', res.data)
+        wx.setStorageSync('token', res.data.token)
+
+        getMemberInfo().then(res => {
+          this.$parent.globalData.userInfo = res.data
+          // this.$parent.globalData.userInfo.memberType = 0 // 先模拟
+          searchMemberCustomizationInfo().then(res => {
+            if (!res) {
+              this.$parent.globalData.userInfo.hasCustomization = ''
+            } else {
+              this.$parent.globalData.userInfo.hasCustomization =
+                res.data.customizationId
+              this.$parent.globalData.userInfo.refundPrice =
+                res.data.refundPrice
+            }
+            this.$apply()
+          })
+          if (this.$parent.userInfoReadyCallback) {
+            this.$parent.userInfoReadyCallback(res)
+          }
+          this.$apply()
+
+          getMemberImInfo().then(res => {
+            if (res) {
+              new IMController({
+                // 实时通讯
+                // token: this.data.password,
+                // account: this.data.account
+                account: res.data.accid,
+                token: res.data.token
+              })
+            }
+          })
+        })
+
+        wx.setStorageSync('openid', '')
+
+        this.navigateBack ? wx.navigateBack() : goPath('/pages/index', 'rl')
+      }
+    })
+  }
+  validateTelphone() {
+    // 验证手机号
+    if (!this.phone || this.phone.length < 11) {
+      wepy.showToast({
+        icon: 'none',
+        title: '请输入正确的手机号！',
+        mask: false
+      })
+      return true
+    }
+  }
+  jumpOver() {
+    goPath('/pages/index', 'rl')
+  }
+  async onLoad(option) {
+    let { back } = option
+    if (back == 'false') {
+      this.navigateBack = false
+    }
+  }
+}
+</script>
+<style lang="less">
+page {
+  background-color: #fff;
+}
+.text_center {
+  text-align: center;
+  margin-top: 30rpx;
+}
+.text_center1 {
+  text-align: center;
+  margin-top: 20rpx;
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.logo02 {
+  width: 133rpx;
+  height: 129rpx;
+}
+.content_out {
+  padding: 100rpx 30rpx 140rpx;
+}
+.icon_number {
+  width: 36rpx;
+  height: 36rpx;
+}
+.take_phone {
+  margin-left: 20rpx;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+}
+.take_phone_out {
+  padding: 48rpx 0 22rpx;
+  border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+}
+.get_code {
+  width: 164rpx;
+  height: 62rpx;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 31rpx;
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  line-height: 62rpx;
+}
+.get_code_second {
+  width: 164rpx;
+  height: 62rpx;
+  background: rgba(255, 255, 255, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 31rpx;
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  text-align: center;
+  line-height: 62rpx;
+}
+.button {
+  width: 686rpx;
+  height: 80rpx;
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  text-align: center;
+  line-height: 80rpx;
+  color: rgba(246, 246, 250, 1);
+  margin: 0 auto 92rpx;
+}
+.tiaoguo {
+  padding: 0 32rpx;
+}
+.icon_tiaoguo {
+  width: 24rpx;
+  height: 22rpx;
+}
+.tiaoguo_title {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  margin-right: 16rpx;
+}
+</style>

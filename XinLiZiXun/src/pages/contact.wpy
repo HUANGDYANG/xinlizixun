@@ -1,0 +1,134 @@
+<template>
+  <view class="container">
+    <view class='mgat'>
+      <image src='{{contractusInfo.logoPic}}'
+             class='icon_number'></image>
+    </view>
+    <view class="about">
+      <view class="header flex flex-a-i-center">
+        <view class="line"></view>
+        <text class="title">关于我们</text>
+      </view>
+      <view class="about-text">
+        <rich-text nodes="{{contractusInfo.aboutUs}}"> </rich-text>
+      </view>
+    </view>
+    <view class='pd30'>
+      <view class='flex flex-j-c-sb pd32'>
+        <view class='title'>公司电话：</view>
+        <view class='phone'
+              @tap="call('{{contractusInfo.phone}}')">{{contractusInfo.phone}}</view>
+      </view>
+    </view>
+    <view class='pd30'>
+      <view class='flex flex-j-c-sb pd32'>
+        <view class='title'>客服电话：</view>
+        <view class='phone'
+              @tap="call('{{contractusInfo.serviceMobile}}')">{{contractusInfo.serviceMobile}}</view>
+      </view>
+    </view>
+    <view class='pd30'>
+      <view class='flex flex-j-c-sb pd32'
+            style='border-bottom: none;'>
+        <view class='title'>邮箱：</view>
+        <view class='phone'>{{contractusInfo.email}}</view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class Consult extends wepy.page {
+  config = {
+    navigationBarTitleText: '联系我们'
+  };
+  components = {};
+  data = {
+    contractusInfo: {}
+  };
+
+  computed = {};
+  methods = {
+    call(phone) {
+      wx.makePhoneCall({
+        phoneNumber: phone
+      })
+    }
+  };
+  events = {};
+  async onLoad(option) {
+    this.getContactusInfo()
+  }
+  getContactusInfo() {
+    let { getContactusInfo } = api
+    getContactusInfo().then(res => {
+      res.data.aboutUs = res.data.aboutUs
+        .replace(
+          /<img/gi,
+          '<img style="max-width:100%;height:auto;display:block" '
+        )
+        .replace(/<section/g, '<div')
+        .replace(/\/section>/g, 'div>')
+      this.contractusInfo = res.data
+      this.$apply()
+    })
+  }
+}
+</script>
+<style lang="less">
+.about {
+  margin: 0 0 20rpx 0;
+  .header {
+    background-color: #fff;
+    height: 96rpx;
+    border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+    padding: 0 30rpx;
+    .line {
+      width: 8rpx;
+      height: 28rpx;
+      margin-right: 16rpx;
+      background: #1462aa;
+      border-radius: 8rpx;
+    }
+    .title {
+      font-size: 30rpx;
+    }
+  }
+  .about-text {
+    padding: 30rpx;
+    background: #fff;
+    color: #666666;
+    font-size: 28rpx;
+  }
+}
+.mgat {
+  margin: 160rpx auto 140rpx;
+  text-align: center;
+}
+.icon_number {
+  width: 274rpx;
+  height: 260rpx;
+}
+.pd30 {
+  padding: 0 32rpx;
+  background-color: #fff;
+}
+.pd32 {
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+}
+.title {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.phone {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(102, 102, 102, 1);
+}
+</style>

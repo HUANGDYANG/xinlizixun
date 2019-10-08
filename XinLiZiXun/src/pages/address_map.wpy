@@ -1,0 +1,74 @@
+<template>
+  <view class="container">
+   <view class="page-section page-section-gap">
+    <map
+      id="myMap"
+     
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      markers="{{markers}}"
+      show-location
+    ></map>
+  </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Address_map extends wepy.page {
+    config = {
+      navigationBarTitleText: '地址'
+    }
+    components = {
+    }
+    data = {
+      latitude: 23.09716,
+      longitude: 113.32778,
+      markers: [{
+        id: 1,
+        latitude: 23.09716,
+        longitude: 113.32778,
+        name: '米袋软件',
+        content: '米袋软件'
+      }]
+    }
+    computed = {}
+    methods = {
+      
+    }
+    events = {}
+    
+    async onLoad(option) {
+      // todo
+      let { latitude, longitude} = option
+      this.latitude = latitude
+      this.longitude = longitude 
+      this.markers[0].latitude = latitude 
+      this.markers[0].longitude = longitude 
+      if(!+latitude) {
+        this.latitude = 23.09716
+        this.longitude = 113.32778
+        this.markers = [{
+          id: 1,
+          latitude: 23.09716,
+          longitude: 113.32778,
+          name: '米袋软件',
+          content: '米袋软件'
+        }]
+      }
+    }
+    onReady() {
+      
+    }
+  }
+</script>
+<style lang="less">
+page{
+  height: 100%;
+}
+#myMap {
+  width: 100%;
+  height: 1337rpx;
+}
+</style>

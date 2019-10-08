@@ -1,0 +1,495 @@
+<template>
+  <view class="container">
+    <view class="form_out">
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">服务对象</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.serviceObject}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">性别</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.sex == 0 ? '男' : '女'}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">年龄</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.age}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">职业</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.profession}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">称谓（自定义）</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.appellation}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">陪伴类型</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.companionTypeName}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">时间跨度</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true">{{memberCustomizationDetail.timeSpan}}</view>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{festival}}"
+            class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs">附加节日</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <view class="'qxz_true"></view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{festival}}">
+        <textarea class="textarea"
+                  disabled
+                  value="{{memberCustomizationDetail.festival}}" />
+        </view>
+      <view class="flex flex-j-c-sb yyxx_this flex-a-i-center">
+        <view class="zxs" style="color: #000;">手机号码</view>
+        <view>
+          <view class="flex flex-a-i-center">
+            <!-- <view class="'qxz_true">18565236548</view> -->
+            <input
+              maxlength="11"
+              type="number"
+              name
+              placeholder="请输入..."
+              bindinput="phone"
+              placeholder-style="color:#999;"
+              value="{{memberCustomizationDetail.mobile}}"
+            />
+          </view>
+        </view>
+      </view>
+      <view class="flex flex-j-c-sb yyxx_this">
+        <view class="zxs" style="color: #000;">收货地址</view>
+        <view>
+          <view class="flex">
+            <view
+              bindtap="chooseLocation"
+              class="address"
+              style="{{address ? '' : 'color:#999;'}}"
+            >{{address ? address : '请输入...'}}</view>
+            <!-- <input class='' type="text" name="" placeholder="请输入..." bindinput='address' placeholder-style='color:#999;' value="{{memberCustomizationDetail.address}}"> -->
+            <!-- <view class="'qxz_true maxWidth410">广东省广州市天河区车陂南街道 丁一塘16号6楼604</view> -->
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="paat">*只可修改手机号码和收货地址</view>
+    <view class="bottom flex">
+      <view class="button_in" @tap="edit">确定修改</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo, prevPageOnLoad, sleep } from '../util.js'
+import api from '../api.js'
+export default class Custom_edit extends wepy.page {
+  config = {
+    navigationBarTitleText: '修改定制'
+  };
+  components = {};
+  data = {
+    show_modal1: false,
+    memberCustomizationDetail: {},
+    id: '',
+    mobile: '',
+    address: ''
+  };
+
+  computed = {};
+  methods = {
+    chooseLocation() {
+      let that = this
+      wx.chooseLocation({
+        success: function(res) {
+          // 允许打开定位
+          that.address = res.address
+          that.$apply()
+        },
+        fail: () => {
+          // 不允许打开定位
+          wx.getSetting({
+            success: res => {
+              if (res.authSetting['scope.userLocation'] == true) {
+                // 打开提示框，提示前往设置页面
+              } else {
+                wx.showModal({
+                  title: '位置信息授权',
+                  content: '位置授权暂未开启，无法完成选择',
+                  confirmText: '开启授权',
+                  confirmColor: '#2565c3',
+                  cancelText: '仍然拒绝',
+                  cancelColor: '#999999',
+                  success: function(res) {
+                    if (res.confirm) {
+                      wx.openSetting({
+                        fail: function() {
+                        }
+                      })
+                    }
+                  }
+                })
+              }
+            }
+          })
+        }
+      })
+    },
+    cancel() {},
+    edit() {
+      let phoneReg = /(^1[3|4|5|7|8|9]\d{9}$)|(^09\d{8}$)/
+      if (!phoneReg.test(this.mobile)) {
+        wx.showToast({
+          title: '手机号有误',
+          icon: 'none',
+          duration: 2000
+        })
+        return;
+      } else if (!this.address) {
+        wx.showToast({
+          title: '请输入地址',
+          icon: 'none',
+          duration: 2000
+        })
+        return;
+      }
+      this.updatesearchMemberCustomization()
+    },
+    address(e) {
+      this.address = e.detail.value
+    },
+    phone(e) {
+      this.mobile = e.detail.value
+    }
+  };
+  events = {};
+  async onLoad(option) {
+    let { id } = option
+    // id = 1
+    this.id = id
+    this.getMemberCustomizationDetail(id)
+  }
+
+  getMemberCustomizationDetail(id) {
+    // 获取定制详情
+    let { getMemberCustomizationDetail } = api
+    getMemberCustomizationDetail(id).then(res => {
+      this.memberCustomizationDetail = res.data
+      this.mobile = res.data.mobile
+      this.address = res.data.address
+      this.$apply()
+    })
+  }
+  updatesearchMemberCustomization() {
+    // 修改定制
+    let { updatesearchMemberCustomization } = api
+    updatesearchMemberCustomization({
+      id: this.id,
+      address: this.address,
+      mobile: this.mobile
+    }).then(res => {
+      if (res) {
+        wx.showToast({
+          title: res.message,
+          duration: 3000,
+          mask: true,
+          success() {
+ 
+          }
+        })
+      }
+
+      sleep(2).then(res => {
+        let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+        let prevPage = pages[pages.length - 2]
+        prevPage.onLoad({
+          id: this.memberCustomizationDetail.id
+        })
+        wx.navigateBack()
+      })
+    })
+  }
+}
+</script>
+<style lang="less">
+.container {
+  padding-bottom: 200rpx;
+}
+.address {
+  font-size: 30rpx;
+  padding-left: 28rpx;
+}
+.form_out {
+  background-color: #fff;
+  margin-top: 20rpx;
+  padding: 0 30rpx;
+}
+.yyxx_this {
+  padding: 25rpx 0;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+.zxs {
+  flex: none;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+}
+.qxz {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  margin-right: 15rpx;
+}
+.qxz_true {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  margin-right: 15rpx;
+}
+.icon_xiala {
+  width: 16rpx;
+  height: 10rpx;
+}
+.yyxx_this input {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  text-align: right;
+}
+.textarea {
+  width: 100%;
+  height: 200rpx;
+  padding: 36rpx 30rpx;
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(37, 101, 195, 1);
+  line-height: 36rpx;
+  background: rgba(246, 246, 250, 1);
+  border-radius: 8rpx;
+}
+.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 98rpx;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+  box-shadow: 0rpx 1rpx 12rpx 0rpx rgba(3, 3, 3, 0.11);
+  z-index: 9999;
+}
+.bottom1 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 98rpx;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+  box-shadow: 0rpx -3rpx 10rpx 0rpx rgba(204, 204, 204, 0.25);
+  z-index: 9999;
+}
+.bottom_in {
+  width: 240rpx;
+  height: 98rpx;
+  background: rgba(37, 101, 195, 1);
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  line-height: 98rpx;
+  text-align: center;
+}
+.flex1 {
+  flex: 1;
+  line-height: 98rpx;
+  padding-left: 30rpx;
+}
+.xzf {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(142, 142, 142, 1);
+}
+.xzf1 {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(34, 34, 34, 1);
+}
+.yuan {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: #333333;
+  margin-left: 10rpx;
+}
+.money {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: #f6ab00;
+}
+.money1 {
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(34, 34, 34, 1);
+  margin-left: 20rpx;
+}
+/*dialog*/
+.modal1 {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+}
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.mgat1 {
+  z-index: 999999;
+  background-color: #fff;
+  border-radius: 24rpx;
+  width: 100%;
+  height: 649rpx;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+.pay_title_out {
+  padding: 0 32rpx;
+}
+.pay_title {
+  font-size: 34rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(34, 34, 34, 1);
+}
+.pdsx {
+  padding: 32rpx 0;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+.pdsx1 {
+  padding: 20rpx 0;
+}
+.x {
+  width: 26rpx;
+  height: 26rpx;
+}
+.yfje {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.yfje_money {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.ygzf_icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+.icon_gou_gray {
+  width: 50rpx;
+  height: 50rpx;
+}
+.mgl20 {
+  margin-left: 20rpx;
+}
+.posi_rela {
+  position: relative;
+  height: 100%;
+}
+.maxWidth410 {
+  max-width: 410rpx;
+}
+.w50 {
+  width: 50%;
+  height: 100%;
+  line-height: 98rpx;
+  text-align: center;
+}
+.cancel {
+  background-color: #fff;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+.edit {
+  background: rgba(37, 101, 195, 1);
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+.paat {
+  margin-top: 24rpx;
+  padding-left: 30rpx;
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+}
+.button_in {
+  width: 686rpx;
+  height: 88rpx;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 4rpx;
+  margin: 5rpx auto 0;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  line-height: 88rpx;
+}
+</style>

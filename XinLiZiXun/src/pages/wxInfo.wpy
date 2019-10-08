@@ -1,0 +1,173 @@
+<!--  -->
+<template>
+    <view class='container'>
+        <view class='div'>
+<image src='../images/logo02@2x.png' mode="aspectFill" class='backe5'></image>
+<view class='name'>心理咨询</view>
+<view class='detail'>
+请微信授权后放心使用心理咨询
+</view>
+<view class='detail' style='margin-top: 0;'>您的数据和信息将受到保护</view>
+<button hover-class="none" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="onGotUserInfo" class='button'>
+<image class='wethat' src='../images/wechat-active.png' mode="aspectFill"></image>
+微信授权登录
+</button>
+</view>
+    </view>
+</template>
+
+<script>
+    import wepy from 'wepy';
+    import api from '@/api.js';
+    import { goPath } from '@/util.js';
+    import { authorization } from '@/util.js'
+    import IMController from '../controller/im.js'
+
+    export default class WxInfo extends wepy.page {
+        config = {
+            navigationBarTitleText: "小程序授权",
+        };
+
+        data = {
+
+        };
+
+        components = {};
+
+        methods = {
+            async onGotUserInfo(e) {
+              let { getMemberInfo, searchMemberCustomizationInfo, getMemberImInfo } = api
+                var that = this
+                //触发成功回调
+
+                if (e.detail.userInfo) {
+                    //用户按了允许授权按钮
+                    wx.showLoading({
+                        title: '登录中...', //提示的内容,
+                        mask: true, //显示透明蒙层，防止触摸穿透,
+                        success: res => {}
+                    });
+
+
+                    authorization(api.wxLogin)
+                      .then((res) => {
+                        
+                        if(res.data.code == 0 || res.data.code == 404){
+                          // 根据你账号有没有绑定手机号码
+                          // 如果有token去主页， 有信息的时候 表示已经绑定手机
+                            if (res.data.data.token) { // 后台返回来了
+                              wx.setStorageSync('mobile', res.data.data.phone)
+                              // wx.setStorageSync('password', res.data.data.wsPwd)
+                              //设置token
+                              wx.setStorageSync('token', res.data.data.token);
+                              // wx.setStorageSync('token', '9164fd2e4c56b079d084323380d99374');
+
+
+                              // 获取用户信息
+                              getMemberInfo().then(res => {
+                                this.$parent.globalData.userInfo = res.data
+                                // this.$parent.globalData.userInfo.memberType = 0 // 先模拟
+                                  searchMemberCustomizationInfo().then( res => {
+                                    if(!res) {
+                                      this.$parent.globalData.userInfo.hasCustomization = ''
+                                    }else {
+                                      this.$parent.globalData.userInfo.hasCustomization = res.data.customizationId
+                                      this.$parent.globalData.userInfo.refundPrice = res.data.refundPrice
+                                      this.$apply()
+                                    }
+                                  })
+
+                                  if (this.$parent.userInfoReadyCallback) {
+                                  this.$parent.userInfoReadyCallback(res)
+                                }
+                                wepy.hideLoading()
+                                getMemberImInfo().then(res => {
+                                  if(res){
+                                    new IMController({
+                                      // 实时通讯
+                                      // token: this.data.password,
+                                      // account: this.data.account
+                                      account:  res.data.accid,
+                                      token: res.data.token,
+                                    })
+                                  }
+                                })
+                                goPath('/pages/index', 'st')
+                                this.$apply()
+                              })
+                            } else {
+                                // 手机盐不要验证再说吧。。。
+                                // 绑定手机的路线
+                                wx.setStorageSync('openid', res.data.data) // 本地存储
+                                wepy.hideLoading();
+                                goPath('/pages/login?back=false', 'rd')
+                            }
+                        }else{
+                          wepy.hideLoading();
+                          wepy.showToast({
+                            title: JSON.stringify(res.data.message),
+                            icon: 'none',
+                            duration: 5000
+                          })
+                        }
+                    })
+                }
+            },
+
+        };
+
+        events = {};
+
+        watch = {};
+
+        computed = {};
+
+        onLoad(option) {
+        };
+
+        onShow() { };
+    }
+</script>
+
+<style lang='less'>
+page{
+  height: 100%;
+  background-color: #fff;
+}
+image{
+  width: 172rpx;
+  height: 172rpx;
+  border-radius: 50%;
+  margin: 100rpx 0 0;
+}
+.div{
+  text-align: center;
+}
+button{
+  padding: 0;
+  background-color: #2565C3;
+  color: #fff;
+  font-size: 32rpx;
+  width: 60%;
+  margin-top: 100rpx;
+  line-height:2.55555556;
+  box-sizing: border-box;
+}
+.detail{
+  font-size: 28rpx;
+  margin: 60rpx 0 4rpx;
+  color: #666;
+}
+.name{
+  font-size: 36rpx;
+  margin: 30rpx 0;
+}
+.wethat{
+  width:50rpx;
+  height:40rpx;
+  margin:0;
+  border-radius:0;
+  vertical-align: middle;
+  margin-bottom: 2rpx;
+}
+</style>

@@ -1,0 +1,341 @@
+<template>
+  <view class="container">
+    <view class='form_out'>
+
+    <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+      <view class='zxs'>选择时长</view>
+      <view>
+        <picker bindchange="bindChanges1" value="{{inde1}}" range="{{type1}}">
+        <view class='flex flex-a-i-center'>
+              <view class="{{time_small_1?'qxz':'qxz_true'}}">{{(type1[inde1])?type1[inde1]:'请选择...'}}</view>
+              <image src="../images/icon_xiala@2x.png" class="icon_xiala" ></image>
+        </view>
+        </picker>
+      </view>
+    </view>
+    <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+      <view class='zxs'>咨询金额</view>
+      <view>
+      <view class='flex flex-a-i-center' style="color:#2565C3;font-size:30rpx;">
+            ￥{{handlePrice}}
+      </view>
+      </view>
+    </view>
+      <view class='read_out flex flex-a-i-center'>
+       <image src="../images/publish_check_default_icon@2x.png" class="publish_check_default_icon" wx:if='{{!show_gou}}' @tap='show_gou'></image>
+       <image src="../images/publish_check_icon@2x.png" class="publish_check_default_icon" wx:if='{{show_gou}}' @tap='show_gou'></image>
+       <view class='flex'>
+         <view class='readed'>我已阅读并同意</view>
+         <view class='zqxy' @tap='to_detail'>《知情协议》</view>
+       </view>
+     </view>
+    </view>
+    <view class='bottom'>
+      <view class='flex1'>
+        <view>
+          <view>咨询时长：{{type1[inde1]}}</view>
+          <view class='mgt5'>￥{{handlePrice}}</view>
+        </view>
+      </view>
+      <view class='w240' @tap='show_pay_modal'>确认咨询</view>
+    </view>
+     <HPay tip="（免费咨询师请选余额支付）" @hpay.user="purchase" :show.sync="show_pay_modal" :payType.sync="payType" :price.sync="handlePrice"></HPay>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo, sleep } from '../util.js'
+  import api from '../api.js'
+  import IMController from '../controller/im.js'
+  import HPay from '../components/h-pay'
+  let app = wepy.$instance
+
+  export default class Consult extends wepy.page {
+    config = {
+      navigationBarTitleText: '实时咨询'
+    }
+    components = {
+      HPay: HPay
+    }
+    data = {
+      chatTo: '', // 聊天对象account
+      chatType: 'p2p', // 聊天类型 advanced 高级群聊 normal 讨论组群聊 p2p 点对点聊天
+      currentGroup: '',
+      type1: ['20min', '30min', '60min'],
+      inde1: 0,
+      consultantName: '',
+      avatar: '',
+      minute: 20,
+
+      show_pay_modal: false,
+      price: 0,
+      payType: 1,
+      show_gou: false,
+
+      consultantId: ''
+    }
+
+    computed = {
+      handlePrice() {
+
+        return (parseFloat(this.price) * this.minute / 60.0).toFixed(2)
+      }
+    }
+    methods = {
+      show_gou() {
+        this.show_gou = !this.show_gou
+      },
+      show_pay_modal() {
+        if (!this.show_gou) {
+          wx.showToast({
+            title: '请先阅读《知情协议》, 并勾选确认',
+            icon: 'none',
+            duration: 2000
+          })
+          return
+        }
+        this.show_pay_modal = true
+      },
+      to_detail() {
+        goPath('/pages/agreement')
+      },
+      purchase() {
+        // 如果已经接通了
+        this.fuckNeed()
+      },
+      bindChanges1(e) {
+        var that = this
+        console.log('picker发送选择改变，携带值为', e.detail.value)
+        this.inde1 = e.detail.value// 当前选项的索引值
+        this.minute = parseInt(this.type1[e.detail.value].slice(0, -3))
+        console.log(this.minute, ' this.min')
+
+        var inde1 = e.detail.value
+      },
+      to_videoCall() {
+        if (app.globalData.waitingUseVideoCall) {
+          showToast('text', '请勿频繁操作', {duration: 2000})
+          return
+        }
+        if (this.data.chatType === 'advanced' || this.data.chatType === 'normal') { // 群组
+          if (this.data.currentGroup.memberNum.length < 2) {
+            showToast('text', '无法发起，人数少于2人')
+          } else {
+            wx.navigateTo({
+              url: `../forwardMultiContact/forwardMultiContact?teamId=${this.data.currentGroup.teamId}`
+            })
+          }
+        } else { // p2p
+          console.log(`正在发起对${this.chatTo}的视频通话`)
+          wx.navigateTo({
+            url: `./videoCall/videoCall?callee=${this.chatTo}&avatar=${this.avatar}&name=${this.consultantName}&price=${this.price}`
+          })
+        }
+      }
+    }
+    fuckNeed () {
+      this.callConsultantSchedule().then(res => {
+        let that = this
+        console.log(res, '用户与咨询师实时音频')
+        if (res) {
+          let chatTo = res.data.contactInfo.accid
+          if (!res.data.hasOwnProperty('wxPay')) {
+                    // 余额的
+            wx.showToast({
+              title: '支付成功',
+              duration: 2000,
+              mask: true
+            })
+            this.show_pay_modal = false
+
+            wx.setStorageSync('buyTime' + this.consultantId, +new Date())
+            wx.setStorageSync('chatTo' + this.consultantId, chatTo)
+            wx.setStorageSync('consultingLengthTime' + this.consultantId, parseInt(this.minute)) // 通行证 多长时间
+            wx.setStorageSync('chatOrderId' + this.consultantId, res.data.orderId) // 设置实时通讯的orderId
+                    // wx.setStorageSync('consultingLengthTime' + this.consultantId , 2) // 模拟
+            sleep(2).then(res => {
+              goPath(`./videoCall/videoCall?callee=${chatTo}&client=true&avatar=${this.avatar}&name=${this.consultantName}&price=${this.price}&consultantId=${this.consultantId}`, 'rd')
+            })
+          } else {
+                    // 先不弄等对好排班 再接 接好了
+            console.log(res.data, '支付后台返回来的')
+            let postData = {
+              timeStamp: '',
+              nonceStr: '',
+              package: '',
+              paySign: ''
+            }
+
+            postData.timeStamp = res.data.wxPay.timestamp + ''
+            postData.nonceStr = res.data.wxPay.nonce
+            postData.paySign = res.data.wxPay.signature
+            postData.package = res.data.wxPay.pack
+            // 成功之后在设置缓存
+
+            console.log(postData, '处理后的数据')
+            let paymentObj = {...postData, signType: 'MD5'}
+            wx.requestPayment({
+              ...paymentObj,
+              success(payRes) {
+                // 设置缓存
+                wx.setStorageSync('buyTime' + that.consultantId, +new Date())
+                wx.setStorageSync('chatTo' + that.consultantId, chatTo)
+                wx.setStorageSync('consultingLengthTime' + that.consultantId, parseInt(that.minute)) // 通行证
+                wx.setStorageSync('chatOrderId' + that.consultantId, res.data.orderId)
+                        // prevPage.onLoad()
+                wx.showToast({
+                  title: '购买成功',
+                  icon: 'success',
+                  duration: 2000,
+                  mask: true
+                })
+                that.show_pay_modal = false
+                sleep(2).then(selRes => {
+                  goPath(`./videoCall/videoCall?callee=${chatTo}&client=true&avatar=${that.avatar}&name=${that.consultantName}&price=${that.price}&consultantId=${that.consultantId}`, 'rd')
+                })
+                console.log(payRes, 'success')
+                
+              },
+              complete(res) {
+                console.log(res, 'complete')
+              },
+              fail(res) {
+                wx.showToast({
+                  title: '支付失败',
+                  icon: 'none',
+                  duration: 2000,
+                  mask: true
+                })
+
+                console.log(res, 'fail')
+              }
+            })
+          }
+        }
+      })
+    }
+    callConsultantSchedule() {
+      let { callConsultantSchedule } = api
+      return callConsultantSchedule({
+        consultantId: this.consultantId,
+        minute: this.minute,
+        payType: this.payType
+      })
+    }
+    events = {}
+    async onLoad(option) {
+      let {avatar, consultantName, consultantId, price} = option
+      console.log(option, 'option option option')
+      console.log(consultantId, 'consultantId consultantId consultantId')
+
+      this.consultantName = consultantName
+      this.avatar = avatar
+      this.consultantId = consultantId
+      this.price = price
+      // this.data.chatTo = '123456'
+    }
+  }
+</script>
+<style lang="less">
+page{
+  margin-bottom: 120rpx;
+  background-color: #fff;
+}
+.publish_check_default_icon{
+  margin-right: 18rpx;
+  width: 36rpx;
+  height: 36rpx;
+}
+.read_out{
+  margin-top: 20rpx;
+  padding: 60rpx 32rpx 0;
+  background-color: #fff;
+}
+.readed{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  margin-right: 10rpx;
+}
+.zqxy{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:#2565C3;
+  text-decoration: underline;
+}
+.form_out{
+  background-color: #fff;
+  margin-top: 20rpx;
+  padding: 0 30rpx;
+}
+.yyxx_this{
+  padding: 25rpx 0;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.bottom{
+  width: 100%;
+  height: 98rpx;
+  box-shadow:0rpx -3rpx 10rpx 0rpx rgba(204,204,204,0.25);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+}
+.flex1{
+  flex: 1;
+  padding: 10rpx 32rpx;
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.w240{
+  width: 240rpx;
+  height: 98rpx;
+  background:rgba(37,101,195,1);
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  line-height: 98rpx;
+}
+.mgt5{
+  margin-top: 10rpx;
+}
+.yyxx_this{
+  padding: 25rpx 0;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.zxs{
+  flex: none;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+}
+.address {
+  font-size: 30rpx;
+  padding-left: 28rpx;
+}
+.qxz{
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  margin-right: 15rpx;
+}
+.qxz_true{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+  margin-right: 15rpx;
+}
+.icon_xiala{
+  width: 16rpx;
+  height: 10rpx;
+}
+</style>

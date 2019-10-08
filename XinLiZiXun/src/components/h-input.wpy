@@ -1,0 +1,57 @@
+<template>
+  <view>
+    <input
+      type="{{type}}"
+      @input="input"
+      value="{{value}}"
+      placeholder="{{placeholder}}"
+      maxlength="{{maxlength}}"
+      placeholder-style="{{placeholderStyle}}"
+    >
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+
+export default class Hinput extends wepy.component {
+  props = {
+    type: {
+      type: String,
+      default: 'text'
+    },
+    value: {
+      type: String,
+      default: '',
+      twoWay: true
+    },
+    placeholder: {
+      type: String,
+      default: '请输入...'
+    },
+    placeholderStyle: {
+      type: String,
+      default:
+        'font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);'
+    },
+    maxlength: {
+      type: String,
+      default: 140
+    }
+  };
+
+  data = {};
+
+  components = {};
+
+  methods = {
+    input(e) {
+      this.value = e.detail.value
+      this.$apply() // 要触脏数据
+      this.$parent.$apply()
+      this.$emit('hinput')
+    }
+  };
+
+  onLoad() {}
+}
+</script>

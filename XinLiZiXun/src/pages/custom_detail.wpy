@@ -1,0 +1,534 @@
+<template>
+  <view class="container">
+   <view class='form_out'>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>定制时间</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.createTime}}</view>
+         </view>
+         </view>
+       </view>
+       <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>定制状态</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+            <view class="'qxz_true" style='color:rgba(37,101,195,1);'>定制成功{{memberCustomizationDetail.payStatus == 3 ? '(已退款)' : '(已付款)'}}</view>
+         </view>
+         </view>
+       </view>
+   </view>
+    <view class='form_out'>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>服务对象</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.serviceObject}}</view>
+         </view>
+         </view>
+       </view>
+       <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>性别</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.sex == 0 ? '男' : '女'}}</view>
+         </view>
+         </view>
+       </view>
+       <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>年龄</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.age}}</view>
+         </view>
+         </view>
+       </view>
+       <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>职业</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.profession}}</view>
+         </view>
+         </view>
+       </view>
+       <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>称谓（自定义）</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.appellation}}</view>
+         </view>
+         </view>
+       </view>
+        <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>陪伴类型</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.companionTypeName}}</view>
+         </view>
+         </view>
+       </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>时间跨度</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.timeSpan}}</view>
+         </view>
+         </view>
+       </view>
+       <view wx:if="{{festival}}" class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>附加节日</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true"></view>
+         </view>
+         </view>
+       </view>
+
+       <view wx:if="{{festival}}">
+         <!-- <textarea class="textarea" disabled value="输入内容如以下范例：生日：1月8日（农历）；出门在外打工，未能回家看望父亲，惭愧。父亲喜欢蓝色的东西。"/> -->
+         <textarea class="textarea" disabled value="{{memberCustomizationDetail.festival}}"/>
+       </view>
+        <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+         <view class='zxs'>手机号码</view>
+         <view>
+         <view class='flex flex-a-i-center'>
+                <view class="'qxz_true">{{memberCustomizationDetail.mobile}}</view>
+         </view>
+         </view>
+       </view>
+       <view class='flex flex-j-c-sb yyxx_this'>
+         <view class='zxs'>收货地址</view>
+         <view>
+         <view class='flex'>
+              <view class="'qxz_true address">{{memberCustomizationDetail.address}}</view>
+         </view>
+         </view>
+       </view>
+    </view>
+    <!-- <view class='bottom flex' wx:if="{{memberCustomizationDetail.payStatus == 2 || memberCustomizationDetail.payStatus == 3}}"> -->
+    <view class='bottom flex' wx:if="{{memberCustomizationDetail.payStatus == 1}}">
+     <view class='w50 cancel' @tap='cancel'>取消定制</view>
+     <view class='w50 edit' @tap='edit'>修改定制</view>
+    </view>
+    <view class='modal flex' wx:if='{{show_modal1}}'>
+     <view class='mask'></view>
+       <view class='mgat'>
+        <view class='pdlr20'>
+          <view class='qxdz_title'>取消定制服务</view>
+        </view>
+         <view class='flex flex-j-c-sb dzzf_out'>
+           <view class='dzzf_title'>定制支付：</view>
+           <view class='dzzf_money'>¥{{memberCustomizationDetail.price}}</view>
+         </view>
+         <view class='flex flex-j-c-sb ktje_out'>
+           <view class='ktje_title'>可退金额：</view>
+           <view class='ktje_money'>¥{{memberCustomizationDetail.price}}</view>
+         </view>
+         <view class='back246'>
+           <view class='back246_in'>
+            *若是在服务生效中（如T月）申请取消，由于服
+            务需提前精心准备，今退回T+2月后款项；
+            每月退回费为：
+            <view style='color:#2565C3;display: inline;'>套餐总价/套餐时间跨度</view>
+           </view>
+         </view>
+         <view class='flex h88'>
+           <view class='w50_ thing' @tap='thing'>再想想</view>
+           <view class='w50_ confirm' @tap='confirm'>确定</view>
+         </view>
+       </view>
+   </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo, sleep } from '../util.js'
+  import api from '../api.js'
+  export default class Custom_detail extends wepy.page {
+    config = {
+      navigationBarTitleText: '定制详情'
+    }
+    components = {}
+    data = {
+      show_modal1:false,
+      memberCustomizationDetail: {},
+      id: ''
+    }
+
+    computed = {}
+    methods = {
+      cancel(){
+        this.show_modal1 = true;
+      },
+      edit(){
+        goPath('/pages/custom_edit?id='+this.id)
+      },
+      thing(){
+        this.show_modal1 = false;
+      },
+      confirm(){
+        this.refundMemberCustomization(this.id)
+
+      }
+    }
+    events = {}
+    onLoad(option) {
+      let { id } = option
+      // id = 1
+      // if(!id) {
+      //   this.id = this.$parent.globalData.userInfo.hasCustomization
+      //   console.log(this.id, 'hasCustomization');
+      // }else {
+        this.id = id
+      // }
+
+      this.getMemberCustomizationDetail(this.id)
+    }
+  refundMemberCustomization(id) {
+    // 取消定制
+    
+    let { refundMemberCustomization } = api
+    refundMemberCustomization(id).then(res => {
+      if(res){
+        wx.showToast({
+          title: '取消定制成功！',
+          duration: 3000
+        })
+        sleep(2).then(res => {
+           let pages = getCurrentPages() //获取当前页面js里面的pages里的所有信息。
+          let prevPage = pages[pages.length - 2]
+          if (prevPage.getMemberInfo) prevPage.getMemberInfo()
+          wx.navigateBack()
+          this.show_modal1 = false;
+          // this.$parent.globalData.userInfo.hasCustomization = ''
+          this.$apply()  
+        })
+        this.$apply()
+      }
+    })
+  }
+    getMemberCustomizationDetail(id) {
+    // 获取定制详情
+    let { getMemberCustomizationDetail } = api
+    getMemberCustomizationDetail(id).then(res => {
+      this.memberCustomizationDetail = res.data
+      this.$apply()
+    })
+    }
+  }
+</script>
+<style lang="less">
+.address {
+  font-size: 30rpx;
+  padding-left: 28rpx;
+}
+/*dialog*/
+.modal{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  z-index: 9999;
+}
+
+.mask{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9999;
+}
+.mgat{
+  margin: auto;
+  z-index: 999;
+  background-color: #fff;
+  border-radius:24rpx;
+  width: 620rpx;
+  height: 520rpx;
+  z-index: 99999;
+  position: relative;
+}
+
+
+.container{
+  padding-bottom: 230rpx;
+}
+.form_out{
+  background-color: #fff;
+  margin-top: 20rpx;
+  padding: 0 30rpx;
+}
+.yyxx_this{
+  padding: 25rpx 0;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.zxs{
+  flex: none;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+}
+.qxz{
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  margin-right: 15rpx;
+}
+.qxz_true{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+  margin-right: 15rpx;
+}
+.icon_xiala{
+  width: 16rpx;
+  height: 10rpx;
+}
+.yyxx_this input{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+  text-align: right;
+}
+.textarea{
+    width: 100%;
+    height: 200rpx;
+    padding: 36rpx 30rpx;
+    font-size:24rpx;
+    font-family:PingFang-SC-Regular;
+    font-weight:400;
+    color:rgba(0,0,0,1);
+    line-height:36rpx;
+    background:rgba(246,246,250,1);
+    border-radius:8rpx;
+}
+.bottom{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 98rpx;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+  box-shadow:0rpx -3rpx 10rpx 0rpx rgba(204,204,204,0.25);
+  z-index: 9999;
+}
+.bottom1{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 98rpx;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+  box-shadow:0rpx -3rpx 10rpx 0rpx rgba(204,204,204,0.25);
+  z-index: 9999;
+}
+.bottom_in{
+  width:240rpx;
+  height:98rpx;
+  background:rgba(37,101,195,1);
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  line-height: 98rpx;
+  text-align: center;
+}
+.flex1{
+  flex: 1;
+  line-height: 98rpx;
+  padding-left: 30rpx;
+}
+.xzf{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(142,142,142,1);
+}
+.xzf1{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(34,34,34,1);
+}
+.yuan{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:#333333;
+  margin-left: 10rpx;
+}
+.money{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:#F6AB00;
+}
+.money1{
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(34,34,34,1);
+  margin-left: 20rpx;
+}
+.pay_title_out{
+  padding:0 32rpx;
+}
+.pay_title{
+  font-size:34rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(34,34,34,1);
+}
+.pdsx{
+  padding: 32rpx 0;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.pdsx1{
+  padding: 20rpx 0;
+}
+.x{
+  width:26rpx;
+  height:26rpx;
+}
+.yfje{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+}
+.yfje_money{
+  font-size:36rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+}
+.ygzf_icon{
+  width: 40rpx;
+  height: 40rpx;
+}
+.icon_gou_gray{
+  width: 50rpx;
+  height: 50rpx;
+}
+.mgl20{
+  margin-left: 20rpx;
+}
+.posi_rela{
+  position: relative;
+  height: 100%;
+}
+.maxWidth410{
+  max-width: 410rpx;
+}
+.w50{
+  width: 50%;
+  height: 100%;
+  line-height: 98rpx;
+  text-align: center;
+}
+.cancel{
+  background-color: #fff;
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.edit{
+  background:rgba(37,101,195,1);
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+}
+.pdlr20{
+  padding: 0 20rpx;
+}
+.qxdz_title{
+  font-size:36rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  padding: 36rpx 0;
+  text-align: center;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.dzzf_out{
+  padding: 30rpx 36rpx 14rpx;
+}
+.dzzf_title{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  line-height:45rpx;
+}
+.dzzf_money{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(102,102,102,1);
+}
+.ktje_out{
+  padding: 2rpx 36rpx 20rpx;
+}
+.ktje_title{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  line-height:45rpx;
+}
+.ktje_money{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,180,0,1);
+}
+.back246{
+  padding: 0 36rpx 30rpx;
+}
+.back246_in{
+  background:rgba(246,246,250,1);
+  padding: 16rpx 10rpx;
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  line-height:36rpx;
+}
+.h88{
+  height: 88rpx;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.w50_{
+  width: 50%;
+  line-height: 88rpx;
+  text-align: center;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+}
+.thing{
+  background:rgba(246,246,250,1);
+  border-radius:0rpx 0rpx 0rpx 24rpx;
+  color:rgba(51,51,51,1);
+}
+.confirm{
+  background:rgba(37,101,195,1);
+  border-radius:0rpx 0rpx 24rpx 0rpx;
+  color:rgba(248,248,248,1);
+}
+</style>

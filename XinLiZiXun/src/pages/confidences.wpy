@@ -1,0 +1,366 @@
+<template>
+  <view class="container">
+    <!--导航菜单-->
+    <view class="navbar">
+    <!--循环-->
+    <block wx:for='{{navbar}}' wx:for-item='item' wx:for-index='idx' wx:key='idx'>
+      <!-- <repeat wx:for="{{navbar}}" wx:key=""> -->
+        <view data-idx="{{idx}}" wx:key="unique" class="item {{currentTab==idx ? 'active' : ''}}" @tap="navbarTap">
+          <view class="notice" wx:if="{{count[idx]>0}}">{{count[idx]}}</view>
+        {{item}}
+        </view>
+      <!-- </repeat> -->
+    </block>
+  </view>
+  <view hidden="{{currentTab !== 0}}" id="one">
+      <block wx:for='{{freeCourseList}}' wx:for-item='item' wx:for-index='idx' wx:key='idx'>
+      <!-- <repeat for="{{freeCourseList}}" wx:key=""> -->
+        <view class='dis_inl_blo scroll_rela' @tap='to_confidences({{item.courseId}})'>
+        <view class="scroll_abso scroll_img"></view>
+        <view class="scroll_abso_view">
+          <view class='scroll_abso_view_num'>
+          <view class='flex flex-j-c-sb'>
+            <view></view>
+            <view class='sell_num' wx:if="{{currentTab !== 0}}">已售：{{!item.soldOutNum ? '0' : item.soldOutNum }}</view>
+          </view>
+          </view>
+          <view class='mgat'>{{item.courseName}}</view>
+          <view class='scroll_abso_view_star'>
+          <view class='flex flex-j-c-sb'>
+            <view class='flex flex-a-i-center'>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 1}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 1}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 2}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 2}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 3}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 3}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 4}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 4}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 5}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 5}}'></image>
+              <view class='sell_star' wx:if="{{item.gradeNumber}}">{{item.graded.length >= 3 ? item.graded : item.graded + '.0'}}</view>
+
+            </view>
+            <view wx:if="{{item.gradeNumber}}" class='sell_num'>{{item.gradeNumber}}人评分</view>
+            <view wx:else class='sell_num'>暂无评分</view>
+          </view>
+          </view>
+        </view>
+        <image mode="aspectFill" src='{{item.mainPic}}' data-id='{{item.id}}' class="scroll_img"></image>
+        <image mode="aspectFill" wx:if="{{false}}" src='http://image.zhvankelive.com/images/2018/12/23/2018122307111317203639.png' data-id='{{item.id}}' class="scroll_img"></image>
+        </view>
+      <!-- </repeat> -->
+      </block>
+      <view class='no_more' wx:if='{{loaded && freeCourseList.length > 3}}'>- 没有更多啦 -</view>
+           <view class='no_more' wx:if='{{freeCourseListisEmptyArr}}'>暂无信息</view>
+
+  </view>
+
+  <view hidden="{{currentTab !== 1}}" id="one">
+    <block wx:for='{{courseList}}' wx:for-item='item' wx:for-index='idx' wx:key='idx'>
+    <!-- <repeat for="{{courseList}}" key=""> -->
+      <view class='dis_inl_blo scroll_rela' @tap='to_confidences({{item.courseId}})'>
+        <view class="scroll_abso scroll_img"></view>
+        <view class="scroll_abso_view">
+          <view class='scroll_abso_view_num'>
+          <view class='flex flex-j-c-sb'>
+            <view></view>
+            <view class='sell_num'>已售：{{!item.soldOutNum ? '0' : item.soldOutNum }}</view>
+          </view>
+          </view>
+          <view class='mgat'>{{item.courseName}}</view>
+          <view class='scroll_abso_view_star'>
+          <view class='flex flex-j-c-sb'>
+            <view class='flex flex-a-i-center'>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 1}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 1}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 2}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 2}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 3}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 3}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 4}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 4}}'></image>
+              <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.graded >= 5}}'></image>
+              <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.graded < 5}}'></image>
+              <view class='sell_star' wx:if="{{item.gradeNumber}}">{{item.graded.length >= 3 ? item.graded : item.graded + '.0'}}</view>
+            </view>
+            <view wx:if="{{item.gradeNumber}}" class='sell_num'>{{item.gradeNumber}}人评分</view>
+            <view wx:else class='sell_num'>暂无评分</view>
+          </view>
+          </view>
+        </view>
+        <image mode="aspectFill" src='{{item.mainPic}}' data-id='{{item.id}}' class="scroll_img"></image>
+        <image mode="aspectFill" wx:if="{{false}}" src='http://image.zhvankelive.com/images/2018/12/23/2018122307111317203639.png' data-id='{{item.id}}' class="scroll_img"></image>
+        </view>
+    <!-- </repeat> -->
+    </block>
+         <view class='no_more' wx:if='{{loaded1 && courseList.length > 3}}'>- 没有更多啦 -</view>
+           <view class='no_more' wx:if='{{courseListisEmptyArr}}'>暂无信息</view>
+  </view>
+
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Confidences extends wepy.page {
+    config = {
+      navigationBarTitleText: '知新话'
+    }
+    components = {
+    }
+    data = {
+      courseList: [], // 收费的
+      freeCourseList: [],
+      navbar: ['免费', '付费'],
+      currentTab: 0,
+      datas_is_vip: [],
+      datas_no_vip: [],
+      star: 4,
+      type: 0,
+      nextPage: 1, // 下一页
+      loaded: false,
+      loaded1: false,
+      nextPage1: 1 // 下一页
+    }
+    computed = {
+      courseListisEmptyArr() {
+        return JSON.stringify(this.courseList) === '[]'
+      },
+      freeCourseListisEmptyArr() {
+        return JSON.stringify(this.freeCourseList) === '[]'
+      }
+    }
+    methods = {
+      navbarTap(e) {
+        var that = this
+        that.currentTab = e.currentTarget.dataset.idx
+        that.datas_is_vip = 1
+        that.datas_no_vip = 1
+        this.type = e.currentTarget.dataset.idx
+        this.nextPage = 1 // 下一页
+        this.loaded = false
+        this.loaded1 = false
+        this.nextPage1 = 1 // 下一页
+        this.getCourseList({type: this.type})
+      },
+      to_confidences(e) {
+        goPath('/pages/confidences_detail?courseId=' + e)
+      },
+      a() {
+        return 111
+      }
+    }
+    getCourseList({pageNum = 1, pageSize = 10, type = 0} = {}) {
+      let { getCourseList } = api
+      getCourseList({
+        pageNum,
+        pageSize,
+        type
+      }).then((res) => {
+        if (res) {
+          let list = res.data.list
+          list.forEach((item, i) => {
+            list[i].graded = item.graded + ''
+          })
+
+
+          if (!type) {
+            if (this.nextPage == 1) {
+              if (res.data.nextPage == 0) {
+                this.loaded = true
+              } else {
+                this.nextPage = res.data.nextPage
+              }
+              this.freeCourseList = list
+            } else if (this.nextPage > 1) {
+              this.nextPage = res.data.nextPage
+              if (res.data.nextPage == 0) this.loaded = true
+              this.freeCourseList.push(...list)
+            }
+          } else {
+            if (this.nextPage1 == 1) {
+              if (res.data.nextPage == 0) {
+                this.loaded1 = true
+              } else {
+                this.nextPage1 = res.data.nextPage
+              }
+              this.courseList = list
+            } else if (this.nextPage1 > 1) {
+              this.nextPage1 = res.data.nextPage
+              if (res.data.nextPage == 0) this.loaded1 = true
+              this.courseList.push(...list)
+            }
+          }
+        }
+
+        this.$apply()
+      })
+    }
+    events = {}
+    onReachBottom() {
+      if (!this.loaded && this.type == 0) {
+        this.getCourseList({
+          pageNum: this.nextPage,
+          type: 0
+        })
+      }
+      if (!this.loaded1 && this.type == 1) {
+        this.getCourseList({
+          pageNum: this.nextPage1,
+          type: 1
+        })
+      }
+    }
+    async onLoad() {
+      this.getCourseList({type: 0}) // 0 免费列表
+      this.getCourseList({type: 1}) // 1 收费列表
+    }
+    onShow() {
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color: #fff;
+  }
+  /*圆点数字标注*/
+.notice {
+    width:28rpx;
+    height:28rpx;
+    color:#fff;
+    text-align:center;
+    background-color:#EA260C;
+    border-radius:50%;
+    position:absolute;
+    float:left;
+   /* margin-top: 8rpx;*/
+   top:5rpx;
+    font-size: 15rpx;
+    right:30rpx;
+    line-height:30rpx; }
+
+/*顶部导航样式*/
+  .navbar{
+ flex: none;
+ display: flex;
+ padding-top: 15rpx;
+ padding-bottom: 12rpx;
+ position: fixed;
+ left: 0;
+ top: 0;
+ width: 100%;
+ z-index: 99999;
+ background-color:rgba(246,246,250,1);
+}
+.navbar .item{
+ position: relative;
+ flex: auto;
+ text-align: center;
+ line-height: 80rpx;
+ font-size: 32rpx;
+ color: rgba(51,51,51,1);
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active{
+ color: rgba(37,101,195,1);
+ font-size: 32rpx;
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active:after{
+ content: "";
+ display: block;
+ position: absolute;
+ bottom: -10rpx;
+ left: 36%;
+ right: 0;
+ height: 6rpx;
+ background: rgba(37,101,195,1);
+ font-size: 32rpx;
+ color: #666666;
+ font-family: Microsoft YaHei;
+ width: 28%;
+ border-radius: 8rpx;
+}
+#one{
+  margin-top: 106rpx;
+  padding: 48rpx 32rpx;
+}
+
+
+/*content*/
+.scroll_rela{
+  position: relative;
+  margin-bottom: 26rpx;
+}
+
+.scroll_img{
+   width: 686rpx;
+   height: 344rpx;
+   background-color:#e5e5e5;
+   display: inline-block;
+   vertical-align: middle;
+}
+.scroll_abso{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 686rpx;
+  height: 344rpx;
+  background:rgba(0,0,0,1);
+  opacity:0.6;
+}
+.scroll_abso_view{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 686rpx;
+  height: 344rpx;
+  z-index: 999;
+  padding: 26rpx 35rpx;
+
+  display: flex;
+  flex-direction: column;
+  // justify-content: space-around;
+  justify-content: space-between;
+}
+.scroll_abso_view_num{
+  width: 100%;
+  height: 50rpx;
+}
+.sell_num{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(246,246,250,1);
+}
+.mgat{
+  font-size:36rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(255,255,255,1);
+  // margin-top: 60rpx;
+  // white-space:nowrap;
+  // overflow:hidden;
+  // text-overflow:ellipsis;
+  text-align: center;
+}
+.scroll_abso_view_star{
+  width: 100%;
+  height: 50rpx;
+  // margin-top: 88rpx;
+}
+.star_icon{
+  width: 18rpx;
+  height: 18rpx;
+  margin-right: 6rpx;
+}
+.sell_star{
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  margin-left: 13rpx;
+}
+</style>

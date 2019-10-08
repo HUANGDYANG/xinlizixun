@@ -1,0 +1,81 @@
+<template>
+  <view class="container">
+
+    <rich-text class="detail" nodes="{{informedProtocol.content}}"></rich-text>
+    <!-- <view class='this'>
+      <view class='title'>一、为什么要填写？</view>
+      <view class='detail'>1.1 帮助咨询师了解你，初步评估你们是否匹配，并决定是否接受预约；</view>
+      <view class='detail'>1.2 电话、紧急联系人等信息，可以帮助咨询师在危急时刻更好地帮助你。</view>
+    </view>
+    <view class='this'>
+      <view class='title'>二、是否必填？</view>
+      <view class='detail'>1.1 姓名、紧急联系人信息必填，其余基本信息可选填；</view>
+      <view class='detail'>1.2 如申请单填写信息过少，咨询师可能会因为无法做初步评估而拒绝你的申请。</view>
+    </view>
+    <view class='this'>
+      <view class='title'>三、需要多久？</view>
+      <view class='detail'>1.1 只需3-5分钟即可填写完毕，完成预约；</view>
+    </view>
+    <view class='this'>
+      <view class='title'>四、谁能看到我填写的信息？</view>
+      <view class='detail'>1.1 仅你申请的咨询师可查看，且有责任进行保密；</view>
+      <view class='detail'>1.2 如有法律纠纷等特殊情况，可能会被依法使用，以保障你的合法权益。</view>
+    </view> -->
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Agreement extends wepy.page {
+    config = {
+      navigationBarTitleText: '知情协议'
+    }
+    components = {}
+    data = {
+      informedProtocol: ''
+    }
+    
+    computed = {}
+    methods = {
+     
+    }
+    events = {}
+    getInformedProtocol() {
+      // 获取知情协议
+      let { getInformedProtocol } = api
+      getInformedProtocol().then(res=>{
+        this.informedProtocol = res.data
+        this.$apply()
+      })
+    }
+    async onLoad(option) {
+      this.getInformedProtocol()
+    }
+  }
+</script>
+<style lang="less">
+page{
+  background-color: #fff;
+}
+.container{
+  padding: 0 32rpx;
+  // margin: 50rpx 0;
+}
+.title{
+  margin: 50rpx 0;
+  font-size:28rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(0,0,0,1);
+  line-height:40rpx;
+}
+.detail{
+  display: inline-block;
+  padding-top: 50rpx !important;
+  font-size:28rpx !important;
+  font-family:PingFang-SC-Regular !important;
+  color:rgba(0,0,0,1) !important;
+  line-height:40rpx !important;
+}
+</style>

@@ -1,0 +1,375 @@
+<template>
+  <view class="hpay">
+    <form @submit="formSubmit"
+          report-submit>
+    <!-- 弹框 -->
+    <view class='modal1 flex'
+          wx:if="{{show}}">
+      <view class='mask2222'></view>
+      <view class='maggg'>
+        <view class='posi_rela'>
+          <view class='pay_title_out'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx'>
+              <text></text>
+              <view class='pay_title'>支付</view>
+              <image src='../images/icon_zhifu_quxiao@2x.png'
+                     class='x'
+                     @tap='x'></image>
+            </view>
+          </view>
+          <view class='pay_title_out'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='yfje'>应付金额：</view>
+              <view class='yfje_money'>¥{{price}}</view>
+            </view>
+          </view>
+          <view class='pay_title_out'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='yfje'>支付方式：</view>
+              <view class='yfje_money'></view>
+            </view>
+          </view>
+          <view class='pay_title_out'
+                @tap='icon_showBalancePay'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='flex flex-a-i-center'>
+                <image src='../images/icon_zhifu_yue@2x.png'
+                       class='ygzf_icon'></image>
+                <view class='yfje mgl20'>余额支付</view>
+                 <test style="font-size:24rpx;font-family:PingFang-SC-Regular;font-weight:400;color:red;">{{tip}}</test>
+              </view>
+              <image src='../images/icon_gou_blue@2x.png'
+                     class='icon_gou_gray'
+                     wx:if='{{icon_show1}}'></image>
+              <image src='../images/icon_gou_gray@2x.png'
+                     class='icon_gou_gray'
+                     wx:else></image>
+            </view>
+          </view>
+          <view class='pay_title_out'
+                @tap='icon_showWxPay'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='flex flex-a-i-center'>
+                <image src='../images/icon_zhifu_weixin@2x.png'
+                       class='ygzf_icon'></image>
+                <view class='yfje mgl20'>微信支付</view>
+              </view>
+              <image src='../images/icon_gou_blue@2x.png'
+                     class='icon_gou_gray'
+                     wx:if='{{icon_show2}}'></image>
+              <image src='../images/icon_gou_gray@2x.png'
+                     class='icon_gou_gray'
+                     wx:else></image>
+            </view>
+
+          </view>
+          <view class='bottom1'>
+            <view class='flexfuck'>
+              <view class='flex'>
+                <view class='xzf1'>总计</view>
+                <view class='money1'>¥ {{price}}</view>
+              </view>
+            </view>
+            <!-- <view class='bottom_in'
+                  @tap='pay'>支付</view> -->
+                   <button form-type="submit" class='bottom_in' >支付</button>
+          </view>
+        </view>
+      </view>
+    </view>
+    </form>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+
+export default class Hpay extends wepy.component {
+  props = {
+    payType: {
+      // 1 余额 2 微信
+      type: Number,
+      default: 1,
+      twoWay: true
+    },
+    price: { // 价格
+      type: String,
+      default: '0.00',
+      twoWay: true
+    },
+    show: {
+      type: Boolean,
+      default: true,
+      twoWay: true
+    },
+    tip: {
+      type: String,
+      default: '',
+      twoWay: true
+    }
+  }
+
+  data = {
+    icon_show1: true,
+    icon_show2: false
+  }
+
+  components = {
+
+  }
+
+  methods = {
+    formSubmit(e) {
+      wx.request({
+        url: 'https://miniprogram.careyourfeeling.cn/consultant/saveFormId',
+        method: 'POST',
+        data: {
+          formId: e.detail.formId
+        },
+        header: {
+          'content-type': 'application/x-www-form-urlencoded;',
+          accessToken: wx.getStorageSync('token')
+        }
+      })
+      this.$emit('hpay')
+    },
+    icon_showBalancePay() {
+      this.payType = 1
+      this.icon_show1 = true
+      this.icon_show2 = false
+      this.$apply()
+    },
+    icon_showWxPay() {
+      this.payType = 2
+      this.icon_show2 = true
+      this.icon_show1 = false
+      this.$apply()
+    },
+    x() {
+      this.show = false
+    },
+    pay() {
+      this.$emit('hpay')
+    }
+  }
+
+  onLoad() {
+  }
+}
+</script>
+<style lang="less">
+/*dialog*/
+.hpay {
+  .form_out {
+    background-color: #fff;
+    margin-top: 20rpx;
+    padding: 0 30rpx;
+  }
+  .yyxx_this {
+    padding: 25rpx 0;
+    border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+  }
+  .zxs {
+    flex: none;
+    font-size: 30rpx;
+    font-family: PingFang-SC-Regular;
+    font-weight: 400;
+    color: rgba(51, 51, 51, 1);
+  }
+  .address {
+    font-size: 30rpx;
+    padding-left: 28rpx;
+  }
+  .qxz {
+    font-size: 30rpx;
+    font-family: PingFang-SC-Regular;
+    font-weight: 400;
+    color: rgba(153, 153, 153, 1);
+    margin-right: 15rpx;
+  }
+  .qxz_true {
+    font-size: 30rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    margin-right: 15rpx;
+  }
+  .icon_xiala {
+    width: 16rpx;
+    height: 10rpx;
+  }
+  .yyxx_this input {
+    font-size: 30rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    text-align: right;
+  }
+  .textarea {
+    width: 100%;
+    height: 200rpx;
+    padding: 36rpx 30rpx;
+    font-size: 24rpx;
+    font-family: PingFang-SC-Regular;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 1);
+    line-height: 36rpx;
+    background: rgba(246, 246, 250, 1);
+    border-radius: 8rpx;
+    position: relative;
+    text {
+      color: #999999;
+      font-size: 24rpx;
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 0rpx 37rpx 0rpx 30rpx;
+    }
+  }
+  .bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 98rpx;
+    width: 100%;
+    display: flex;
+    background-color: #fff;
+    box-shadow: 0rpx -3rpx 10rpx 0rpx rgba(204, 204, 204, 0.25);
+    z-index: 999999;
+  }
+  .bottom1 {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 98rpx;
+    width: 100%;
+    display: flex;
+    background-color: #fff;
+    box-shadow: 0rpx -3rpx 10rpx 0rpx rgba(204, 204, 204, 0.25);
+    z-index: 999999;
+  }
+  .bottom_in {
+    width: 240rpx;
+    height: 98rpx;
+    background: rgba(37, 101, 195, 1);
+    font-size: 32rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+    line-height: 98rpx;
+    text-align: center;
+    border-radius: 0;
+  }
+  .flexfuck {
+    flex: 1;
+    line-height: 98rpx;
+    padding-left: 30rpx;
+  }
+  .xzf {
+    font-size: 28rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(142, 142, 142, 1);
+  }
+  .xzf1 {
+    font-size: 30rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(34, 34, 34, 1);
+  }
+  .yuan {
+    font-size: 30rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: #333333;
+    margin-left: 10rpx;
+  }
+  .money {
+    font-size: 30rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: #f6ab00;
+  }
+  .money1 {
+    font-size: 32rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(34, 34, 34, 1);
+    margin-left: 20rpx;
+  }
+  /*dialog*/
+  .modal1 {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+  }
+  .mask2222 {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 99999;
+    width: 100%;
+    height: 1300rpx;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .maggg {
+    z-index: 9999999;
+    background-color: #fff;
+    border-radius: 24rpx;
+    width: 100%;
+    height: 649rpx;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    .pay_title_out {
+      padding: 0 32rpx;
+    }
+    .pay_title {
+      font-size: 34rpx;
+      font-family: PingFang-SC-Medium;
+      font-weight: 500;
+      color: rgba(34, 34, 34, 1);
+    }
+    .pdsx {
+      padding: 32rpx 0;
+      border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+    }
+    .pdsx1 {
+      padding: 20rpx 0;
+    }
+    .x {
+      width: 26rpx;
+      height: 26rpx;
+    }
+    .yfje {
+      font-size: 30rpx;
+      font-family: PingFang-SC-Medium;
+      font-weight: 500;
+      color: rgba(51, 51, 51, 1);
+    }
+    .yfje_money {
+      font-size: 36rpx;
+      font-family: PingFang-SC-Medium;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 1);
+    }
+    .ygzf_icon {
+      width: 40rpx;
+      height: 40rpx;
+    }
+    .icon_gou_gray {
+      width: 50rpx;
+      height: 50rpx;
+    }
+    .mgl20 {
+      margin-left: 20rpx;
+    }
+    .posi_rela {
+      position: relative;
+      height: 100%;
+    }
+  }
+}
+</style>

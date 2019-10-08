@@ -1,0 +1,303 @@
+<template>
+  <view class="container">
+   <image src="{{evaluationDetail.mainPic}}" class="img backe5" mode="aspectFill"></image>
+   <view class='title_out'>
+     <view class='title'>{{evaluationDetail.title}}</view>
+     <view class='flex flex-j-c-sb mgt40'>
+       <view wx:if='{{evaluationDetail.payType == 0}}'></view>
+        <!-- <view class='money' wx:if='{{evaluationDetail.payType == 1}}'>¥{{evaluationDetail.price}}
+        </view> -->
+       <view class='money' wx:if='{{evaluationDetail.payType == 1}}'>¥{{evaluationDetail.discountPrice || evaluationDetail.discountPrice ===0 ? evaluationDetail.discountPrice : evaluationDetail.price}}
+          <text class='discount-money' wx:if="{{evaluationDetail.discountPrice || evaluationDetail.discountPrice ===0}}">{{evaluationDetail.price}}</text>
+        </view>
+
+       <view class='time'>{{!evaluationDetail.testNum ? 0 : evaluationDetail.testNum}}人测试</view>
+     </view>
+   </view>
+   <view class='detail_out'>
+    <view class='detail_title'>测试介绍</view>
+    <view class='detail_detail'>
+        <import src="../wxParse/wxParse.wxml"/>
+       <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+    </view>
+   </view>
+   <view class='button_out'>
+     <!-- 不要出来了，每次进来都要买一次 -->
+    <!-- <view class='button' @tap='toDetail'  wx:if="{{evaluationDetail.payType == 0 || evaluationDetail.buyStatus}}">立即测试</view> -->
+    <!-- <view class='button' @tap='to_buy' wx:if="{{evaluationDetail.payType == 1 && evaluationDetail.buyStatus == false}}">立即购买</view> -->
+    <!-- <view class='button' @tap='toDetail'  wx:if="{{evaluationDetail.payType == 0}}">立即测试</view>
+    <view class='button' @tap='to_buy' wx:else>立即购买</view> -->
+    <!-- 换 -->
+    <view class='button' @tap='toDetail'  wx:if="{{evaluationDetail.payType == 0 || evaluationDetail.referStatus}}">{{!evaluationDetail.referStatus ? '立即测试' : '继续答题'}}</view>
+    <view class='button' @tap='to_buy' wx:if="{{evaluationDetail.payType == 1 && !evaluationDetail.referStatus}}">立即购买</view>
+   </view>
+  <HPay @hpay.user="purchase" :show.sync="show_pay_modal" :payType.sync="payType" :price.sync="price" tip="（免费测评请选余额支付）"></HPay>
+
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  import WxParse from '../wxParse/wxParse.js'
+  import HPay from '../components/h-pay'
+  export default class Heart_know_detail extends wepy.page {
+    config = {
+      navigationBarTitleText: '测试详情'
+    }
+    components = {
+      HPay: HPay
+    }
+    data = {
+      show_pay_modal: false,
+      payType: 1,
+      price: '',
+      buyStatus: '',
+      testPay: [],
+      vip: '',
+      buy: 0,
+      evaluationDetail: {}
+    }
+    toDetail() {
+      let detail = this.evaluationDetail
+
+      if (this.evaluationDetail.payType) {
+        // 是不是优惠码用户 是优惠码用户 需要进行判断 收集信息 或者 调查问卷 为非优惠码用户，这时收集信息 和
+        // 调查问卷都显示
+        // canInfoGatherStatus 优惠码用户是否收集信息
+        // canQuestionnaireStatus 优惠码用户是否显示调查问卷
+        if (detail.discountStatus) {
+          console.log('是优惠码用户')
+
+          if (detail.canInfoGatherStatus) {
+            console.log('要收集信息')
+            if (detail.canQuestionnaireStatus) {
+              console.log(detail.canQuestionnaireStatus, 'detail.canQuestionnaireStatus')
+
+              goPath('/pages/collection_information?id=' + this.id + '&canQuestionnaireStatus=' + detail.canQuestionnaireStatus)
+            } else {
+              goPath('/pages/collection_information?id=' + this.id)
+            }
+          } else {
+            if (detail.canQuestionnaireStatus) {
+              console.log(detail.canQuestionnaireStatus, 'detail.canQuestionnaireStatus')
+
+              goPath('/pages/test_detail?id=' + this.id + '&canQuestionnaireStatus=' + detail.canQuestionnaireStatus)
+            } else {
+              goPath('/pages/test_detail?id=' + this.id)
+            }
+            // goPath('/pages/test_detail?id=' + this.id)
+          }
+        } else {
+          console.log('不是优惠码的关联用户')
+          // goPath('/pages/collection_information?id=' + this.id + '&canQuestionnaireStatus=true')
+          goPath('/pages/test_detail?id=' + this.id)
+        }
+      } else {
+        // 免费的不用填
+        goPath('/pages/test_detail?id=' + this.id)
+      }
+    }
+    computed = {}
+    methods = {
+      to_buy() {
+        this.show_pay_modal = true
+      },
+      purchase() {
+
+        this.purchaseEvaluation();
+      }
+    }
+    events = {}
+    onShow() {
+      this.getEvaluationDetail(this.id)
+
+      console.log(this.testPay, 'testPay testPay')
+    }
+    async onLoad(option) {
+      let { id } = option
+      // id = 38 // mock
+      this.id = id
+      console.log(id, '评测id')
+    }
+    purchaseEvaluation() {
+      let { purchaseEvaluation } = api
+      let that = this
+      purchaseEvaluation(this.id, {
+        payType: this.payType
+      }).then(res => {
+        if (res) {
+          if (!res.data) {
+         
+            that.evaluationDetail.buyStatus = true
+
+            that.show_pay_modal = false
+            that.toDetail()
+            this.testPay.push(this.evaluationDetail.id) // 现阶段前端做出来
+            that.$apply()
+          } 
+          else {
+            // 支付的
+            console.log(res.data, '支付后台返回来的')
+            let postData = {
+              timeStamp: '',
+              nonceStr: '',
+              package: '',
+              paySign: ''
+            }
+
+            postData.timeStamp = res.data.timestamp + ''
+            postData.nonceStr = res.data.nonce
+            postData.paySign = res.data.signature
+            postData.package = res.data.pack
+
+
+            let paymentObj = {...postData, signType: 'MD5'}
+            wx.requestPayment({
+              ...paymentObj,
+              success(res) {
+                that.testPay.push(that.evaluationDetail.id) // 现阶段前端做出来
+                // wx.setStorageSync('testPay', that.testPay)
+                that.evaluationDetail.buyStatus = true
+                that.show_pay_modal = false
+                
+                that.toDetail()
+                // goPath('/pages/test_detail?id=' + that.id) // add 每次进来都要买一次
+                that.$apply()
+                // that.searchMemberCustomizationInfo()
+                console.log(res, 'success')
+              },
+              complete(res) {
+                console.log(res, 'complete')
+              },
+              fail(res) {
+                wx.showToast({
+                  title: '支付失败',
+                  icon: 'none',
+                  duration: 2000
+                })
+                console.log(res, 'fail')
+              }
+            })
+          }
+        }
+      })
+    }
+    getEvaluationDetail(id) {
+      let { getEvaluationDetail } = api
+      getEvaluationDetail(id).then((res) => {
+        console.log(res, '获取测评详情')
+        if (!res.data) {
+          // wx.navigateBack()
+          wx.showToast({
+            title: '没有数据',
+            icon: 'none'
+          })
+          return
+        }
+        this.evaluationDetail = res.data
+        // this.evaluationDetail.discountPrice = 0.01
+        // this.evaluationDetail.referStatus = true
+        console.log(this.evaluationDetail.price)
+
+        if (this.evaluationDetail.content) {
+          WxParse.wxParse('article', 'html', this.evaluationDetail.content, this, 5)
+        }
+
+        for (const iterator of this.testPay) {
+          if (iterator == this.evaluationDetail.id) {
+            this.buyStatus = true
+          }
+        }
+        if (this.evaluationDetail.discountPrice === 0) {
+          this.price = this.evaluationDetail.discountPrice
+        } else {
+          this.price = this.evaluationDetail.discountPrice || this.evaluationDetail.price
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>
+<style lang="less">
+.img{
+  width: 100%;
+  height: 422rpx;
+  vertical-align: middle;
+}
+.title_out{
+  padding: 40rpx 33rpx;
+  background-color: #fff;
+}
+.title{
+  font-size:38rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(51,51,51,1);
+  line-height:58rpx;
+}
+.time{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(153,153,153,1);
+}
+.mgt40{
+  margin-top: 40rpx;
+}
+.detail_out{
+  margin-top: 20rpx;
+  background-color: #fff;
+}
+.detail_title{
+  padding: 36rpx 31rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.detail_detail{
+  padding: 40rpx 31rpx 120rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+}
+.button{
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  background:rgba(37,101,195,1);
+  border-radius:4rpx;
+  width:686rpx;
+  height:88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  margin-top: 5rpx;
+  margin-left: 32rpx;
+}
+.button_out{
+  width:100%;
+  height:98rpx;
+  background:rgba(255,255,255,1);
+  box-shadow:0rpx 1rpx 12rpx 0rpx rgba(3,3,3,0.11);
+  position: fixed;
+  bottom: 0;
+  left: 0
+}
+.money{
+
+  font-size:40rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.discount-money{
+  margin-left: 6rpx;
+  text-decoration:line-through;
+  font-size:28rpx;
+
+}
+</style>

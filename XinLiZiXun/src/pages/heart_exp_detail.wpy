@@ -1,0 +1,84 @@
+<template>
+  <view class="container">
+    <view class="title">{{newsDetail.title}}</view>
+    <view class="flex flex-j-c-sb mgt40">
+      <view></view>
+      <view class="time">{{time}}</view>
+    </view>
+    <view class="content">
+      <import src="../wxParse/wxParse.wxml" />
+      <view>
+        <template is="wxParse" data="{{wxParseData:article.nodes}}" />
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+import WxParse from '../wxParse/wxParse.js'
+export default class Heart_exp_detail extends wepy.page {
+  config = {
+    navigationBarTitleText: '心速递'
+  };
+  components = {};
+  data = {
+    data1: '<p style="white-space: normal;">11</p>', // 测试数据
+    newsDetail: {},
+    createTime: ''
+  };
+  computed = {
+    time() {
+      return this.createTime.split(' ')[0]
+    }
+  };
+  methods = {};
+  events = {};
+  async onLoad(option) {
+    let { id } = option
+    this.getNewsDetail(id)
+  }
+  getNewsDetail(id) {
+    let { getNewsDetail } = api
+    getNewsDetail(id).then(res => {
+      this.newsDetail = res.data
+      this.createTime = res.data.createTime
+      this.$apply()
+      this.newsDetail.content &&
+        WxParse.wxParse('article', 'html', this.newsDetail.content, this, 5)
+    })
+  }
+}
+</script>
+<style lang="less">
+page {
+  background-color: #fff;
+}
+.container {
+  padding: 56rpx 30rpx 120rpx;
+}
+.title {
+  font-size: 42rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(51, 51, 51, 1);
+  line-height: 64rpx;
+}
+.time {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+}
+.mgt40 {
+  margin-top: 40rpx;
+}
+.content {
+  margin-top: 40rpx;
+  font-size: 36rpx;
+  font-weight: normal;
+  color: #333333;
+  line-height: 58rpx;
+}
+</style>

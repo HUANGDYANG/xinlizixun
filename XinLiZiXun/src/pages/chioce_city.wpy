@@ -1,0 +1,260 @@
+<template>
+  <view class="container">
+        <city-choose haveHistory="{{false}}" scroll-with-animation="{{true}}" catch:confirm="confirm1" />
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Chioce_city extends wepy.page {
+    config = {
+      navigationBarTitleText: '选择地点',
+      'usingComponents': {
+        'city-choose': '/components/citys/citys'
+      }
+    }
+    components = {}
+    data = {}
+    computed = {}
+    methods = {
+      confirm1(e) {
+        let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+        let prevPage = pages[pages.length - 2]
+        // prevPage 是获取上一个页面的js里面的pages的所有信息。 -2 是上一个页面，-3是上上个页面以此类推。
+        // prevPage.setData({ // 将我们想要传递的参数在这里直接setData。上个页面就会执行这里的操作。
+        //   tempFilePaths: src
+        // })
+        prevPage.updateChoosedCitys(e.detail.choosedCitys)
+        // 上一个页面内执行setData操作，将我们想要的信息保存住。当我们返回去的时候，页面已经处理完毕。
+        // 最后就是返回上一个页面。
+        wx.navigateBack({
+          delta: 1 // 返回上一级页面。
+        })
+      }
+    }
+    events = {}
+    }
+
+</script>
+<style lang="less">
+Page {
+    background-color: #fff;
+}
+
+.bottom-border {
+    border-bottom: 1rpx solid #e3e3e3;
+}
+
+.header-box {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100rpx;
+    z-index: 199;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    height: 65rpx;
+    background-color:rgba(246,246,250,1);
+    border-radius: 6rpx;
+    width: 600rpx;
+    border-radius:28rpx;
+}
+
+.search-icon {
+    width: 36rpx;
+    height: 36rpx;
+    margin: 0 16rpx;
+    margin-left: 36rpx
+}
+
+.search-input {
+    width: 450rpx;
+    font-size: 29.16rpx;
+}
+
+.confirm {
+    width: 120rpx;
+    height: 65rpx;
+    margin-left: 30rpx;
+    text-align: center;
+    line-height: 65rpx;
+    font-size: 28rpx;
+    background-color: #d9d9d9;
+    color: #ffffff;
+    border-radius: 8rpx;
+}
+
+.confirm-active {
+    background-color: #3dcc6d;
+}
+
+.select-word {
+    position: fixed;
+    z-index: 99;
+    width: 50rpx;
+    height: 100vh;
+    overflow-y: auto;
+    right: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #03a9f4;
+    background-color: #ffffff;
+    font-size: 20rpx;
+}
+
+.word-item {
+    width: 50rpx;
+    height: 3.5vh;
+    text-align: center;
+    font-size:20rpx;
+    font-family:PingFang-SC-Medium;
+    font-weight:500;
+    color:rgba(37,101,195,1);
+}
+
+.word-item:first-child {
+    margin-top: 130rpx;
+}
+
+.city-scroll {
+    margin-top: 100rpx;
+}
+
+.tag {
+    height: 80rpx;
+    line-height: 80rpx;
+    font-size: 28rpx;
+    color: #666666;
+    padding: 0 30rpx;
+}
+
+.citys-box {
+    /*padding: 0 30rpx;
+    background-color: #ffffff;
+    font-size: 30rpx;
+    color: #666666;*/
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10rpx 20rpx;
+    background-color: #ffffff;
+    font-size: 30rpx;
+    color: #666666;
+}
+
+.citys-item {
+   /* height: 80rpx;
+    line-height: 80rpx;*/
+    width: 150rpx;
+    height: 64rpx;
+    margin: 10rpx;
+    text-align: center;
+    line-height: 60rpx;
+    background:rgba(246,246,250,1);
+    border-radius:32rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.citys-item:last-child {
+    border-bottom: none;
+}
+
+.hot-citys-box {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10rpx 20rpx;
+    background-color: #ffffff;
+    font-size: 30rpx;
+    color: #666666;
+}
+
+.hot-citys-item {
+    /*width: 146rpx;
+    height: 60rpx;
+    margin: 10rpx;
+    text-align: center;
+    line-height: 60rpx;
+    border-radius: 10rpx;
+    border: 3rpx solid #e3e3e3;*/
+    width: 150rpx;
+    height: 64rpx;
+    margin: 10rpx;
+    text-align: center;
+    line-height: 60rpx;
+    background:rgba(246,246,250,1);
+    border-radius:32rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.city-active {
+    color: rgba(37,101,195,1);
+    /*border-color: #03a9f4;*/
+    background-color: #fff;
+    border:2rpx solid rgba(37,101,195,1);
+}
+
+.item-box:last-child {
+    margin-bottom: 30rpx;
+}
+
+.remind-word {
+    width: 200rpx;
+    height: 200rpx;
+    line-height: 200rpx;
+    text-align: center;
+    border-radius: 18rpx;
+    position: absolute;
+    top: 25vh;
+    left: 276rpx;
+    z-index: 199;
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #000000;
+    opacity: 0.5;
+    animation: remind-word 200ms linear 1;
+}
+.add_orange_icon{
+    width: 22rpx;
+    height: 28rpx;
+    margin-right: 14rpx;
+}
+.present_now{
+    font-size:30rpx;
+    font-family:PingFang-SC-Regular;
+    font-weight:400;
+    color:rgba(37,101,195,1);
+}
+.sure_button{
+    margin-left: 30rpx;
+    font-size:28rpx;
+    font-family:PingFang-SC-Regular;
+    font-weight:400;
+    color:rgba(37,101,195,1);
+}
+@keyframes remind-word {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+
+</style>

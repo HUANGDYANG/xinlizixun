@@ -1,0 +1,206 @@
+<template>
+  <view class="container">
+    <view class='fuwu_out'>
+      <view class='flex flex-a-i-center pdb36'>
+        <view class='shu'></view>
+        <view class='fuwu_title'>服务简介</view>
+      </view>
+    </view>
+    <rich-text class='fuwu_detail'
+               nodes="{{memberCustomizationintro.content}}"></rich-text>
+    <view class='fuwu_out'>
+      <view class='flex flex-a-i-center pdb36'>
+        <view class='shu'></view>
+        <view class='fuwu_title'>定制流程</view>
+      </view>
+    </view>
+    <rich-text class="rich_c"
+               nodes="{{memberCustomizationintro.step}}"></rich-text>
+    <form @submit="formSubmit"
+          report-submit>
+      <!-- <view class='check_out flex flex-a-i-center'
+            @tap='change_check'> -->
+      <button form-type="submit"
+              class='check_out flex flex-a-i-center'>
+        <image src="../images/publish_check_icon@2x.png"
+               class="check_no"
+               wx:if="{{!check_off}}"></image>
+        <image src="../images/publish_check_default_icon@2x.png"
+               class="check_no"
+               wx:if='{{check_off}}'></image>
+        <view class='read'>我已阅读并同意</view>
+      </button>
+    </form>
+    <form @submit="formSubmit1"
+          report-submit>
+      <view class='fix_button'>
+        <button form-type="submit"
+                class="button">我要定制</button>
+      </view>
+    </form>
+
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+let { saveFormId } = api
+export default class Friend_acc extends wepy.page {
+  config = {
+    navigationBarTitleText: '友陪伴'
+  };
+  components = {};
+  data = {
+    check_off: true,
+    memberCustomizationintro: '',
+    userInfo: ''
+  };
+  computed = {};
+  methods = {
+    formSubmit1(e) {
+      saveFormId({
+        formId: e.detail.formId
+      })
+      this.toFrienForm()
+    },
+    formSubmit(e) {
+
+      this.check_off = !this.check_off
+      saveFormId({
+        formId: e.detail.formId
+      })
+    },
+    change_check() {
+      this.check_off = !this.check_off
+    }
+  };
+  toFrienForm() {
+    if (this.check_off) {
+      wx.showToast({
+        title: '请详细服阅读务介绍，并勾选同意按钮',
+        icon: 'none'
+      })
+      return;
+    }
+    goPath('/pages/friend_form')
+  }
+  events = {};
+  getMemberCustomizationintro() {
+    //  服务介绍
+    let { getMemberCustomizationintro } = api
+    getMemberCustomizationintro().then(res => {
+      this.memberCustomizationintro = res.data
+      this.$apply()
+    })
+  }
+  async onLoad() {
+    this.getMemberCustomizationintro()
+
+  }
+  onShow() {}
+}
+</script>
+<style lang="less">
+.container {
+  margin-bottom: 100rpx;
+}
+.fuwu_out {
+  background-color: #fff;
+  margin-top: 20rpx;
+  padding: 36rpx 32rpx;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+.fuwu_detail {
+  background-color: #fff !important;
+  padding: 36rpx 32rpx !important;
+  font-size: 28rpx !important;
+  font-family: PingFang-SC-Regular !important;
+  font-weight: 400 !important;
+  color: rgba(102, 102, 102, 1) !important;
+  line-height: 42rpx !important;
+  display: inline-block;
+}
+.fuwu_title {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.shu {
+  width: 8rpx;
+  height: 28rpx;
+  background: rgba(20, 98, 170, 1);
+  border-radius: 4rpx;
+  margin-right: 14rpx;
+}
+.fy_detail {
+  background-color: #fff;
+  padding: 36rpx 32rpx;
+}
+.fy_title {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  display: flex;
+}
+.flex1 {
+  flex: 1;
+  font-size: 28rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  line-height: 42rpx;
+}
+.rich_c {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  line-height: 42rpx;
+  background-color: #fff;
+  padding: 36rpx 32rpx;
+  display: inline-block;
+}
+.opa0 {
+  opacity: 0;
+}
+.check_out {
+  background-color: #fff;
+  margin-top: 20rpx;
+  padding: 65rpx 32rpx 118rpx;
+}
+.check_no {
+  height: 36rpx;
+  width: 36rpx;
+}
+.read {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  margin-left: 20rpx;
+}
+.fix_button {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: #fff;
+  width: 100%;
+  height: 98rpx;
+}
+.button {
+  width: 686rpx;
+  height: 88rpx;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 4rpx;
+  text-align: center;
+  line-height: 88rpx;
+  margin: 5rpx auto;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+</style>

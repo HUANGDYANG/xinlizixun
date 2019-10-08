@@ -1,0 +1,157 @@
+page {
+  font-family: PingFang-SC-Medium;
+  background-color: rgba(246, 246, 250, 1);
+}
+
+.container {}
+
+view,
+input,
+scroll-view,
+swiper-item,
+swiper,
+image,
+scroll-view,
+cover-view,
+movable-area,
+checkbox-group,
+video,
+checkbox,
+picker-view,
+picker,
+radio-group,
+radio,
+label,
+textarea {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  border: none;
+  min-height: auto;
+}
+
+button {
+  background: transparent;
+  line-height: 0;
+}
+
+button::after {
+  border: none;
+}
+
+button[disabled]:not([type]) {
+  background-color: transparent;
+}
+
+.button-hover {
+  background: #fff;
+}
+
+.placeholder-class {
+  color: #999999;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-a-i-center {
+  align-items: center;
+}
+
+.flex-a-i-start {
+  align-items: flex-start;
+}
+
+.flex-a-i-baseline {
+  align-items: baseline;
+}
+
+.flex-a-c-sb {
+  align-content: space-between;
+}
+
+.flex-j-c-center {
+  justify-content: center;
+}
+
+.flex-j-c-sb {
+  justify-content: space-between;
+}
+
+.flex-j-c-sa {
+  justify-content: space-around;
+}
+
+.flex-j-c-e {
+  justify-content: flex-end;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ellipsis2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.bg-cover {
+  background-size: cover;
+  background-position: center center;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  text-align: right;
+}
+
+.backe5 {
+  background-color: #e5e5e5;
+}
+
+.dis_inl_blo {
+  display: inline-block;
+}
+
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.no_more {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 90rpx;
+  color: rgba(153, 153, 153, 1);
+}
+
+.mgat {
+  position: relative;
+}
+
+// color
+@t_color: #2565c3;

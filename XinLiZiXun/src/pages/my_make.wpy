@@ -1,0 +1,685 @@
+<template>
+  <view class="container">
+      <view class="navbar">
+  <!--循环-->
+    <repeat wx:for="{{navbar}}" wx:for-index='idx' wx:key="{idx}">
+      <view data-idx="{{idx}}" wx:key="unique" class="item {{currentTab==idx ? 'active' : ''}}" @tap="navbarTap">
+      {{item}}
+      </view>
+    </repeat>
+  </view>
+  <view  id="one"></view>
+    <view class='pd_out'
+          wx:if="{{memberScheduleList && currentTab==0}}">
+      <repeat for='{{memberScheduleList}}'>
+        <view class='this'
+              @tap.stop="gotoDetail({{item.id}}, {{index}}, {{item.payStatus}}, {{item.consultStatus}})">
+          <view class='this_title flex flex-j-c-sb'
+                style="background-color:{{item.consultStatus == 0 ? 'rgba(37,101,195,1)' : 'rgba(153,153,153,1)'}};">
+            <view class='this_time'>{{item.time}}</view>
+            <view class='this_status'
+                  wx:if='{{item.consultStatus == 0 && item.payStatus == 1}}'>待咨询</view>
+            <view class='this_status'
+                  wx:if='{{item.consultStatus == 0 && item.payStatus == 0}}'>待支付</view>
+            <view class='this_status'
+                  wx:if='{{item.consultStatus == 1}}'>已咨询</view>
+            <view class='this_status'
+                  wx:if='{{item.consultStatus == 2}}'>预约已取消</view>
+                    <view class='this_status'
+                  wx:if='{{item.consultStatus == 5}}'>已过期</view>
+            <view class='this_status'
+                  wx:if='{{item.consultStatus == 6}}'>已过期</view>
+          </view>
+          <view class='this_detail'>
+            <view class='flex flex-j-c-sb'>
+              <view class='flex flex-a-i-center'>
+                <image src='../images/icon_zixunshi@2x.png'
+                       class='icon_zixunshi'></image>
+                <view class='this_name'>咨询师</view>
+              </view>
+              <view class='flex flex-a-i-center'>
+                <image src='../images/icon_jiage@2x.png'
+                       class='icon_zixunshi'></image>
+                <view class='this_name'>预约价格</view>
+              </view>
+            </view>
+            <view class='flex flex-j-c-sb'
+                  style='margin-top: 10rpx;'>
+              <view class='this_name1'>{{item.consultantName}}</view>
+              <view class='this_name1'>￥{{item.price}}</view>
+            </view>
+          </view>
+          <view class='bottom'
+                @tap.stop='show_modal({{item.id}}, {{index}})'
+                wx:if='{{item.consultStatus == 0 && item.payStatus == 1}}'
+                style="color:{{item.consultStatus == '0' ? 'rgba(37,101,195,1)' : 'rgba(153,153,153,1)'}};">取消预约</view>
+          <view class='bottom'
+                wx:if='{{item.consultStatus == 0 && item.payStatus == 0}}'
+                style="color:{{item.consultStatus == '0' ? 'rgba(37,101,195,1)' : 'rgba(153,153,153,1)'}};">点击付款
+          </view>
+          <view>
+            <view class='bottom'
+                  @tap.stop='evaluate({{item.id}})'
+                  wx:if='{{!item.commentStatus && item.consultStatus == 1}}'
+                  style="color:rgba(37,101,195,1);">评价咨询师</view>
+            <view class='bottom'
+                  wx:if='{{item.consultStatus == 2}}'
+                  style="color:rgba(153,153,153,1);">预约已取消</view>
+            <view class='bottom'
+                  wx:if='{{item.consultStatus == 3 || item.consultStatus == 4}}'
+                  style="color:rgba(153,153,153,1);">缺席</view>
+            <view class='bottom'
+                  wx:if='{{item.consultStatus == 5}}'
+                  style="color:rgba(153,153,153,1);">预约已过期</view>
+            <view class='bottom'
+                  wx:if='{{item.consultStatus == 6}}'
+                  style="color:rgba(153,153,153,1);">预约已过期</view>
+          </view>
+          <view class='bottom'
+                wx:if='{{item.commentStatus && item.consultStatus == 1}}'
+                style="color:rgba(153,153,153,1);">已经评价啦</view>
+        </view>
+      </repeat>
+      <view class='no_more'
+            wx:if='{{loaded}}'>- 没有更多啦 -</view>
+              <view class="no_more"
+                  wx:else>
+              <text>暂无消息</text>
+            </view>
+    </view>
+
+    <view class='pd_out'
+          wx:if="{{consultList && currentTab==1}}">
+      <repeat for='{{consultList}}'>
+        <view class='this'
+          >
+          <view class='this_title flex flex-j-c-sb'
+                style="background-color:{{item.orderStatus != 2 ? 'rgba(37,101,195,1)' : 'rgba(153,153,153,1)'}};">
+            <view class='this_time'>{{item.createTime}}</view>
+<view class='this_status'
+                  wx:if='{{item.orderStatus == 2}}'>已咨询</view>
+            <view class='this_status'
+                  wx:if='{{item.orderStatus == 0}}'>未支付</view>
+            <view class='this_status'
+                  wx:if='{{item.orderStatus == 1}}'>已支付</view>
+
+          </view>
+          <view class='this_detail'>
+            <view class='flex flex-j-c-sb'>
+              <view class='flex flex-a-i-center flex-column flex-j-c-center'>
+                <view class="flex flex-a-i-center"><image src='../images/icon_zixunshi@2x.png'
+                       class='icon_zixunshi'></image>
+                <view class='this_name'>咨询师</view></view>
+                  <view class='this_name1'>{{item.consultantName}}</view>
+              </view>
+              <view class='flex flex-a-i-center flex-column flex-j-c-center'>
+                <view class="flex flex-a-i-center"><image src='../images/ttt.png'
+                       class='icon_zixunshi'></image>
+                <view class='this_name'>咨询时长</view></view>
+                  <view class='this_name1'>{{item.minute+'min'}}</view>
+              </view>
+              <view class='flex flex-a-i-center flex-column flex-j-c-center'>
+                <view class="flex flex-a-i-center"><image src='../images/icon_jiage@2x.png'
+                       class='icon_zixunshi'></image>
+                <view class='this_name'>咨询金额</view></view>
+                  <view class='this_name1'>{{'￥'+item.price}}</view>
+              </view>
+            </view>
+            <!-- <view class='flex flex-j-c-sb'
+                  style='margin-top: 10rpx;'>
+              <view class='this_name1'>{{item.consultantName}}</view>
+              <view class='this_name1'>￥{{item.price}}</view>
+            </view> -->
+          </view>
+
+        </view>
+      </repeat>
+      <view class='no_more'
+            wx:if='{{loaded1}}'>- 没有更多啦 -</view>
+        <view class="no_more"
+            wx:else>
+        <text>暂无消息</text>
+      </view>
+    </view>
+
+
+    <!-- model -->
+    <view class='modal flex'
+          wx:if='{{show_modal}}'>
+      <view class='mask'
+            catchtouchmove="preventTouchMove"
+            @tap="hideMask"></view>
+      <view class='mgat'>
+        <view class='modal_title'>确定取消咨询师的预约？</view>
+        <view class='modal_detail'>*若取消预约，费用将直接退回您的钱包余额 每月最多可取消3次，本月您已取消{{memberScheduleCancelNum}}次。</view>
+        <view class='modal_bottom flex'>
+          <view class='modal_bottom_cancel'
+                @tap='cancel'>再想想</view>
+          <view class='modal_bottom_confirm'
+                @tap='confirm'>确定</view>
+        </view>
+      </view>
+    </view>
+    <view class='modal flex'
+          wx:if='{{show_modal1}}'>
+      <view class='mask'
+            catchtouchmove="preventTouchMove"
+            @tap="hideMask"></view>
+      <view class='mgat'>
+        <view class='modal_title'>确定取消咨询师的预约？</view>
+        <view class='modal_detail'>*若有相关疑问，可联系客服。</view>
+        <view class='modal_detail'
+              style='margin: 0;opacity: 0;'>您的钱包余额 每月最多可取</view>
+        <view class='modal_bottom flex'>
+          <view class='modal_bottom_cancel'
+                @tap='cancel1'>联系客服</view>
+          <view class='modal_bottom_confirm'
+                @tap='confirm1'>确定</view>
+        </view>
+      </view>
+    </view>
+    <view class='modal flex'
+          wx:if='{{show_modal2}}'>
+      <view class='mask'
+            catchtouchmove="preventTouchMove"
+            @tap="hideMask"></view>
+      <view class='mgat'>
+        <view class='modal_title'>无法取消该预约</view>
+        <view class='modal_detail'>*若有相关疑问，可联系客服。</view>
+        <view class='modal_detail'
+              style='margin: 0;opacity: 0;'>您的钱包余额 每月最多可取</view>
+        <view class='modal_bottom flex'>
+          <view class='modal_bottom_cancel'
+                @tap='cancel1'>联系客服</view>
+          <view class='modal_bottom_confirm'
+                @tap='confirm2'>确定</view>
+        </view>
+      </view>
+    </view>
+    <view class='modal flex'
+          wx:if='{{show_modal3}}'>
+      <view class='mask'
+            catchtouchmove="preventTouchMove"
+            @tap="hideMask"></view>
+      <view class='mgat'>
+        <view class='modal_title'>
+          <view>预约取消成功</view>
+          <view>款项已返回到余额</view>
+        </view>
+        <view class='modal_detail'>*若有相关疑问，可联系客服。</view>
+        <view class='modal_detail'
+              style='margin: 0;opacity: 0;'>占位的 palceholder</view>
+        <view class='modal_bottom flex'>
+          <view class='modal_bottom_cancel'
+                @tap='cancel1'>联系客服</view>
+          <view class='modal_bottom_confirm'
+                @tap='confirm3'>确定</view>
+        </view>
+      </view>
+    </view>
+    <view class='modal flex'
+          wx:if='{{show_modal4}}'>
+      <view class='mask'
+            catchtouchmove="preventTouchMove"
+            @tap="hideMask"></view>
+      <view class='mgat'>
+
+        <view class='modal_title'>
+          <view>预约取消成功</view>
+          <view>款项已返回到微信</view>
+        </view>
+        <view class='modal_detail'>*若有相关疑问，可联系客服。</view>
+        <view class='modal_detail'
+              style='margin: 0;opacity: 0;'>占位的 palceholder</view>
+        <view class='modal_bottom flex'>
+          <view class='modal_bottom_cancel'
+                @tap='cancel1'>联系客服</view>
+          <view class='modal_bottom_confirm'
+                @tap='confirm4'>确定</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class My_make extends wepy.page {
+  config = {
+    navigationBarTitleText: '我的咨询'
+  }
+  components = {}
+  data = {
+    show_modal: false,
+    show_modal1: false,
+    show_modal2: false,
+    memberScheduleList: '',
+    memberScheduleCancelNum: 0,
+    cancelId: '',
+    cancelIndex: '',
+    show_modal3: false,
+    show_modal4: false,
+    serviceMobile: '',
+    nextPage: 1, // 下一页
+    loaded: false,
+    navbar: ['在线预约', '实时咨询'],
+    currentTab: 0,
+    consultList: [],
+    nextPage1: 1, // 下一页
+    loaded1: false,
+    pageNum1:1,//当前页 （预约）
+    pageNum2:1,//当前页 （咨询）
+  }
+
+  computed = {}
+  methods = {
+    navbarTap(e) {
+      var that = this
+      that.currentTab = e.currentTarget.dataset.idx
+    },
+    hideMask () {
+      this.show_modal = false
+      this.show_modal1 = false
+      this.show_modal2 = false
+      this.show_modal3 = false
+    },
+    show_modal (id, cancelIndex) {
+      this.cancelId = id
+      this.cancelIndex = cancelIndex
+      this.getMemberScheduleCancelNum()
+      // this.memberScheduleCancelNum = 3
+    },
+    cancel () {
+      this.show_modal = false
+    },
+    confirm () {
+      this.show_modal = false
+      this.show_modal1 = true
+    },
+    cancel1 () {
+      this.show_modal1 = false
+      this.show_modal2 = false
+      this.show_modal3 = false
+      this.show_modal4 = false
+      wx.makePhoneCall({
+        phoneNumber: this.serviceMobile
+      })
+      //  this.cancelSchedule(this.cancelId)
+    },
+    cancel2 () {
+      this.show_modal2 = false
+    },
+    confirm2 () {
+      this.show_modal2 = false
+    },
+    confirm1 () {
+
+      this.cancelSchedule(this.cancelId)
+    },
+    cancel3 () {
+    },
+    confirm3 () {
+      this.show_modal3 = false
+    },
+    confirm4 () {
+      this.show_modal4 = false
+    },
+    evaluate (id) {
+      goPath('/pages/evaluate?id=' + id)
+    },
+    gotoDetail (id, index, payStatus, consultStatus) {
+      if (this.memberScheduleList[index].consultStatus == 2) {
+        goPath('/pages/make_detail?id=' + id + '&payStatus=' + payStatus + '&consultStatus=' + consultStatus)
+      } else {
+        goPath('/pages/make_detail?id=' + id + '&payStatus=' + payStatus + '&consultStatus=' + consultStatus)
+      }
+    }
+  }
+  //咨询
+  getRealTimeList() {
+    let { getRealTimeList } = api;
+    let that = this;
+    let params = {
+      pageNum : that.pageNum2,
+      pageSize : 10
+    };
+    getRealTimeList(params).then(res => {
+      if(res.code == 0 || res.code ==200){
+
+        if(that.pageNum2 == 1){
+          this.consultList = res.data.list;
+        }else{
+          this.consultList = this.consultList.concat(res.data.list);
+        }
+
+        if(res.data.pageNum < res.data.pages){
+          that.pageNum2 += 1;
+        }else{
+          that.pageNum2 = 'end';
+        }
+
+        this.$apply()
+      }else{
+        that.consultList = [];
+        that.pageNum2 = 'end';
+      }
+    })
+  }
+  //预约
+  getMemberScheduleList () {
+    let that = this;
+    let { getMemberScheduleList } = api;
+    let params = {
+      pageNum : that.pageNum1,
+      pageSize : 10
+    };
+    getMemberScheduleList(params).then(res => {
+        if(res.code == 0 || res.code ==200){
+          // consultStatus 6 已过期 后台判断
+          let endTime = ''
+          res.data.list.forEach((element, i) => {
+            endTime = element.endTime.slice(0, -3)
+            res.data.list[i].time = element.dateTime.split(' ')[0] + ' ' + element.benginTime.slice(0, -3) + '-' + element.endTime.slice(0, -3)
+            if (element.endTime.slice(0, -3) == '00:00') {
+              endTime = '23:59'
+            }
+            if (new Date(element.dateTime.split(' ')[0].replace(/\-/g, '/') + ' ' + endTime) < new Date()) {
+
+              if (res.data.list[i].consultStatus == 0) {
+                res.data.list[i].consultStatus = 6
+              }
+            }
+          })
+          if(that.pageNum1 == 1){
+            this.memberScheduleList = res.data.list;
+          }else{
+            this.memberScheduleList = this.memberScheduleList.concat(res.data.list);
+          }
+
+          if(res.data.pageNum < res.data.pages){
+            that.pageNum1 += 1;
+          }else{
+            that.pageNum1 = 'end';
+          }
+        }else{
+          that.memberScheduleList = [];
+          that.pageNum1 = 'end';
+        }
+        this.$apply()
+        
+    })
+  }
+  getMemberScheduleCancelNum () {
+    let { getMemberScheduleCancelNum } = api
+    // 查询当月预约取消次数
+    getMemberScheduleCancelNum().then(res => {
+      if (res) {
+        this.memberScheduleCancelNum = res.data
+        if (this.memberScheduleCancelNum < 3) {
+          this.show_modal = true
+        } else {
+          this.show_modal2 = true
+        }
+        this.$apply()
+      }
+    })
+  } 
+  cancelSchedule (id) {
+    let { cancelSchedule } = api
+    // 用户取消预约
+    cancelSchedule(id).then(res => {
+      if (res) {
+        // todo
+        this.show_modal1 = false
+        this.memberScheduleList[this.cancelIndex].consultStatus = 2
+        if (this.memberScheduleList[this.cancelIndex].payType == 1) {
+          this.show_modal3 = true
+        } else {
+          this.show_modal4 = true
+        }
+        // wx.showToast({
+        //   title: '取消成功',
+        //   icon: 'success',
+        //   duration: 2000
+        // })
+        // this.show_modal3 = true
+        this.$apply()
+      }
+    })
+  }
+  events = {}
+  onReachBottom () {
+    // if (!this.loaded && this.currentTab == 0) {
+    //   this.getMemberScheduleList({
+    //     pageNum: this.nextPage
+    //   })
+    // }
+    // if (!this.loaded1 && this.currentTab == 1) {
+    //   this.getRealTimeList({
+    //     pageNum: this.nextPage1
+    //   })
+    // }
+    console.log(this.currentTab);
+
+    if(this.currentTab == 0){
+      if(this.pageNum1 != 'end'){
+        this.getMemberScheduleList();
+      }else{
+        wepy.showToast({
+          title: '已经到底了',
+          icon: 'none',
+          duration: 2000
+        })
+      }
+    } else{ 
+      if(this.pageNum2 != 'end'){
+        this.getRealTimeList(); 
+      }else{
+        wepy.showToast({
+          title: '已经到底了',
+          icon: 'none',
+          duration: 2000
+        })
+      }
+    }
+   
+  }
+  async onLoad (option) {
+    this.serviceMobile = this.$parent.globalData.contactusInfo.serviceMobile
+    this.getMemberScheduleList();
+    this.getRealTimeList();
+  }
+}
+</script>
+<style lang="less">
+.flex-column{
+  flex: 0 0 33.3%;
+}
+.acenter{
+  text-align: center;
+}
+.pd_out {
+  padding: 49rpx 32rpx 60rpx;
+}
+.this {
+  background: rgba(255, 255, 255, 1);
+  border-radius: 24rpx;
+  background-color: #fff;
+  overflow: hidden;
+  margin-bottom: 26rpx;
+}
+.this_title {
+  padding: 15rpx 31rpx;
+  background-color: rgba(37, 101, 195, 1);
+}
+.this_time {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 1);
+}
+.this_status {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+.this_detail {
+  padding: 36rpx 32rpx;
+}
+.icon_zixunshi {
+  width: 22rpx;
+  height: 22rpx;
+}
+.this_name {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  margin-left: 6rpx;
+}
+.this_name1 {
+  font-size: 32rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 1);
+}
+.bottom {
+  height: 85rpx;
+  line-height: 85rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  border-top: 1rpx solid rgba(238, 238, 238, 1);
+}
+
+/*dialog*/
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+.mgat {
+  position: relative;
+  margin: auto;
+  background-color: #fff;
+  border-radius: 24rpx;
+  width: 580rpx;
+  overflow: hidden;
+  z-index: 99999;
+}
+
+.modal_title {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  text-align: center;
+  margin-top: 72rpx;
+}
+.modal_detail {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  margin: 10rpx 0 20rpx;
+  text-align: center;
+  padding: 0 57rpx;
+}
+.modal_bottom {
+  width: 100%;
+  height: 88rpx;
+}
+.modal_bottom_cancel {
+  width: 50%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: rgba(246, 246, 250, 1);
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.modal_bottom_confirm {
+  width: 50%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: rgba(37, 101, 195, 1);
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(248, 248, 248, 1);
+}
+.no_more {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 90rpx;
+  color: rgba(153, 153, 153, 1);
+}
+/*顶部导航样式*/
+.navbar{
+ flex: none;
+ display: flex;
+ padding-top: 15rpx;
+ padding-bottom: 12rpx;
+ position: fixed;
+ left: 0;
+ top: 0;
+ width: 100%;
+ z-index: 99999;
+ background-color:#fff;
+}
+.navbar .item{
+ position: relative;
+ flex: auto;
+ text-align: center;
+ line-height: 80rpx;
+ font-size: 32rpx;
+ color: rgba(51,51,51,1);
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active{
+ color: rgba(37,101,195,1);
+ font-size: 32rpx;
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active:after{
+ content: "";
+ display: block;
+ position: absolute;
+ bottom: -10rpx;
+ left: 36%;
+ right: 0;
+ height: 6rpx;
+ background: rgba(37,101,195,1);
+ font-size: 32rpx;
+ color: #666666;
+ font-family: Microsoft YaHei;
+ width: 28%;
+ border-radius: 8rpx;
+}
+#one{
+  margin-top: 80rpx;
+  padding: 16rpx 0;
+}
+
+</style>

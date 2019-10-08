@@ -1,0 +1,823 @@
+<template>
+  <view class="container">
+    <view class="wrap">
+      <swiper
+        autoplay="{{autoplay}}"
+        interval="5000"
+        duration="500"
+        class="swiper"
+        indicator-dots="{{indicator}}"
+        indicator-color="rgba(255,255,255,0.5)"
+        indicator-active-color="rgba(37,101,195,1)"
+      >
+        <!-- <repeat for="{{personInfo.rows}}" key> -->
+          <swiper-item wx:for='{{personInfo.rows}}' wx:for-item='item' wx:for-index='idx' wx:key='idx'>
+            <image src="{{item.mainPic}}" class="slide-image backe5" mode="aspectFill" />
+          </swiper-item>
+        <!-- </repeat> -->
+      </swiper>
+    </view>
+    <view>
+      <view class="second">
+        <view class="second_this" @tap="to_be_mindful">
+          <image src="../images/icon_zouxinliao@2x.png" class="second_img" />
+          <view class="second_title">走心聊</view>
+        </view>
+        <view class="second_this" @tap="to_heart_know">
+          <image src="../images/icon_xinzizhi@2x.png" class="second_img" />
+          <view class="second_title">心自知</view>
+        </view>
+        <view class="second_this" @tap="to_confidences">
+          <image src="../images/icon_zhixinhua@2x.png" class="second_img" />
+          <view class="second_title">知新话</view>
+        </view>
+      </view>
+      <view class="second1">
+        <view class="second_this" @tap="to_friend_acc">
+          <image src="../images/icon_youpeiban@2x.png" class="second_img" />
+          <view class="second_title">友陪伴</view>
+        </view>
+        <view class="second_this" @tap="to_heart_exp">
+          <image src="../images/icon_xinsudi@2x.png" class="second_img" />
+          <view class="second_title">心速递</view>
+        </view>
+        <view class="second_this" @tap="to_provide">
+          <image src="../images/icon_youyouhui@2x.png" class="second_img" />
+          <view class="second_title">友优惠</view>
+        </view>
+      </view>
+    </view>
+    <view class="three">
+      <view class="three_title">
+        <view class="three_title_left">走心聊</view>
+        <view class="three_title_right" @tap="to_be_mindful">
+          <view class="three_more">更多</view>
+          <image src="../images/icon_gengduo@2x.png" class="icon_gengduo" />
+        </view>
+      </view>
+      <view wx:for="{{consultantlist}}"  wx:for-index="idx" wx:for-item="item" wx:key='idx'>
+        <view class="three_this" @tap="to_be_mindful_detail({{item.consultantId}})">
+          <view class="three_top">
+            <image src="{{item.mainPic}}" class="three_img backe5" mode="aspectFill" />
+            <view class="three_top_right">
+              <view class="flex flex-j-c-sb">
+                <view class="flex flex-a-i-center">
+                  <view class="three_top_right_name">{{item.consultantName}}</view>
+                  <view class="three_top_right_man" wx:if="{{item.subscribeStatus}}">约满</view>
+                  <view class="three_top_right_ke" wx:if="{{!item.subscribeStatus}}">可约</view>
+                </view>
+                <view class="flex flex-a-i-center" wx:if="{{item.onlineStatus == 0}}">
+                  <image src="../images/icon_lixian@2x.png" class="icon_manglu" />
+                  <view class="three_top_right_lixian">离线</view>
+                </view>
+                <view class="flex flex-a-i-center" wx:if="{{item.onlineStatus == 1}}">
+                  <image src="../images/icon_zaixian@2x.png" class="icon_manglu" />
+                  <view class="three_top_right_zaixian">在线</view>
+                </view>
+                <view class="flex flex-a-i-center" wx:if="{{item.onlineStatus == 2}}">
+                  <image src="../images/icon_manglu@2x.png" class="icon_manglu" />
+                  <view class="three_top_right_manglu">忙碌</view>
+                </view>
+              </view>
+              <view class="three_top_bottom">
+                <!-- <repeat for="{{item.tags}}" item="tag" key> -->
+                  <block wx:for='{{item.tags}}' wx:for-item='item2' wx:for-index='idx2' wx:key='idx2'>
+                     <view wx:if="{{idx2 < 3}}" class="three_top_bottom_work">{{item2.name}}</view>
+                  </block>
+                <!-- </repeat> -->
+              </view>
+            </view>
+          </view>
+          <view class="three_bottom">
+            <view class="opa0"></view>
+            <view class="three_bottom_right">
+              <view class="flex flex-j-c-sb">
+                <view class="three_bottom_right_left">
+                  <image src="../images/icon_dizhi@2x.png" class="icon_dizhi" />
+                  <view class="three_bottom_right_left_title">{{item.city}}</view>
+                </view>
+                <view class="three_bottom_right_right">¥{{item.price}}/次</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="three">
+      <view class="three_title four_title">
+        <view class="three_title_left">心自知</view>
+        <view class="three_title_right" @tap="to_heart_know">
+          <view class="three_more">更多</view>
+          <image src="../images/icon_gengduo@2x.png" class="icon_gengduo" />
+        </view>
+      </view>
+      <view class="w686">
+        <!-- <repeat for="{{evaluationList}}" key="{{item.id}}"> -->
+        <block wx:for='{{evaluationList}}' wx:for-item='item' wx:for-index='idx' wx:key='idx'>
+          <view class="xinzizhi_out" @tap="to_heart_know_detail({{item.id}})">
+            <image src="{{item.mainPic}}" class="backe5 xinzizhi" mode="aspectFill" />
+            <view class="click_in" data-pay-type="{{item.payType}}">点击进入</view>
+            <view class="fufei" wx:if="{{item.payType}}">付费</view>
+          </view>
+        </block>
+        <!-- </repeat> -->
+      </view>
+    </view>
+    <view class="three">
+      <view class="three_title four_title">
+        <view class="three_title_left">知新话</view>
+        <view class="three_title_right" @tap="to_confidences">
+          <view class="three_more">更多</view>
+          <image src="../images/icon_gengduo@2x.png" class="icon_gengduo" />
+        </view>
+      </view>
+      <view style>
+        <scroll-view scroll-x="true" class="scroll_view">
+          <block wx:for='{{courseList}}' wx:for-item='item' wx:for-index='idx' wx:key='idx'>
+          <!-- <repeat for="{{courseList}}"> -->
+            <view class="dis_inl_blo scroll_rela" @tap="to_confidences_detail({{item.courseId}})">
+              <view class="scroll_abso scroll_img {{index == 0 ? 'left32' : ''}}"></view>
+              <view class="scroll_abso_view {{index == 0 ? 'left32' : ''}}">
+                <view class="scroll_abso_view_num">
+                  <view class="flex flex-j-c-sb">
+                    <view></view>
+                    <view class="sell_num">已售：{{!item.soldOutNum ? '0' : item.soldOutNum }}</view>
+                  </view>
+                </view>
+                <view class="mgat1">{{item.courseName}}</view>
+                <view class="scroll_abso_view_star">
+                  <view class="flex flex-j-c-sb">
+                    <view class="flex flex-a-i-center">
+                      <image
+                        src="../images/icon_star_yellow@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded >= 1}}"
+                      />
+                      <image
+                        src="../images/icon_star_gray@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded < 1}}"
+                      />
+                      <image
+                        src="../images/icon_star_yellow@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded >= 2}}"
+                      />
+                      <image
+                        src="../images/icon_star_gray@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded < 2}}"
+                      />
+                      <image
+                        src="../images/icon_star_yellow@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded >= 3}}"
+                      />
+                      <image
+                        src="../images/icon_star_gray@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded < 3}}"
+                      />
+                      <image
+                        src="../images/icon_star_yellow@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded >= 4}}"
+                      />
+                      <image
+                        src="../images/icon_star_gray@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded < 4}}"
+                      />
+                      <image
+                        src="../images/icon_star_yellow@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded >= 5}}"
+                      />
+                      <image
+                        src="../images/icon_star_gray@2x.png"
+                        class="star_icon"
+                        wx:if="{{item.graded < 5}}"
+                      />
+                      <!-- <view class='sell_star'>4.0</view> -->
+                      <view
+                        class="sell_star"
+                        wx:if="{{item.gradeNumber}}"
+                      >{{item.graded.length >= 3 ? item.graded : item.graded + '.0'}}</view>
+                    </view>
+                    <view wx:if="{{item.gradeNumber}}" class="sell_num">{{item.gradeNumber}}人评分</view>
+                    <view wx:else class="sell_num">暂无评分</view>
+                  </view>
+                </view>
+              </view>
+              <image
+                mode="aspectFill"
+                src="{{item.mainPic}}"
+                data-id="{{item.id}}"
+                class="scroll_img {{index == 0 ? 'mar-left42' : ''}}"
+              />
+            </view>
+          </block>
+          <!-- </repeat> -->
+        </scroll-view>
+      </view>
+    </view>
+    <view class="modal flex" catchtouchmove="preventTouchMove" wx:if="{{showPushMask}}">
+      <view class="mask"></view>
+      <view class="mgat">
+        <view class="modal_title">{{pushInfo.title}}</view>
+        <image src="{{pushInfo.mainPic}}" mode="aspectFill" lazy-load="false" class="push-img" />
+        <view class="modal_bottom flex">
+          <view class="modal_bottom_cancel" @tap="cancel">取消</view>
+          <view class="modal_bottom_confirm" @tap="confirm">查看</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class Index extends wepy.page {
+  config = {
+    navigationBarTitleText: '走心聊'
+  };
+  components = {};
+  data = {
+    canIUse: wx.canIUse('button.open-type.getUserInfo'),
+    userInfo: '',
+    consultantlist: [],
+    courseList: [],
+    evaluationList: [],
+    autoplay: true,
+    currentSwiper: 0,
+    indicator: true,
+    manglu: 1,
+    fufei: true,
+    star: 4,
+    personInfo: '',
+    data_banner: [
+      {
+        a:
+          'http://image.zhvankelive.com/images/2018/12/23/2018122307111317203639.png'
+      },
+      {
+        a:
+          'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png'
+      }
+    ],
+    data_card: [
+      {
+        mainPic:
+          'http://image.zhvankelive.com/images/2018/12/23/2018122307111317203639.png',
+        id: 1
+      },
+      {
+        mainPic:
+          'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      },
+      {
+        mainPic:
+          'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      },
+      {
+        mainPic:
+          'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      },
+      {
+        mainPic:
+          'http://image.zhvankelive.com/images/2018/12/20/2018122010002719706814.png',
+        id: 2
+      }
+    ],
+    pushInfo: {mainPic:'',title:''},
+    showPushMask: false
+  };
+  computed = {};
+  onHide() {
+    this.showPushMask = false
+  }
+  methods = {
+    preventTouchMove() {},
+    cancel() {
+      this.showPushMask = false
+    },
+    confirm() {
+      // goPath('/pages/test_detail?id=' + this.pushInfo.id)
+      goPath('/pages/heart_know_detail?id=' + this.pushInfo.id)
+
+      this.showPushMask = true
+    },
+    to_provide() {
+      goPath('/pages/provide')
+    },
+    to_heart_exp() {
+      goPath('/pages/heart_exp')
+    },
+    to_heart_know() {
+      goPath('/pages/heart_know', 'st')
+    },
+    to_confidences() {
+      goPath('/pages/confidences', 'st')
+    },
+    to_be_mindful() {
+      goPath('/pages/be_mindful', 'st')
+    },
+    to_be_mindful_detail(e) {
+      goPath('/pages/be_mindful_detail?id=' + e)
+    },
+    to_heart_know_detail(e) {
+      // let paytype = e.target.dataset.paytype
+      goPath('/pages/heart_know_detail?id=' + e)
+    },
+    to_confidences_detail(e) {
+      goPath('/pages/confidences_detail?courseId=' + e)
+    },
+    to_friend_acc() {
+      this.checkLogin('/pages/friend_acc')
+ 
+    }
+  };
+  checkLogin(path) {
+    if (!this.userInfo) {
+      wepy
+        .showModal({
+          content: '请先进行登录操作', // 提示的内容,
+          // showCancel: false, // 是否显示取消按钮,
+          confirmText: '确定', // 确定按钮的文字，默认为取消，最多 4 个字符,
+          confirmColor: '#2565C3' // 确定按钮的文字颜色,
+        })
+        .then(res => {
+          if (res.confirm) {
+            goPath('/pages/wxInfo')
+          } else if (res.cancel) {
+          }
+        })
+    } else {
+      goPath(path)
+    }
+  }
+  events = {};
+  checkPush() {
+    let { getPushEvaluation } = api
+    getPushEvaluation().then(res => {
+      if (res) {
+        this.pushInfo = res.data
+        this.showPushMask = true
+      }
+    })
+  }
+  async onLoad() {
+    let {
+      slideshow,
+      getIndexConsultantlist,
+      getIndexEvaluationList,
+      getIndexCourseList
+    } = api
+    this.checkPush()
+    this.userInfo = Object.assign({}, this.$parent.globalData.userInfo)
+    this.$apply()
+    if (this.$parent.globalData.userInfo) {
+      this.userInfo = Object.assign({}, this.$parent.globalData.userInfo)
+    } else if (this.canIUse) {
+      // canIUse: wx.canIUse('button.open-type.getUserInfo'),
+      this.$parent.userInfoReadyCallback = res => {
+        this.userInfo = res.data
+        this.$apply()
+      };
+    }
+    var personInfo = await slideshow()
+    this.personInfo = personInfo.data
+    this.$apply()
+    let consultantlist = await getIndexConsultantlist()
+    this.consultantlist = consultantlist.data
+    this.$apply()
+    let evaluationList = await getIndexEvaluationList()
+    this.evaluationList = evaluationList.data
+    this.$apply()
+    let courseList = await getIndexCourseList()
+    this.courseList = courseList.data
+
+    
+    wx.getSetting({
+      success(res) {
+        if (!res.authSetting['scope.record']) {
+          wx.authorize({
+            scope: 'scope.record',
+            success (recordRes) {
+              console.log(recordRes);
+            }
+          })
+        }
+      }
+    })
+
+    // 判断是不是咨询师
+    this.$apply()
+  }
+  async onShow() {
+    let { getIndexConsultantlist } = api
+    let consultantlist = await getIndexConsultantlist()
+    this.consultantlist = consultantlist.data
+    this.$apply()
+  }
+}
+</script>
+<style lang="less">
+.push-img {
+  height: 200rpx;
+  width: 100%;
+}
+page {
+  margin-bottom: 20rpx;
+}
+.wrap {
+  height: auto;
+  position: relative;
+}
+swiper {
+  height: 360rpx;
+}
+.slide-image {
+  width: 100%;
+  height: 360rpx;
+}
+.second {
+  padding: 38rpx 0;
+  width: 100%;
+  height: 240rpx;
+  background-color: rgba(255, 255, 255, 1);
+  display: flex;
+}
+.second1 {
+  width: 100%;
+  height: 205rpx;
+  background-color: rgba(255, 255, 255, 1);
+  display: flex;
+}
+.second_this {
+  width: 33.33%;
+  text-align: center;
+}
+.second_img {
+  width: 120rpx;
+  height: 120rpx;
+  display: inline-block;
+}
+.second_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  text-align: center;
+}
+.three {
+  margin-top: 20rpx;
+}
+.three_title {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 31rpx;
+  height: 118rpx;
+  align-items: center;
+  background-color: #fff;
+}
+.four_title {
+  border-bottom: 2rpx solid rgba(244, 244, 244, 1);
+}
+.icon_gengduo {
+  width: 24rpx;
+  height: 21rpx;
+  margin-left: 19rpx;
+}
+.three_title_right {
+  display: flex;
+  align-items: center;
+}
+.three_more {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+}
+.three_title_left {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(51, 51, 51, 1);
+}
+.three_this {
+  padding: 36rpx 32rpx;
+  background-color: #fff;
+  border-top: 2rpx solid rgba(244, 244, 244, 1);
+}
+.three_top {
+  display: flex;
+  align-items: center;
+}
+.three_img {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+}
+.three_top_right {
+  margin-left: 26rpx;
+  flex: 1;
+}
+.three_top_right_name {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.three_top_right_man {
+  margin-left: 15rpx;
+  font-size: 18rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  background: rgba(255, 255, 255, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 15rpx;
+  padding: 3rpx 14rpx;
+}
+.three_top_right_ke {
+  margin-left: 15rpx;
+  font-size: 18rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 15rpx;
+  padding: 3rpx 14rpx;
+}
+.three_top_right_manglu {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(231, 43, 43, 1);
+  margin-left: 9rpx;
+}
+.three_top_right_zaixian {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  margin-left: 9rpx;
+}
+.three_top_right_lixian {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(153, 153, 153, 1);
+  margin-left: 9rpx;
+}
+.icon_manglu {
+  width: 22rpx;
+  height: 22rpx;
+}
+.three_top_bottom {
+  margin-top: 24rpx;
+  display: flex;
+}
+.three_top_bottom_work {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  background: rgba(246, 247, 250, 1);
+  border-radius: 4rpx;
+  padding: 0rpx 6rpx;
+  margin-right: 10rpx;
+  height: 38rpx;
+  line-height: 38rpx;
+}
+.three_bottom {
+  display: flex;
+}
+.opa0 {
+  width: 88rpx;
+  opacity: 0;
+}
+.three_bottom_right {
+  flex: 1;
+  margin-left: 26rpx;
+  margin-top: 34rpx;
+}
+.three_bottom_right_left {
+  display: flex;
+  align-items: center;
+}
+.icon_dizhi {
+  width: 22rpx;
+  height: 24rpx;
+}
+.three_bottom_right_left_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(102, 102, 102, 1);
+  margin-left: 15rpx;
+}
+.three_bottom_right_right {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+.w686 {
+  padding: 36rpx 32rpx 10rpx;
+  background-color: #fff;
+}
+.xinzizhi {
+  vertical-align: middle;
+  width: 100%;
+  height: 100%;
+}
+.xinzizhi_out {
+  margin-bottom: 26rpx;
+  height: 344rpx;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.mar-left42 {
+  margin-left: 32rpx;
+}
+.scroll_view {
+  white-space: nowrap;
+  display: flex;
+  background-color: #fff;
+  padding: 36rpx 0;
+}
+.scroll_img {
+  width: 660rpx;
+  height: 330rpx;
+  background-color: #e5e5e5;
+  display: inline-block;
+  margin-right: 32rpx;
+  vertical-align: middle;
+}
+.click_in {
+  font-size: 22rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  width: 120rpx;
+  height: 52rpx;
+  text-align: center;
+  line-height: 52rpx;
+  background: rgba(255, 255, 255, 1);
+  border: 2rpx solid rgba(37, 101, 195, 1);
+  border-radius: 26rpx;
+  display: inline-block;
+  position: absolute;
+  right: 36rpx;
+  bottom: 26rpx;
+}
+.fufei {
+  font-size: 22rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  width: 70rpx;
+  height: 38rpx;
+  background: rgba(255, 182, 4, 1);
+  border-radius: 0rpx 19rpx 19rpx 0rpx;
+  position: absolute;
+  left: 0;
+  top: 27rpx;
+  text-align: center;
+  line-height: 38rpx;
+}
+.scroll_rela {
+  position: relative;
+}
+.scroll_abso {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 660rpx;
+  height: 330rpx;
+  background: rgba(0, 0, 0, 1);
+  opacity: 0.6;
+}
+
+.scroll_abso_view {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 660rpx;
+  height: 330rpx;
+  z-index: 999;
+  padding: 26rpx 35rpx;
+  display: flex;
+  flex-direction: column;
+  // justify-content: space-around;
+  justify-content: space-between;
+}
+.left32 {
+  left: 32rpx;
+}
+.sell_num {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(246, 246, 250, 1);
+}
+.mgat1 {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 1);
+  // margin-top: 60rpx;
+  white-space: normal;
+  // overflow: hidden;
+  // text-overflow: ellipsis;
+  // text-align: center;
+}
+.scroll_abso_view_num {
+  width: 100%;
+  height: 50rpx;
+}
+.scroll_abso_view_star {
+  width: 100%;
+  height: 50rpx;
+  // margin-top: 88rpx;
+}
+.star_icon {
+  width: 18rpx;
+  height: 18rpx;
+  margin-right: 6rpx;
+}
+.sell_star {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  margin-left: 13rpx;
+}
+/*dialog*/
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  z-index: 999999;
+}
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999999;
+}
+.mgat {
+  margin: auto;
+  z-index: 999;
+  background-color: #fff;
+  border-radius: 24rpx;
+  width: 580rpx;
+  z-index: 99999999;
+  overflow: hidden;
+}
+.modal_title {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  text-align: center;
+  margin: 20rpx 0;
+  // border-bottom: 2rpx solid #cccccc;
+}
+.modal_bottom_cancel {
+  width: 50%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: rgba(246, 246, 250, 1);
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.modal_bottom_confirm {
+  width: 50%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: rgba(37, 101, 195, 1);
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(248, 248, 248, 1);
+}
+</style>

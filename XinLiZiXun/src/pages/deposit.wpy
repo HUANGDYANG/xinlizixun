@@ -1,0 +1,241 @@
+<template>
+  <view class="container">
+    <form @submit="formSubmit" report-submit>
+      <view class='mgt20'>
+        <view class='flex flex-j-c-sb flex-a-i-center pd32'>
+          <view class='title'>提现金额</view>
+          <view>
+            <input type="digit" value="{{money}}" placeholder="请输入提现金额" class='name' name="price" maxlength="10" @input="priceInput" />
+          </view>
+        </view>
+        <view class="deposit">可提现金额：<text class="pirce">{{depositMoney == 'null' ? '0.00' : depositMoney}}</text>元</view>
+        <view class='flex flex-j-c-sb flex-a-i-center pd32'>
+          <view class='title'>银行账号</view>
+          <view>
+            <input maxlength="23" placeholder="请输入您的银行账号" class='name' value="{{bankCard}}" name="bankNo" @input='bankCardNoInput' />
+          </view>
+        </view>
+        <view class='flex flex-j-c-sb flex-a-i-center pd32'>
+          <view class='title'>银行账号类型</view>
+          <view>
+            <input placeholder="输入卡号自动匹配" placeholder-style="font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);" class='name' value="{{cardTypeName}}" disabled />
+          </view>
+        </view>
+        <view class='flex flex-j-c-sb flex-a-i-center pd32'>
+          <view class='title'>开户名称</view>
+          <view>
+            <input placeholder="输入卡号自动匹配" placeholder-style="font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);" class='name' value="{{bankName}}" disabled name="bankName" />
+          </view>
+        </view>
+
+        <view class='flex flex-j-c-sb flex-a-i-center pd32' style='border-bottom: none;'>
+          <view class='title'>开户人</view>
+          <view>
+            <input placeholder="请输入您的真实姓名" class='name' value="" name="bankUserName" />
+          </view>
+        </view>
+        <view style="padding:27rpx 32rpx;font-size: 24rpx;  color:red;">*提现申请审核通过后7个工作日到账</view>
+      </view>
+      <button class='button' form-type="submit">提现</button>
+    </form>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { sleep } from '../util.js'
+import api from '../api.js'
+import BankCard from '../controller/bankcardinfo.js'
+let BankObj = new BankCard()
+export default class Deposit extends wepy.page {
+  config = {
+    navigationBarTitleText: '提现'
+  };
+  components = {};
+  data = {
+    bankCard: '',
+    bankName: '',
+    cardTypeName: '',
+    depositMoney: '',
+    money: ''
+  };
+
+  computed = {};
+  methods = {
+    formSubmit(e) {
+      parseInt(this.depositMoney - e.detail.value.price)
+      if (!e.detail.value.price) {
+        wx.showToast({
+          icon: 'none',
+          title: '提现金额不能为空'
+        })
+        return;
+      }
+      if (
+        this.depositMoney - e.detail.value.price < 0 ||
+        parseFloat(e.detail.value.price) <= 0
+      ) {
+        wx.showToast({
+          icon: 'none',
+          title: '提现金额有误'
+        })
+        return;
+      }
+      if (!/^[1-9]+\d*(\.\d{0,2})?$|^0?\.\d{0,2}$/.test(e.detail.value.price)) {
+        wx.showToast({
+          icon: 'none',
+          title: '金额保留小数点后两位'
+        })
+        return;
+      }
+      if (!e.detail.value.bankNo) {
+        wx.showToast({
+          icon: 'none',
+          title: '银行卡号不能为空'
+        })
+        return;
+      }
+      if (!e.detail.value.bankName) {
+        wx.showToast({
+          icon: 'none',
+          title: '银行卡号有误'
+        })
+        return;
+      }
+      if (!e.detail.value.bankUserName) {
+        wx.showToast({
+          icon: 'none',
+          title: '开户人不能为空'
+        })
+        return;
+      }
+      this.depositWithdraw(
+        {
+          ...e.detail.value,
+          formId: e.detail.formId,
+          withdrawType: 1
+        },
+        e.detail.value.price
+      )
+    },
+    priceInput(e) {
+    },
+    bankCardNoInput(e) {
+
+      // 6222005865412565805
+      let card = e.detail.value
+      // card = '6222005865412565805'
+      let cardTrim = card.replace(/\s/g, '')
+      card = card
+        .replace(/\s/g, '')
+        .replace(/[^\d]/g, '')
+        .replace(/(\d{4})(?=\d)/g, '$1 ')
+      this.bankCard = card
+      BankObj.getInfo(cardTrim).then(res => {
+        if (res) {
+          this.cardTypeName = res.cardTypeName
+          this.bankName = res.bankName
+          this.$apply()
+        } else {
+          this.cardTypeName = ''
+          this.bankName = ''
+        }
+        this.$apply()
+      })
+    }
+  };
+  depositWithdraw(data, price) {
+    let { depositWithdraw } = api
+    depositWithdraw(data).then(res => {
+      if (res) {
+        this.depositMoney = (this.depositMoney - price).toFixed(2)
+        wx.showToast({
+          title: '申请成功',
+          mask: true,
+          duration: 2000
+        })
+        let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+        let prevPage = pages[pages.length - 2]
+        // prevPage.getMemberInfo()
+        // prevPage.getConsultantWithdrawList()
+        prevPage.onLoad()
+        sleep(2).then(() => {
+          wx.navigateBack()
+        })
+        this.$apply()
+      }
+    })
+  }
+  events = {};
+  async onLoad(option) {
+    let { depositMoney } = option
+
+    this.depositMoney = depositMoney
+  }
+}
+</script>
+<style lang="less">
+.deposit {
+  padding: 16rpx 0 36rpx 32rpx;
+  color: #999999;
+  font-size: 22rpx;
+  .pirce {
+    color: #2565c3;
+  }
+}
+.mgt20 {
+  margin-top: 20rpx;
+}
+.pd32 {
+  padding: 27rpx 32rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+}
+.title {
+  white-space: nowrap;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.backe5 {
+  width: 128rpx;
+  height: 128rpx;
+  border-radius: 50%;
+}
+.icon_youhua {
+  width: 16rpx;
+  height: 28rpx;
+  margin-left: 26rpx;
+}
+.name {
+  width: 420rpx;
+  text-align: right;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+}
+.phone,
+.code {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 1);
+}
+.button {
+  position: absolute;
+  bottom: 36rpx;
+  left: 32rpx;
+  width: 686rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(246, 246, 250, 1);
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  // border-radius: 40rpx;
+}
+</style>

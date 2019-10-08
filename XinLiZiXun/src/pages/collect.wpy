@@ -1,0 +1,255 @@
+<template>
+  <view class="container">
+    <block wx:if="{{consultantList}}">
+      <repeat for="{{consultantList}}"
+              key="">
+        <view class='three_this'
+              @tap='to_detail({{item.consultantId}})'>
+          <view class='three_top'>
+            <image src="{{item.mainPic}}"
+                   class='three_img backe5'
+                   mode="aspectFill"></image>
+            <view class='three_top_right'>
+              <view class='flex flex-j-c-sb'>
+                <view class='flex flex-a-i-center'>
+                  <view class='three_top_right_name'>{{item.consultantName}}</view>
+                  <view class='three_top_right_man'
+                        wx:if='{{item.subscribeStatus}}'>约满</view>
+                  <view class='three_top_right_ke'
+                        wx:if='{{!item.subscribeStatus}}'>可约</view>
+                </view>
+                <view class='flex flex-a-i-center'
+                      wx:if='{{item.onlineStatus == 2}}'>
+                  <image src="../images/icon_manglu@2x.png"
+                         class='icon_manglu'></image>
+                  <view class='three_top_right_manglu'>忙碌</view>
+                </view>
+                <view class='flex flex-a-i-center'
+                      wx:if='{{item.onlineStatus == 1}}'>
+                  <image src="../images/icon_zaixian@2x.png"
+                         class='icon_manglu'></image>
+                  <view class='three_top_right_zaixian'>在线</view>
+                </view>
+                <view class='flex flex-a-i-center'
+                      wx:if='{{item.onlineStatus == 0}}'>
+                  <image src="../images/icon_lixian@2x.png"
+                         class='icon_manglu'></image>
+                  <view class='three_top_right_lixian'>离线</view>
+                </view>
+              </view>
+              <view class='three_top_bottom'>
+                <repeat for="{{item.tags}}"
+                        item="tag">
+                  <view wx:if="{{index < 3}}"
+                        class='three_top_bottom_work'>{{tag.name}}</view>
+                </repeat>
+              </view>
+            </view>
+          </view>
+          <view class='three_bottom'>
+            <view class='opa0'></view>
+            <view class='three_bottom_right'>
+              <view class='flex flex-j-c-sb'>
+                <view class='three_bottom_right_left'>
+                  <image src="../images/icon_dizhi@2x.png"
+                         class='icon_dizhi'></image>
+                  <view class='three_bottom_right_left_title'>{{item.city}}</view>
+                </view>
+                <view class='three_bottom_right_right'>¥{{item.price}}/次</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </repeat>
+    </block>
+    <view class="no_more"
+          wx:else>
+      <text>暂无收藏</text>
+    </view>
+    <view class='no_more'
+          wx:if='{{loaded && consultantList.length > 5}}'>- 没有更多啦 -</view>
+
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class Collect extends wepy.page {
+  config = {
+    navigationBarTitleText: '我的收藏'
+  }
+  components = {}
+  data = {
+    autoplay: true,
+    manglu: 1,
+    consultantList: '',
+    nextPage: 1, // 下一页
+    loaded: false
+  }
+
+  computed = {}
+  methods = {
+    to_detail (id) {
+      goPath('/pages/be_mindful_detail?id=' + id)
+    }
+  }
+  events = {}
+  async onLoad (option) {
+    this.getUserFavedList()
+  }
+  getUserFavedList () {
+    let { getUserFavedList } = api
+    getUserFavedList().then(res => {
+      if (res) {
+        if (this.nextPage == 1) {
+          if (res.data.nextPage == 0) {
+            this.loaded = true
+          } else {
+            this.nextPage = res.data.nextPage
+          }
+          this.consultantList = res.data.list
+        } else if (this.nextPage > 1) {
+          this.nextPage = res.data.nextPage
+          if (res.data.nextPage == 0) this.loaded = true
+          this.consultantList.push(...res.data.list)
+        }
+        // this.consultantList = res.data.list
+        this.$apply()
+      }
+    })
+  }
+  onReachBottom () {
+    if (!this.loaded) {
+      this.getUserFavedList({
+        pageNum: this.nextPage
+      })
+    }
+  }
+}
+</script>
+<style lang="less">
+.container {
+  margin: 20rpx 0 60rpx;
+}
+.three_this {
+  padding: 36rpx 32rpx;
+  background-color: #fff;
+  border-top: 2rpx solid rgba(244, 244, 244, 1);
+}
+.three_top {
+  display: flex;
+  align-items: center;
+}
+.three_img {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+}
+.three_top_right {
+  margin-left: 26rpx;
+  flex: 1;
+}
+.three_top_right_name {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.three_top_right_man {
+  margin-left: 15rpx;
+  font-size: 18rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  background: rgba(255, 255, 255, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 15rpx;
+  padding: 3rpx 14rpx;
+}
+.three_top_right_ke {
+  margin-left: 15rpx;
+  font-size: 18rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 15rpx;
+  padding: 3rpx 14rpx;
+}
+.three_top_right_manglu {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(231, 43, 43, 1);
+  margin-left: 9rpx;
+}
+.three_top_right_zaixian {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  margin-left: 9rpx;
+}
+.three_top_right_lixian {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(153, 153, 153, 1);
+  margin-left: 9rpx;
+}
+.icon_manglu {
+  width: 22rpx;
+  height: 22rpx;
+}
+.three_top_bottom {
+  margin-top: 24rpx;
+  display: flex;
+}
+.three_top_bottom_work {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  background: rgba(246, 247, 250, 1);
+  border-radius: 4rpx;
+  padding: 0rpx 6rpx;
+  margin-right: 10rpx;
+  height: 38rpx;
+  line-height: 38rpx;
+}
+.three_bottom {
+  display: flex;
+}
+.opa0 {
+  width: 88rpx;
+  opacity: 0;
+}
+.three_bottom_right {
+  flex: 1;
+  margin-left: 26rpx;
+  margin-top: 34rpx;
+}
+.three_bottom_right_left {
+  display: flex;
+  align-items: center;
+}
+.icon_dizhi {
+  width: 22rpx;
+  height: 24rpx;
+}
+.three_bottom_right_left_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(102, 102, 102, 1);
+  margin-left: 15rpx;
+}
+.three_bottom_right_right {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+</style>

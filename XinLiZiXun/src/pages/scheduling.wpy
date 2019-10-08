@@ -1,0 +1,475 @@
+<template>
+  <view class="container">
+
+      <view class='scheduling_out flex flex-j-c-sb'>
+      <view class='flex flex-a-i-center'>
+        <view class='scheduling_title'>当前排班</view>
+      </view>
+    </view>
+
+     <week :timeBean.sync="timeBean" @dayClick.user="dayClick"></week>
+    <view class='hours_out flex flex-wrap'>
+      <repeat for="{{hoursQuantum}}">
+        <!-- isSubscribe 1 是已预约 -->
+        <view class="{{item.isSubscribe?'hours_this_chioce':'hours_this'}}">
+          <view wx:if="{{item.consultType == 3}}" class="{{!item.isSubscribe ? 'hours_this_time_not': 'hours_this_time'}}">{{item.beginTime}}-{{item.endTime}}</view>
+          <view  wx:else  class="hours_this_time">{{item.beginTime}}-{{item.endTime}}</view>
+          <view class='hours_this_title' wx:if="{{item.consultType == 1}}">仅线下 {{item.isSubscribe ? '(已预约)' : ''}}</view>
+          <view class='hours_this_title' wx:elif="{{item.consultType == 2}}">仅语音 {{item.isSubscribe ? '(已预约)' : ''}}</view>
+          <view class='hours_this_title' wx:if="{{item.consultType == 3}}">{{item.isSubscribe ? '(已预约)' : ''}}</view>
+        </view>
+      </repeat>
+      </view>
+
+    <view class='zxfs_out scheduling_record flex'>
+      <view class='flex flex-a-i-center'>
+        <view class='kyysj_title'>排班记录</view>
+      </view>
+    </view>
+
+    <repeat for="{{loopData}}">
+        <view class="records flex">
+          <view class="yy_MM_dd">{{index}}</view>
+          <view class="time" >
+            <repeat for="{{item}}" item="time" index="odd">
+            <view class="hh_mm_ss">{{time.date}} {{odd % 2 != 1 ? ';': ''}}</view>
+           </repeat>
+          </view>
+        </view>
+        <view style="background:#fff" wx:if="{{index !== 3}}">
+          <view class='line line_m32'></view>
+        </view>
+    </repeat>
+
+    <view class='bottom'>
+      <view class='arrange' @tap="arrangeScheduling">安排排班</view>
+      <view class='modif' @tap="updateScheduling">修改排班</view>
+    </view>
+
+  </view>
+
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo, getWeekDayList } from '../util.js'
+  import api from '../api.js'
+  import WeekCalendar from '../components/week-calendar'
+
+  export default class Scheduling extends wepy.page {
+
+    config = {
+      navigationBarTitleText: '我的排班'
+    }
+
+    components = {
+      week: WeekCalendar
+    }
+
+    bindDateChange(e) {
+      console.log('picker发送选择改变，携带值为', e.detail.value)
+      var value = e.detail.value.split('-').join('/');
+      this.date = value;
+      this.hours_bottom = true;
+    }
+
+    data = {
+      new_date:'',
+      date:'',
+      hours_this0: false,
+      hours_this1: false,
+      hours_this2: false,
+      hours_this3: false,
+      hours_this4: false,
+      hours_this_big:false,
+      zx_type:2,
+      zx_type_this0:false,
+      zx_type_this1:false,
+      zx_type_this_big:false,
+      hours_bottom:false,
+      time_bottom:false,
+      bottom_bottom:false,
+      hours_this_title:'',
+      zx_type_this_title:'',
+
+      //  week Calendar
+      selectWeek:0,
+      timeBean:{},
+
+      consultantScheduleList: [],
+      consultantId: '',
+      schedulingRrecordList: [],
+      loopData: {
+        // '':[]
+      }
+    }
+
+    computed = {
+      hoursQuantum() {
+        return this.consultantScheduleList[this.clickDay]
+      }
+    }
+    methods = {
+      arrangeScheduling() {
+        goPath('/pages/scheduling_arrange?selectDay=' + this.timeBean.selectDay + '&clickDay=' + this.date)
+      },
+      updateScheduling() {
+        goPath('/pages/scheduling_modify?selectDay=' + this.timeBean.selectDay + '&clickDay=' + this.date)
+      },
+      dayClick(day) {
+      this.timeBean.selectDay = day.index
+      // let date = this.date.split('/')
+      // date.pop()
+      // date.push(day.clickDay)
+      // this.date = date.join('/')
+      this.clickDay = day.clickDay
+
+      if(day.clickDay < 10){
+        day.clickDay = '0' +  day.clickDay
+      }
+      let yymmdd = this.timeBean.yearMonth.split('-').join('') + day.clickDay
+      yymmdd = this.timeBean.weekDayList[day.index].yearMonth.split('-').join('/') + '/' + day.clickDay
+      console.log(yymmdd, 'yymmddyymmddyymmdd');
+      this.date = this.timeBean.weekDayList[day.index].yearMonth.split('-').join('/') + '/' + day.clickDay
+      // 点击按钮时才发
+      this.getConsultantScheduleList(yymmdd).then(res => {
+        console.log(res, '查询咨询师当天排班列表')
+        this.consultantScheduleList[this.clickDay] = res.data
+        if(res.data.length > 0){
+          res.data.forEach((item, i)=>{
+            this.consultantScheduleList[this.clickDay][i].beginTime = item.beginTime.slice(0, -3)
+            this.consultantScheduleList[this.clickDay][i].endTime = item.endTime.slice(0, -3)
+          })
+        }
+
+        this.$apply()
+      })
+    },
+    hours_this(type, index, time, scheduleId) {
+      this.scheduleId = scheduleId
+      // 1仅线下 2仅语音 3线下语音
+      this.hours_this = index
+      this.hours_this_big = true
+      this.zx_type_this_big = true;
+      this.hours_this_title = time
+      // console.log(type)
+      this.showTow = false
+      if(type == 1)  this.zx_type = 1, this.zx_type_this_title = '线下咨询';
+      else if(type == 2)  this.zx_type = 2, this.zx_type_this_title = '语音咨询';
+      else this.showTow = true
+    },
+     to_detail(){
+      console.log(this.hours_bottom)
+      if(!this.hours_bottom){
+        wx.showToast({
+          title: '请选择日期',
+          icon: 'none',
+          duration: 2000
+        })
+      }else if(this.hours_this0 == false && this.hours_this1 == false && this.hours_this2 == false && this.hours_this3 == false && this.hours_this4 == false){
+        wx.showToast({
+          title: '请选择时间',
+          icon: 'none',
+          duration: 2000
+        })
+      }else if(this.zx_type_this0 == false && this.zx_type_this1 == false){
+        wx.showToast({
+          title: '请选择咨询方式',
+          icon: 'none',
+          duration: 2000
+        })
+      }else{
+        goPath('/pages/line_detail')
+      }
+     },
+
+    }
+    getConsultantScheduleList(dateTime) {
+      let { getConsultantScheduleList } = api
+      return getConsultantScheduleList({
+        consultantId: this.consultantId,
+        dateTime: dateTime
+      })
+    }
+    getSchedulingRrecordList(id) {
+      // 咨询师的排班记录
+      let { getSchedulingRrecordList } = api
+      getSchedulingRrecordList({
+        consultantId: id
+      }).then(res => {
+        console.log(res, '咨询师的排班记录');
+        if(res){
+          this.schedulingRrecordList = res.data.list
+
+          console.log(this.schedulingRrecordList.reverse(), 'reversereversereversereversereverse');
+
+          this.schedulingRrecordList.forEach((item, i) => {
+          let dayArr = item.dateTime.split(' ')[0].split('-')
+          let year = dayArr[0]
+          if(!this.loopData[dayArr.join('/')]) this.loopData[dayArr.join('/')] = [];
+          this.loopData[dayArr.join('/')].push({
+            date: item.beginTime.slice(0, -3) + '-' + item.endTime.slice(0, -3)
+          })
+        })
+        console.log(this.loopData, 'this.loopData');
+
+        this.$apply()
+        }
+
+      })
+    }
+    events = {}
+    async onLoad(option) {
+      this.weekInit()
+
+      this.consultantId = this.$parent.globalData.userInfo.consultantId // 获取咨询师id
+
+      let { selectDay, clickDay } = option
+      // 注意啊两边的clilckDay不一样的啊啊啊啊啊啊啊啊啊啊啊
+      console.log(this.timeBean.weekDayList);
+
+      this.clickDay =  this.timeBean.today // 打开就选择今天 clickDay 用来选择hoursQuantum 时段的
+      // if(clickDay) {
+      //   this.clickDay = clickDay
+      //   console.log(this.clickDay, 'scheduling clickDay scheduling clickDay');
+      // }
+      let yearMonth = this.timeBean.yearMonth
+      console.log(this.timeBean.weekDayList[this.timeBean.selectDay].yearMonth.split('-').join('/') + '/' + this.timeBean.today, 'this.datethis.datethis.datethis.datethis.datethis.datethis.date');
+      this.date = this.timeBean.weekDayList[this.timeBean.selectDay].yearMonth.split('-').join('/') + '/' + this.timeBean.today
+      if(clickDay) {
+        this.date = clickDay
+      }
+      if(selectDay) {
+        this.clickDay = selectDay
+        this.timeBean.selectDay = selectDay
+      }
+      this.getConsultantScheduleList(this.date).then(res => {
+        console.log(res, '获取排班时间段')
+        this.consultantScheduleList[this.clickDay] = res.data
+        if(res.data.length > 0){
+          res.data.forEach((item, i)=>{
+            this.consultantScheduleList[this.clickDay][i].beginTime = item.beginTime.slice(0, -3)
+            this.consultantScheduleList[this.clickDay][i].endTime = item.endTime.slice(0, -3)
+          })
+        }
+        this.$apply()
+      })
+      console.log(this.consultantScheduleList, 'consultantScheduleListconsultantScheduleList');
+      
+      this.getSchedulingRrecordList(this.consultantId)
+
+    }
+    weekInit() {
+      let weekOrder = "日一二三四五六"
+      let weekDayList = getWeekDayList(this.selectWeek, 8)
+      // console.log(weekDayList)
+      weekDayList.weekOrder = weekOrder
+      this.timeBean = weekDayList
+      this.timeBean.weekDayList.unshift({placeholder:true, hide:1})
+      // 将一个元素推进去，现在先固定
+      // this.timeBean.weekDayList.unshift({placeholder:true, hide:1})
+      this.date = this.timeBean.yearMonth.split('-').join('/') + '/' + this.timeBean.today
+      this.hours_bottom = true
+      console.log(this.timeBean);
+    }
+
+  }
+</script>
+<style lang="less">
+page{
+  margin-bottom: 120rpx;
+  background-color: #F6F6FA;
+}
+.scheduling_out{
+  margin-top: 20rpx;
+  padding: 36rpx 32rpx;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+  background: #fff;
+}
+.icon_shiduan{
+  width: 26rpx;
+  height: 26rpx;
+  margin-right: 14rpx;
+}
+.scheduling_title{
+  font-size:30rpx;
+  font-family:PingFang-SC-Bold;
+  color:rgba(0,0,0,1);
+}
+.font36{
+  font-size:36rpx;
+  color:rgba(0,0,0,1);
+}
+.icon_xiala{
+  width: 16rpx;
+  height: 10rpx;
+}
+.kyysj_chioce{
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  font-size:36rpx;
+  margin-right: 10rpx;
+}
+.hours_out{
+  padding: 26rpx;
+  background: #fff;
+}
+.hours_this{
+  width: 220rpx;
+  height: 100rpx;
+  background:rgba(246,246,250,1);
+  border-radius:4rpx;
+  text-align: center;
+  margin: 10rpx 6rpx;
+  color:rgba(51,51,51,1);
+}
+.hours_this_chioce{
+  width: 220rpx;
+  height: 100rpx;
+  background:rgba(246,246,250,1);
+  border-radius:4rpx;
+  text-align: center;
+  margin: 10rpx 6rpx;
+  color:rgba(37,101,195,1);
+  background:rgba(255,255,255,1);
+  border:2rpx solid rgba(37,101,195,1);
+}
+.hours_this_time{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  margin-top: 10rpx;
+}
+.hours_this_time_not{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  line-height: 100rpx;
+}
+.hours_this_title{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  margin-top: 10rpx;
+}
+.scheduling_record {
+  background: #fff;
+  margin-top: 24rpx;
+  height: 100rpx;
+  line-height: 100rpx;
+  padding-left: 30rpx;
+  font-size: 30rpx;
+  border-bottom: 1rpx solid #EEEEEE;
+}
+.zx_type{
+  padding: 0 32rpx;
+}
+.zx_type_this{
+  padding: 8rpx 22rpx;
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  background:rgba(246,246,250,1);
+  border-radius:32rpx;
+  margin-right: 30rpx;
+}
+.zx_type_this_chioce{
+  padding: 8rpx 22rpx;
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+  background:rgba(255,255,255,1);
+  border-radius:32rpx;
+  margin-right: 30rpx;
+  border:2rpx solid rgba(37,101,195,1);
+}
+
+.records {
+  width: 100%;
+  background: #fff;
+  // justify-content: space-around;
+  justify-content: space-between;
+  padding: 36rpx 32rpx;
+  // border-bottom:1rpx solid #EEEEEE;
+  .time {
+    width: 52%;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .yy_MM_dd {
+    color: #333333;
+    font-size: 30rpx;
+  }
+  .hh_mm_ss {
+    flex: none;
+    width: 50%;
+    color: #666666;
+    font-size: 28rpx;
+  }
+}
+
+.line{
+  z-index: 9999;
+  height: 2rpx;
+  width: auto;
+  background-color: #EEEEEE;
+}
+
+.line_m32 {
+ margin: 0 32rpx;
+}
+
+.bottom{
+  z-index: 9999;
+  width: 100%;
+  height: 98rpx;
+  box-shadow:0rpx -3rpx 10rpx 0rpx rgba(204,204,204,0.25);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  view {
+    z-index: 9999;
+    width: 50%;
+    height: 98rpx;
+    font-size:32rpx;
+    font-family:PingFang-SC-Medium;
+    text-align: center;
+    line-height: 98rpx;
+  }
+  .arrange {
+    background:rgba(255,255,255,1);
+    color: #2565C3;
+  }
+  .modif {
+    color: #fff;
+    background:rgba(37,101,195,1);
+  }
+
+}
+.flex1{
+  flex: 1;
+  padding: 10rpx 32rpx;
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.w240{
+  width: 240rpx;
+  height: 98rpx;
+  background:rgba(37,101,195,1);
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  line-height: 98rpx;
+}
+.mgt5{
+  margin-top: 10rpx;
+}
+
+</style>

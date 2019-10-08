@@ -1,0 +1,182 @@
+<!--  -->
+<template>
+  <view class="container">
+    <view class="info-box">
+      <view class="info-header">信息采集</view>
+      <view class="info-content">
+        <view class="item flex flex-column .flex-j-c-sb">
+          <view class="label">1、您的姓名是：</view>
+          <name-input
+            type="text"
+            placeholder="请输入真实姓名..."
+            placeholder-style="{{placeholderStyle}}"
+            :value.sync="memberName"
+          />
+        </view>
+        <view class="item flex flex-column .flex-j-c-sb">
+          <view class="label">2、您所属的部门是：</view>
+          <dep-input
+            type="text"
+            placeholder="请输入所在部门..."
+            placeholder-style="{{placeholderStyle}}"
+            :value.sync="department"
+          />
+        </view>
+        <view class="item flex flex-column .flex-j-c-sb">
+          <view class="label">3、您的年龄是：</view>
+          <age-input
+            type="number"
+            placeholder="请输入您的真实年龄..."
+            placeholder-style="{{placeholderStyle}}"
+            :value.sync="age"
+          />
+        </view>
+      </view>
+    </view>
+    <view class="button" @tap="confirm">确认</view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import Hinput from '../components/h-input'
+import api from '../api.js'
+export default class CollectionInformation extends wepy.page {
+  config = {
+    navigationBarTitleText: '信息采集'
+  };
+
+  data = {
+    placeholderStyle:
+      'color:#999999;font-size:28rpx;font-family: "PingFang-SC-Regular"',
+    id: '',
+    questStatus: '',
+    memberName: '',
+    age: '',
+    department: ''
+  };
+
+  components = {
+    'name-input': Hinput,
+    'dep-input': Hinput,
+    'age-input': Hinput
+  };
+
+  methods = {
+    confirm() {
+      let nameStrictReg = /^(?:[\u4e00-\u9fa5]+)(?:·[\u4e00-\u9fa5]+)*$|^[a-zA-Z0-9]+\s?[\.·\-()a-zA-Z]*[a-zA-Z]+$/
+      if (!nameStrictReg.test(this.memberName)) {
+        wx.showToast({
+          icon: 'none',
+          title: '姓名有误'
+        })
+        return;
+      }
+      if (!this.age) {
+        wx.showToast({
+          icon: 'none',
+          title: '请输入年龄'
+        })
+        return;
+      }
+      if (!this.department) {
+        wx.showToast({
+          icon: 'none',
+          title: '请输入部门'
+        })
+        return;
+      }
+      // this.saveGather()
+      wx.redirectTo({
+        url: `/pages/test_detail?id=${this.id}&canQuestionnaireStatus=${
+          this.questStatus
+        }&memberName=${this.memberName}&age=${this.age}&department=${
+          this.department
+        }`
+      })
+    }
+  };
+  saveGather() {
+    let { saveGather } = api
+    saveGather({
+      evaluationId: this.id,
+      memberName: this.memberName,
+      age: this.age,
+      department: this.department
+    }).then(res => {
+      if (res) {
+        let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+        let prevPage = pages[pages.length - 2]
+        prevPage.onLoad({ id: this.id })
+        wx.redirectTo({
+          url:
+            '/pages/test_detail?id=' +
+            this.id +
+            '&canQuestionnaireStatus=' +
+            this.questStatus
+        })
+      }
+    })
+  }
+  events = {};
+
+  watch = {};
+
+  computed = {};
+
+  onLoad(optins) {
+    let { id, canQuestionnaireStatus } = optins
+    this.id = id
+    this.questStatus = canQuestionnaireStatus
+  }
+
+  onShow() {}
+}
+</script>
+
+<style lang='scss'>
+page {
+  background: #fff;
+}
+.container {
+  padding: 0 32rpx;
+}
+.info-box {
+  margin-bottom: 200rpx;
+  .info-header {
+    padding: 60rpx;
+    color: #333333;
+    font-size: 34rpx;
+    font-weight: Bold;
+    text-align: center;
+  }
+  .info-content {
+    color: #333333;
+    font-size: 32rpx;
+    .item {
+      height: 150rpx;
+      margin-bottom: 60rpx;
+    }
+    input {
+      box-sizing: content-box;
+      border: 2rpx solid #cccccc;
+      padding: 8rpx 26rpx;
+      font-size: 26rpx;
+    }
+  }
+}
+.button {
+  width: 686rpx;
+  height: 80rpx;
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  text-align: center;
+  line-height: 80rpx;
+  color: rgba(246, 246, 250, 1);
+  margin: 0 auto 92rpx;
+}
+</style>

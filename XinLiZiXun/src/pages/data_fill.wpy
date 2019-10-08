@@ -1,0 +1,714 @@
+<template>
+  <view class="container">
+<!-- <block wx:if="{{!isChooseCity}}"> -->
+    <view class='promise_out_out'>
+      <view class='promise_out'>
+      <view class='promise_title'>协议与真实性承诺</view>
+      <!-- <view class='promise_detail'>注：一旦勾选提交，则表示你已签订与走心聊的电子版 协议，具有法律效力。</view> -->
+      <view class='promise_detail'>{{policyProtocol.remark}}</view>
+    </view>
+    <view class='promise_out1'>
+      <view class='flex mgb35'>
+        <image src='../images/publish_check_default_icon@2x.png' @tap='publish_check_default_icon_check' class='publish_check_default_icon' wx:if='{{!publish_check_default_icon}}'></image>
+        <image src='../images/publish_check_icon@2x.png' @tap='publish_check_default_icon_no_check' class='publish_check_default_icon' wx:if='{{publish_check_default_icon}}'></image>
+        <view class='chioce'>本人承诺以下信息真实有效，愿意承担一切法 律责任。</view>
+      </view>
+      <view class='flex'>
+        <image src='../images/publish_check_default_icon@2x.png' @tap='publish_check_default_icon1_check' class='publish_check_default_icon' wx:if='{{!publish_check_default_icon1}}'></image>
+        <image src='../images/publish_check_icon@2x.png' @tap='publish_check_default_icon1_no_check' class='publish_check_default_icon' wx:if='{{publish_check_default_icon1}}'></image>
+        <!-- <view class='chioce'>我已阅读并同意<view style='display: inline;color: #2565C3;' @tap='to_inter_protocol'>《走心聊入驻协议》</view></view> -->
+        <view class='chioce'>我已阅读并同意<view style='display: inline;color: #2565C3;' @tap='to_inter_protocol'> {{policyProtocol.title}}</view></view>
+
+      </view>
+    </view>
+    </view>
+    <view class='person_message_out'>
+      <view class='person_message_title'>个人信息</view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>姓名</view>
+          <name-input :value.sync="consultantName" placeholder="请输入姓名..."/>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>电话</view>
+          <mobile-input :value.sync="mobile" maxlength="11" placeholder="请输入号码..."/>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>邮箱</view>
+          <email-input :value.sync="email" placeholder="请输入邮箱..."/>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>擅长领域</view>
+          <domain-input :value.sync="domain" placeholder="请简略说明..."/>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>初始报价</view>
+          <price-input :value.sync="price" placeholder="请输入..."/>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>可调整幅度
+            <image @tap="showAdjustable" class="icon" src="../images/icon_jiehuo@2x.png" />
+          </view>
+          <view>
+          <picker bindchange="bindChanges1" value="{{inde}}" range="{{type}}">
+         <view class='flex flex-a-i-center'>
+                <view class="{{time_small_?'qxz':'qxz_true'}}">{{(type[inde])?type[inde]:'请选择...'}}</view>
+                <image  src="../images/icon_xiala@2x.png" class="icon_xiala" ></image>
+         </view>
+          </picker>
+         </view>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>所在城市</view>
+          <view @tap="to_chioce_city" class="chosse_city" style="{{choosedCitys ? '' : 'color:rgba(153,153,153,1);'}}">{{choosedCitys?choosedCitys:'请选择'}}</view>
+        </view>
+      </view>
+      <view class='pd32'>
+        <view class='pd32_ flex flex-j-c-sb'>
+          <view class='name_title'>线下地址</view>
+          <!-- <address-input  :value.sync="address" placeholder="请详细输入..." placeholder-style='font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;color:rgba(153,153,153,1);'/> -->
+          <view @tap="chooseLocation" class="address"  style="{{address ? '' : 'color:rgba(153,153,153,1);'}}">{{address ? address : '请选择'}}</view>
+            <!-- wx.chooseLocation(Object object) -->
+       </view>
+      </view>
+    </view>
+    <view class='promise_out_out'>
+      <view class='promise_out'>
+      <view class='promise_title'>准备材料</view>
+      <view class='promise_detail'>注：请提前准备好以下9类材料，并将材料打包发送邮件至 <view style='display: inline;color: #2565C3;'>{{policyMaterials.email}}</view></view>
+    </view>
+    <view class="promise_ou">
+    <!-- <text class='promise_out2'>
+      1、身份证照片（正反面各一张）
+      2、专业资质证明照片（正面一张）
+      3、学历证书照片（正面一张）
+      4、已完成培训的证书扫描件或照片
+      5、如有：累计个人咨询的机构证明照片（如无法开具，可上传机构联系人以及联系方式）
+      6、如有：累计家庭咨询的机构证明照片（如无法开具，可上传机构联系人以及联系方式）
+      7、如有：累计团体咨询的机构证明照片（如无法开具，可上传机构联系人以及联系方式）
+      8、受督导经历的督导签字照片（如无法开具，可填写证明人以及联系方式）
+      9、个案报告（所报个案需要咨询次数在12次以上。没有格式要求，能体现您的咨询风格，有您对个案的理解和分析，相对完整即可，最好是PDF格式）
+    </text> -->
+    <!-- <text class='promise_out2'>
+      {{policyMaterials.content}}
+    </text> -->
+     <!-- <import src="../wxParse/wxParse.wxml"/>
+      <view class='promise_out2'>
+        <template class="promise_out2" is="wxParse" data="{{wxParseData:article.nodes}}"/>
+      </view> -->
+             <rich-text class='promise_out2' nodes="{{policyMaterials.content}}"></rich-text>
+
+    </view>
+    </view>
+    <view class='posi_fix'>
+      <view class='button' @tap='dialog'>申请入驻</view>
+    </view>
+    <view class='modal1 flex' wx:if='{{show_modal1}}'>
+     <view class='mask'></view>
+       <view class='mgat1'>
+        <view class='apply_success'>申请提交成功</view>
+        <view class='dialog_detail'>请及时将9类材料准备好</view>
+        <view class='dialog_detail'>发送邮件至<view style='display: inline;color: #2565C3;'>notice@budebushuo.com</view></view>
+        <view class='dialog_exp'>*审核时间一般为3-5个工作日</view>
+        <view class='dialog_button' @tap='close_dialog'>好的呢</view>
+       </view>
+    </view>
+
+    <view class='modal1 flex' wx:if='{{show_modal2}}' @tap="hideModel">
+     <view class='mask'></view>
+       <view class='mgat1'>
+        <view class='apply_success'>
+          <view class="range">可调整幅度
+              <image class="icon" src="../images/icon_jiehuo@2x.png" />
+          </view>
+          <image class="icon_quxia" src="../images/icon_zhifu_quxiao@2x.png"/>
+        </view>
+        <view class='dialog_detail paddingaa'>平台遇到特殊情况（如其他咨询师违约或
+身体不适等原因）导致已预约咨询无法由
+原定咨询师按时开展，且相同报价区间内
+无其他空闲咨询师，平台将根据可调整幅
+度，为客户匹配更高报价区间的咨询师。
+若接受调整且协助平台完成特殊情况订单
+处理，将获得平台优先推荐权益。</view>
+       </view>
+    </view>
+
+   <!-- </block>
+    <view wx:else>
+    显示地区选择组件
+      <city-choose haveHistory="{{false}}" scroll-with-animation="{{true}}" catch:confirm="confirm1" />
+    </view> -->
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo, deleteHtmlTag } from '../util.js'
+  import api from '../api.js'
+  import Hinput from '../components/h-input'
+  // import WxParse from '../wxParse/wxParse.js'
+
+  export default class Data_fill extends wepy.page {
+    config = {
+      navigationBarTitleText: '资料填写',
+      'usingComponents': {
+        'city-choose': '/components/citys/citys'
+      }
+    }
+
+    components = {
+      'name-input': Hinput,
+      'mobile-input': Hinput,
+      'email-input': Hinput,
+      'domain-input': Hinput,
+      'price-input': Hinput,
+      'address-input': Hinput
+    }
+
+    bindChanges1(e) {
+      var that = this
+      // this.setData({
+      //   inde: e.detail.value//当前选项的索引值
+      // })
+      this.inde = e.detail.value
+      var inde = e.detail.value
+      var data = that.data.array
+      this.time_small_ = false
+      // 处理可调整幅度字段
+      if (this.type[inde] == '不限') {
+        this.adjustScope = 1
+      } else {
+        this.adjustScope = this.type[inde].split('%')[0] / 100
+      }
+    }
+
+    data = {
+      isChooseCity: false,
+      choosedCitys: '',
+
+      type: ['5%', '10%', '15%', '20%', '25%', '30%', '35%', '40%', '45%', '50%', '不限'],
+      time_small_: true, // 可调整幅度选择按钮
+      show_modal1: false, // 申请成功后 弹窗
+      publish_check_default_icon: false, //  承诺
+      publish_check_default_icon1: false, // 已阅读
+      show_modal2: false,
+      inde: '',
+      // postData
+      consultantName: '',
+      mobile: '',
+      email: '',
+      domain: '',
+      price: '',
+      city: '',
+      address: '',
+      adjustScope: '', // 可调整幅度
+      latitude: '',
+      longitude: '',
+
+      policyMaterials: '',
+      policyProtocol: ''
+    }
+
+    computed = {}
+
+    methods = {
+      to_chioce_city() {
+        goPath('/pages/chioce_city')
+      },
+      chooseLocation() {
+        let that = this
+      //   wepy.chooseLocation().then(res => {
+      //     this.address = res.address
+      //     this.latitude = res.latitude
+      //     this.longitude = res.longitude
+      //     this.$apply()
+      //   }).catch()
+        wx.chooseLocation({
+          success: function(res) {
+        // 允许打开定位
+            that.address = res.address
+            that.latitude = res.latitude
+            that.longitude = res.longitude
+            that.$apply()
+          },
+          fail: () => {
+        // 不允许打开定位
+            wx.getSetting({
+              success: (res) => {
+                if (res.authSetting['scope.userLocation'] == true) {
+              // 打开提示框，提示前往设置页面
+                } else {
+                  wx.showModal({
+                    title: '位置信息授权',
+                    content: '位置授权暂未开启，无法完成选择',
+                    confirmText: '开启授权',
+                    confirmColor: '#2565c3',
+                    cancelText: '仍然拒绝',
+                    cancelColor: '#999999',
+                    success: function (res) {
+                      if (res.confirm) {
+                        wx.openSetting({
+                          fail: function () {
+                          }
+                        })
+                      }
+                    }
+                  })
+                }
+              }
+            })
+          }
+        })
+      },
+      showAdjustable() {
+        this.show_modal2 = true
+      },
+      hideModel() {
+        this.show_modal2 = false
+        this.show_modal1 = false
+      },
+      chooseCity() {
+        this.isChooseCity = true
+      },
+      confirm1(e) {
+        // 选择地点的
+        this.choosedCitys = e.detail.choosedCitys
+        this.isChooseCity = false
+        this.city = this.choosedCitys
+      },
+      to_inter_protocol() {
+        goPath('/pages/inter_protocol')
+      },
+    //  申请入驻
+      dialog() {
+        let nameReg = /^[\u4E00-\u9FA5]{2,4}$/
+        let phoneReg = /(^1[3|4|5|7|8|9]\d{9}$)|(^09\d{8}$)/
+        let emailReg = /^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$/
+        if (!this.consultantName) {
+          wx.showToast({
+            title: '请输入姓名',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!nameReg.test(this.consultantName)) {
+          wx.showToast({
+            title: '姓名有误',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!this.mobile) {
+          wx.showToast({
+            title: '请输入手机号码',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (this.mobile.length < 11) {
+          wx.showToast({
+            title: '手机号有误',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!phoneReg.test(this.mobile)) {
+          wx.showToast({
+            title: '手机号有误',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!this.email) {
+          wx.showToast({
+            title: '请输入邮箱',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!emailReg.test(this.email)) {
+          wx.showToast({
+            title: '请输入正确的邮箱',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!this.domain) {
+          wx.showToast({
+            title: '请输入擅长领域',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!this.price) {
+          wx.showToast({
+            title: '请输入初始报价',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!this.city) {
+          wx.showToast({
+            title: '请选择所在城市',
+            icon: 'none',
+            duration: 2000
+          })
+        } else if (!this.address) {
+          wx.showToast({
+            title: '请输入线下地址',
+            icon: 'none',
+            duration: 2000
+          })
+        } else {
+          if (!this.publish_check_default_icon || !this.publish_check_default_icon1) {
+            wx.showToast({
+              title: '请详细阅读后并勾选协议与真实承诺',
+              icon: 'none',
+              duration: 2000
+            })
+            return
+          }
+          // 接口还没改
+          this.applyConsultant()
+        }
+      },
+      close_dialog() {
+        this.$parent.globalData.userInfo.memberType = 1
+
+        let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+        let prevPage = pages[pages.length - 2]
+        prevPage.onLoad()
+        wx.navigateBack()
+        this.show_modal1 = false
+      },
+      publish_check_default_icon_check() {
+        this.publish_check_default_icon = true
+      },
+      publish_check_default_icon_no_check() {
+        this.publish_check_default_icon = false
+      },
+      publish_check_default_icon1_check() {
+        this.publish_check_default_icon1 = true
+      },
+      publish_check_default_icon1_no_check() {
+        this.publish_check_default_icon1 = false
+      }
+    }
+    applyConsultant() {
+      console.log({
+        consultantName: this.consultantName,
+        mobile: this.mobile,
+        email: this.email,
+        domain: this.domain,
+        price: this.price,
+        city: this.city,
+        address: this.address,
+        adjustScope: this.adjustScope,
+        latitude: this.latitude,
+        longitude: this.longitude
+      })
+    // return;
+      let { applyConsultant } = api
+      // 缺一个参数 之后记得加 --
+      applyConsultant({
+        consultantName: this.consultantName,
+        mobile: this.mobile,
+        email: this.email,
+        domain: this.domain,
+        price: this.price,
+        city: this.city,
+        address: this.address,
+        adjustScope: this.adjustScope,
+        latitude: this.latitude,
+        longitude: this.longitude
+      }).then(res => {
+        this.show_modal1 = true
+        this.$apply()
+      })
+    }
+    getPolicyMaterials() {
+      // 获取入驻准备材料信息
+      let { getPolicyMaterials } = api
+      getPolicyMaterials().then(res => {
+        this.policyMaterials = res.data
+        let emailReg = /[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+/
+        this.policyMaterials.email = this.policyMaterials.remark.match(emailReg)[0]
+        // WxParse.wxParse('article', 'html', this.policyMaterials.content, this, 5);
+        // this.policyMaterials.content = deleteHtmlTag(res.data.content)
+      })
+    }
+    getPolicyProtocol() {
+        // 入驻协议
+      let { getPolicyProtocol } = api
+      getPolicyProtocol().then(res => {
+        this.policyProtocol = res.data
+
+        this.$apply()
+      })
+    }
+    events = {}
+
+    async onLoad(option) {
+      this.mobile = this.$parent.globalData.userInfo.mobile
+      this.consultantName = this.$parent.globalData.userInfo.name
+      this.getPolicyMaterials()
+      this.getPolicyProtocol()
+    }
+
+    /**
+     * wepy 页面栈的兼容方法
+     * */
+    updateChoosedCitys(city) {
+      // this.updatePath = true
+      this.city = city
+      this.choosedCitys = city
+    }
+}
+</script>
+<style lang="less">
+page{
+  background-color: #fff;
+}
+.container{
+  padding: 46rpx 32rpx 200rpx;
+}
+.promise_out{
+  padding: 26rpx 32rpx;
+  background:rgba(246,246,250,1);
+  /*border-radius:20rpx 20rpx 0rpx 0rpx;*/
+}
+.promise_ou{
+padding: 28rpx 32rpx 50rpx 32rpx;
+}
+.promise_out1{
+  padding: 0rpx 32rpx 50rpx 32rpx;
+  background:#fff;
+}
+.promise_out2{
+  background:#fff;
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+}
+.promise_out_out{
+  border-radius: 20rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(238,238,238,1);
+}
+.promise_title{
+  font-size:36rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(0,0,0,1);
+}
+.promise_detail{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  line-height:36rpx;
+  margin-top: 10rpx;
+}
+.publish_check_default_icon{
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 18rpx;
+  margin-top: 5rpx;
+}
+.chioce{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  flex: 1;
+}
+.mgb35{
+  margin-top: 46rpx;
+  margin-bottom: 35rpx;
+}
+.person_message_out{
+  border-radius:20rpx;
+  overflow:hidden;
+  border:1rpx solid #eeeeee;
+  margin-top: 36rpx;
+  padding-bottom: 48rpx;
+}
+.person_message_title{
+  height: 106rpx;
+  background:rgba(246,246,250,1);
+  line-height: 106rpx;
+  font-size:36rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(0,0,0,1);
+  padding-left: 32rpx;
+}
+.pd32{
+  padding: 0 32rpx;
+}
+.pd32_{
+  padding: 32rpx 0;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.pd32_ input{
+  font-size:30rpx;
+  text-align: right;
+}
+.name_title{
+  flex: none;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  position: relative;
+  .icon {
+    top: 50%;
+    margin-top: -14rpx;
+    width:28rpx;
+    height:28rpx;
+    position: absolute;
+    right: -50rpx;
+    z-index: 5000;
+    // line-height: 28rpx;
+  }
+}
+.address {
+  padding-left: 28rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+}
+.chosse_city {
+  font-size:30rpx;font-family:PingFang-SC-Regular;font-weight:400;
+}
+.icon_xiala{
+  width: 16rpx;
+  height: 10rpx;
+}
+.qxz{
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  margin-right: 15rpx;
+}
+.qxz_true{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+  margin-right: 15rpx;
+}
+.posi_fix{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 98rpx;
+  background-color: #fff;
+  z-index: 9999;
+}
+.button{
+  width:686rpx;
+  height:88rpx;
+  background:rgba(37,101,195,1);
+  border-radius:4rpx;
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  margin: 5rpx auto 0;
+  line-height: 88rpx;
+  z-index: 10000;
+}
+.modal1{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  z-index: 99999;
+}
+.mask{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+.mgat1{
+  margin: auto;
+  z-index: 999;
+  background-color: #fff;
+  border-radius:24rpx;
+  width: 580rpx;
+  z-index: 100000;
+}
+.apply_success{
+  text-align: center;
+  font-size:36rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  margin-top: 40rpx;
+  margin-bottom: 25rpx;
+  position: relative;
+  .range{
+  position: relative;
+  display: inline-block;
+  .icon {
+      top: 50%;
+      margin-top: -14rpx;
+      width:28rpx;
+      height:28rpx;
+      position: absolute;
+      left: -50rpx;
+      // line-height: 28rpx;
+    }
+  }
+  .icon_quxia {
+    width: 26rpx;
+    height: 26rpx;
+    position: absolute;
+    right: 36rpx;
+  }
+
+}
+.dialog_detail{
+  text-align: center;
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  margin-bottom: 5rpx;
+}
+.dialog_exp{
+  text-align: center;
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  margin-bottom: 26rpx;
+}
+.dialog_button{
+  height: 88rpx;
+  background:rgba(37,101,195,1);
+  border-radius:0rpx 0rpx 24rpx 24rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(248,248,248,1);
+  line-height: 88rpx;
+  text-align: center;
+}
+.paddingaa {
+   text-align:initial;
+  padding: 0 40rpx 60rpx 40rpx;
+}
+</style>

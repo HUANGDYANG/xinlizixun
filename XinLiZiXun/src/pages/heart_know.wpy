@@ -1,0 +1,285 @@
+<template>
+  <view class="container">
+    <!--导航菜单-->
+  <view class="navbar">
+  <!--循环-->
+  <block wx:for='{{navbar}}' wx:for-item='item' wx:for-index='index' wx:key='index'>
+    <!-- <repeat wx:for="{{navbar}}"> -->
+      <view data-idx="{{index}}" wx:key="unique" class="item {{currentTab==index ? 'active' : ''}}" @tap="navbarTap">
+        <!-- <view class="notice" wx:if="{{count[index]>0}}">{{count[index]}}</view> -->
+      {{item}}
+      </view>
+    <!-- </repeat> -->
+  </block>
+  </view>
+  <view hidden="{{currentTab !== 0}}" id="one">
+        <block wx:for='{{freeEvaluationList}}' wx:for-item='item' wx:for-index='index' wx:key='index'>
+          <!-- <repeat for="{{freeEvaluationList}}"> -->
+            <view class='xinzizhi_out' @tap='to_detail({{item.id}})'>
+              <image src='{{item.mainPic}}' class='backe5 xinzizhi' mode="aspectFill"></image>
+              <view class='click_in' >点击进入</view>
+            </view>
+          <!-- </repeat> -->
+        </block>
+         <view class='no_more' wx:if='{{loaded && freeEvaluationList.length > 3}}'>- 没有更多啦 -</view>
+ <view class='no_more' wx:if='{{freeEvaluationListisEmptyArr}}'>暂无信息</view>
+  </view>
+
+  <view hidden="{{currentTab !== 1}}" id="one">
+      <block wx:for='{{evaluationList}}' wx:for-item='item' wx:for-index='index' wx:key='index'>
+        <!-- <repeat for="{{evaluationList}}"> -->
+          <view class='xinzizhi_out' @tap='to_detail({{item.id}})'>
+            <image src='{{item.mainPic}}' class='backe5 xinzizhi' mode="aspectFill"></image>
+            <view class='click_in'>点击进入</view>
+            <view class='fufei' wx:if='{{item.payType}}'>付费</view>
+          </view>
+        <!-- </repeat> -->
+      </block>
+
+        <view class='no_more' wx:if='{{loaded1 && evaluationList.length > 3}}'>- 没有更多啦 -</view>
+          <view class='no_more' wx:if='{{evaluationListisEmptyArr}}'>暂无信息</view>
+  </view>
+
+
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+
+  export default class Heart_know extends wepy.page {
+    config = {
+      navigationBarTitleText: '心自知'
+    }
+    components = {}
+    data = {
+      evaluationList: [],
+      freeEvaluationList: [],
+      navbar: ['免费', '付费'],
+      currentTab: 0,
+      datas_is_vip: [],
+      datas_no_vip: [],
+      star: 4,
+      payType: 0,
+      nextPage: 1, // 下一页
+      loaded: false,
+      loaded1: false,
+      nextPage1: 1 // 下一页
+    }
+    computed = {
+      evaluationListisEmptyArr() {
+        return JSON.stringify(this.evaluationList) === '[]'
+      },
+      freeEvaluationListisEmptyArr() {
+        return JSON.stringify(this.freeEvaluationList) === '[]'
+      }
+    }
+    methods = {
+      navbarTap(e) {
+        var that = this
+        that.currentTab = e.currentTarget.dataset.idx
+        that.datas_is_vip = 1
+        that.datas_no_vip = 1
+   
+        this.nextPage = 1 // 下一页
+        this.loaded = false
+        this.loaded1 = false
+        this.nextPage1 = 1 // 下一页
+        this.getEvaluationList({payType: that.currentTab})
+      // this.getEvaluationList({payType: 1})
+      },
+      to_detail(e) {
+        goPath('/pages/heart_know_detail?id=' + e)
+      }
+    }
+    getEvaluationList({pageNum = 1, pageSize = 10, payType = 0} = {}) {
+      let {getEvaluationList} = api
+      getEvaluationList({
+        pageNum,
+        pageSize,
+        payType
+      }).then(res => {
+        if (res) {
+
+          let list = res.data.list
+          if (!payType) {
+            if (this.nextPage == 1) {
+              if (res.data.nextPage == 0) {
+                this.loaded = true
+              } else {
+                this.nextPage = res.data.nextPage
+              }
+              this.freeEvaluationList = list
+            } else if (this.nextPage > 1) {
+              this.nextPage = res.data.nextPage
+              if (res.data.nextPage == 0) this.loaded = true
+              this.freeEvaluationList.push(...list)
+            }
+          } else {
+            if (this.nextPage1 == 1) {
+              if (res.data.nextPage == 0) {
+                this.loaded1 = true
+              } else {
+                this.nextPage1 = res.data.nextPage
+              }
+              this.evaluationList = list
+            } else if (this.nextPage1 > 1) {
+              this.nextPage1 = res.data.nextPage
+              if (res.data.nextPage == 0) this.loaded1 = true
+              this.evaluationList.push(...list)
+            }
+          }
+
+          // this.evaluationList = list
+          this.$apply()
+        }
+      })
+    }
+    events = {}
+    onReachBottom() {
+      if (!this.loaded && this.payType == 0) {
+        this.getEvaluationList({
+          pageNum: this.nextPage,
+          payType: 0
+        })
+      }
+      if (!this.loaded1 && this.payType == 1) {
+        this.getEvaluationList({
+          pageNum: this.nextPage1,
+          payType: 1
+        })
+      }
+    }
+    async onLoad() {
+      this.getEvaluationList({payType: 0})
+      this.getEvaluationList({payType: 1})
+    }
+    onShow() {
+      // this.nextPage = 1, // 下一页
+      // this.loaded = false,
+      // this.loaded1 = false,
+      //  this.nextPage1 = 1, // 下一页
+      // this.getEvaluationList({payType: 0})
+      // this.getEvaluationList({payType: 1})
+    }
+  }
+</script>
+<style lang="less">
+  page{
+    background-color: #fff;
+  }
+  /*圆点数字标注*/
+.notice {
+    width:28rpx;
+    height:28rpx;
+    color:#fff;
+    text-align:center;
+    background-color:#EA260C;
+    border-radius:50%;
+    position:absolute;
+    float:left;
+   /* margin-top: 8rpx;*/
+   top:5rpx;
+    font-size: 15rpx;
+    right:30rpx;
+    line-height:30rpx; }
+
+/*顶部导航样式*/
+.navbar{
+ flex: none;
+ display: flex;
+ padding-top: 15rpx;
+ padding-bottom: 12rpx;
+ position: fixed;
+ left: 0;
+ top: 0;
+ width: 100%;
+ z-index: 99999;
+ background-color:rgba(246,246,250,1);
+}
+.navbar .item{
+ position: relative;
+ flex: auto;
+ text-align: center;
+ line-height: 80rpx;
+ font-size: 32rpx;
+ color: rgba(51,51,51,1);
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active{
+ color: rgba(37,101,195,1);
+ font-size: 32rpx;
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active:after{
+ content: "";
+ display: block;
+ position: absolute;
+ bottom: -10rpx;
+ left: 36%;
+ right: 0;
+ height: 6rpx;
+ background: rgba(37,101,195,1);
+ font-size: 32rpx;
+ color: #666666;
+ font-family: Microsoft YaHei;
+ width: 28%;
+ border-radius: 8rpx;
+}
+#one{
+  margin-top: 106rpx;
+  padding: 48rpx 32rpx;
+}
+
+
+/*content*/
+.w686{
+  padding:36rpx 32rpx 10rpx;
+  background-color: #fff;
+}
+.xinzizhi_out{
+   margin-bottom: 26rpx;
+   height: 344rpx;
+   width: 100%;
+   position: relative;
+   overflow: hidden;
+}
+.xinzizhi{
+  vertical-align: middle;
+  width: 100%;
+  height: 100%;
+}
+.click_in{
+  font-size:22rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+  width: 120rpx;
+  height: 52rpx;
+  text-align: center;
+  line-height: 52rpx;
+  background:rgba(255,255,255,1);
+  border:2rpx solid rgba(37,101,195,1);
+  border-radius:26rpx;
+  display: inline-block;
+  position: absolute;
+  right: 36rpx;
+  bottom: 26rpx;
+}
+.fufei{
+  font-size:22rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  width:70rpx;
+  height:38rpx;
+  background:rgba(255,182,4,1);
+  border-radius:0rpx 19rpx 19rpx 0rpx;
+  position: absolute;
+  left: 0;
+  top: 27rpx;
+  text-align: center;
+  line-height: 38rpx;
+}
+</style>

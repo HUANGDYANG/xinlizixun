@@ -1,0 +1,111 @@
+{
+	"description": "A WePY project",
+	"setting": {
+		"urlCheck": false,
+		"es6": false,
+		"postcss": false,
+		"minified": false,
+		"newFeature": true,
+		"autoAudits": false,
+		"checkInvalidKey": true
+	},
+	"compileType": "miniprogram",
+	"appid": "wx5347a487931dcb53",
+	"projectname": "XinLiZiXun",
+	"miniprogramRoot": "dist/",
+	"libVersion": "2.6.6",
+	"simulatorType": "wechat",
+	"simulatorPluginLibVersion": {},
+	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"list": []
+		},
+		"miniprogram": {
+			"current": 9,
+			"list": [
+				{
+					"id": -1,
+					"name": "问答详情",
+					"pathName": "pages/heart_know_detail",
+					"query": "id=38",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "问答详情(答题)",
+					"pathName": "pages/test_detail",
+					"query": "id=38",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "友优惠",
+					"pathName": "pages/provide",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "微信授权登录",
+					"pathName": "pages/index",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "手机登录",
+					"pathName": "pages/login",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "测试结果页",
+					"pathName": "pages/test_result",
+					"query": "id=38&answerIds=[{\"281\":722},{\"282\":725},{\"283\":730},{\"284\":733},{\"286\":743},{\"287\":748},{\"288\":753},{\"289\":758},{\"290\":763},{\"291\":768},{\"292\":773},{\"293\":778}]&qresult=[{\"33\":\"90\"},{\"34\":\"97\"},{\"35\":\"101\"},{\"36\":\"115\"},{\"37\":\"125\"},{\"38\":\"134\"},{\"39\":\"137\"},{\"40\":\"150\"},{\"41\":\"153\"},{\"42\":\"163\"},{\"43\":\"166\"},{\"44\":\"170\"},{\"45\":\"180\"},{\"46\":\"185\"},{\"47\":\"189\"}]&memberName=undefined&age=undefined&department=undefined&clickFlag=111",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "知新话",
+					"pathName": "pages/confidences",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "心自知",
+					"pathName": "pages/heart_know",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 8,
+					"name": "调查问卷",
+					"pathName": "pages/questionnaire",
+					"query": "scoreId=927&evaluationId=38",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "我的咨询",
+					"pathName": "pages/my_make",
+					"query": "",
+					"scene": null
+				}
+			]
+		}
+	}
+}

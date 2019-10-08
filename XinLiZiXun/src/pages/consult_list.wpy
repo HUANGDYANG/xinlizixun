@@ -1,0 +1,620 @@
+<template>
+  <view class="container">
+      <view class="navbar">
+  <!--循环-->
+    <repeat wx:for="{{navbar}}">
+      <view data-idx="{{index}}" wx:key="unique" class="item {{currentTab==index ? 'active' : ''}}" @tap="navbarTap">
+      {{item}}
+      </view>
+    </repeat>
+  </view>
+  <view id="one"></view>
+    <block wx:if="{{consultList && currentTab == 0}}">
+      <repeat for="{{consultList}}"
+              key="">
+        <view class="status_container flex"
+              @tap.stop="gotoDetail({{item.id}}, {{index}})">
+          <view class="status_item top flex"
+                wx:if="{{item.consultStatus == 0 || item.consultStatus == 3}}">
+            <view>{{item.createTime}}</view>
+            <view>待咨询</view>
+          </view>
+          <view class="status_item top flex"
+                wx:if="{{item.consultStatus == 4}}">
+            <view>{{item.createTime}}</view>
+            <view>用户缺席</view>
+          </view>
+          <view class="status_item top flex finish"
+                wx:if="{{item.consultStatus == 2 }}">
+            <view>{{item.createTime}}</view>
+            <view>已取消</view>
+          </view>
+           <view class="status_item top flex finish"
+                wx:if="{{item.consultStatus == 5 }}">
+            <view>{{item.createTime}}</view>
+            <view>已过期</view>
+          </view>
+          <view wx:if="{{item.consultStatus == 1}}"
+                class="status_item top flex {{item.consultantCommentStatus  ? 'finish' : 'noevaluated'}}">
+            <view>{{item.createTime}}</view>
+            <view>{{item.consultantCommentStatus ? '已完成' : '待评价'}}</view>
+          </view>
+          <view class="status_item main flex">
+            <view class="userinfo flex">
+              <view class="userinfo_item flex">
+                <view class="bespeak">预约用户：</view>
+                <view>{{item.name}}</view>
+              </view>
+              <view class="userinfo_item flex">
+                <view class="bespeak">预约时间：</view>
+                <view>{{item.date}}</view>
+              </view>
+              <view class="userinfo_item flex">
+                <view class="bespeak">预约价格：</view>
+                <view>¥{{item.price}}</view>
+              </view>
+            </view>
+            <image wx:if="{{item.consultType == 1 && item.consultStatus == 0}}"
+                   @tap.stop="to_counselorCallc({{item.memberId}}, {{item.id}}, {{item.date}})"
+                   src="../images/icon_call_zixun@2x.png"
+                   class='call_icon'></image>
+            <image wx:if="{{item.consultType == 1 && item.consultStatus !=0 }}"
+                   src="../images/icon_call_zixun@2x.png"
+                   class='call_icon'></image>
+          </view>
+          <view class="status_item bottom flex">
+            <view class="button"
+                  @tap.stop="historyEvaluate({{item.memberId}})">历史评价</view>
+            <view class="button"
+                  @tap.stop="evaluateResult({{item.memberId}})">测评结果</view>
+            <view wx:if="{{item.consultStatus == 0}}"
+                  class="button"
+                  @tap.stop="absence({{item.id}}, {{index}})">缺席</view>
+            <view wx:if="{{item.consultStatus == 3 || item.consultStatus == 4 || item.consultStatus == 2 || item.consultStatus == 5}}"
+                  class="button {{item.consultStatus == 3 || item.consultStatus == 4 || item.consultStatus == 5 ? 'disable' : ''}}">缺席</view>
+            <!-- <view wx:if="{{item.consultStatus == 0 || item.consultStatus == 3 || item.consultStatus == 4}}" @tap.stop="finish({{item.id}}, {{index}})" class="button">完成</view> -->
+            <view wx:if="{{item.consultStatus == 0 || item.consultStatus == 3}}"
+                  @tap.stop="finish({{item.id}}, {{index}}, {{item.memberId}}, {{item.scheduleId}})"
+                  class="button">完成</view>
+            <view wx:if="{{item.consultStatus == 4 || item.consultStatus == 2 || item.consultStatus == 5}}"
+                  class="button">完成</view>
+            <view wx:if="{{!item.consultantCommentStatus && item.consultStatus == 1}}"
+                  class="button other"
+                  @tap.stop="clickEvaluate({{item.memberId}}, {{item.scheduleId}})">点击评价</view>
+            <view wx:if="{{item.consultantCommentStatus && item.consultStatus == 1}}"
+                  class="button other"
+                  @tap.stop="seeEvaluation({{item.memberId}}, {{item.scheduleId}})">查看评价</view>
+          </view>
+        </view>
+      </repeat>
+              <view class='no_more'
+          wx:if='{{loaded}}'>- 没有更多啦 -</view>
+    <view class="no_more"
+          wx:else>
+      <text>暂无咨询</text>
+    </view>
+    </block>
+
+    <block wx:if="{{realTimeList && currentTab == 1}}">
+      <repeat for="{{realTimeList}}"
+              key="">
+              <!-- 订单状态 0未支付,1已支付,2已结束 -->
+        <view class="status_container flex"
+              >
+          <view class="status_item top flex"
+                wx:if="{{item.orderStatus == 0}}">
+            <view>{{item.createTime}}</view>
+            <view>未支付</view>
+          </view>
+          <view class="status_item top flex"
+                wx:if="{{item.orderStatus == 1}}">
+            <view>{{item.createTime}}</view>
+            <view>已支付</view>
+          </view>
+          <view class="status_item top flex finish"
+                wx:if="{{item.orderStatus == 2 }}">
+            <view>{{item.createTime}}</view>
+            <view>已结束</view>
+          </view>
+          <!-- <view wx:if="{{item.orderStatus == 1}}"
+                class="status_item top flex {{item.consultantCommentStatus  ? 'finish' : 'noevaluated'}}">
+            <view>{{item.createTime}}</view>
+            <view>{{item.consultantCommentStatus ? '已完成' : '待评价'}}</view>
+          </view> -->
+          <view class="status_item main flex">
+            <view class="userinfo flex">
+              <view class="userinfo_item flex">
+                <view class="bespeak">咨询用户：</view>
+                <view>{{item.memberName}}</view>
+              </view>
+              <view class="userinfo_item flex">
+                <view class="bespeak">咨询时长：</view>
+                <view>{{item.minute}}min</view>
+              </view>
+              <view class="userinfo_item flex">
+                <view class="bespeak">咨询金额：</view>
+                <view>¥{{item.price}}</view>
+              </view>
+            </view>
+          </view>
+          <view class="status_item bottom flex" >
+            <view class="button" style="flex:0 0 50%;"
+                  @tap.stop="historyEvaluate({{item.memberId}})">历史评价</view>
+            <view class="button" style="flex:0 0 50%;"
+                  @tap.stop="evaluateResult({{item.memberId}})">测评结果</view>
+          </view>
+        </view>
+      </repeat>
+      <view class='no_more'
+          wx:if='{{loaded1}}'>- 没有更多啦 -</view>
+      <view class="no_more"
+            wx:else>
+        <text>暂无咨询</text>
+      </view>
+    </block>
+
+
+    <dialog :visible.sync="show_absent_dialog"
+            @confirm.user="absent_confirm">
+      <view slot="title"
+            class="absent_title">
+        <view class="title">确定用户缺席？</view>
+        <view class="remark">*若点击确定，将取消本次咨询预约。</view>
+      </view>
+    </dialog>
+
+    <finish-dialog :visible.sync="show_finish_dialog"
+                   @confirm.user="finishEvaluate">
+      <view slot="title"
+            class="absent_title">
+        <view class="title">咨询完成，快去评价吧！</view>
+        <!-- <view class="remark">*若点击确定，将取消本次咨询预约。</view> -->
+      </view>
+      <view slot="cancel">稍后</view>
+    </finish-dialog>
+
+    <finish1-dialog :visible.sync="show_finish_dialog1"
+                    @confirm.user="finish_confirm">
+      <view slot="title"
+            class="absent_title">
+        <view class="title">确定用户已完成咨询？</view>
+      </view>
+    </finish1-dialog>
+
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+import HDialog from '../components/h-dialog'
+
+export default class Consult_list extends wepy.page {
+  config = {
+    navigationBarTitleText: '咨询列表'
+  };
+
+  components = {
+    dialog: HDialog,
+    'finish-dialog': HDialog,
+    'finish1-dialog': HDialog
+  };
+
+  data = {
+    test_arr: [0, 1, 2, 3],
+    show_absent_dialog: false,
+    show_finish_dialog: false,
+    show_finish_dialog1: false,
+    consultList: '',
+    absence_id: '',
+    absence_index: '',
+
+    nextPage: 1, // 下一页
+    loaded: false,
+
+    finish_memberId: '',
+    finish_scheduleId: '',
+    navbar: ['在线预约', '实时咨询'],
+    currentTab: 0,
+    realTimeList: [],
+
+    nextPage1: 1,
+    loaded1: false
+  };
+
+  methods = {
+    navbarTap(e) {
+      var that = this
+      that.currentTab = e.currentTarget.dataset.idx
+    },
+    gotoDetail (id, index) {
+      goPath('/pages/make_detail?id=' + id + '&consultant=true')
+    },
+    to_counselorCallc (memberId, id, date) {
+      let { getUserImInfo } = api
+      getUserImInfo({
+        memberId: memberId
+      }).then(res => {
+        let endTime = date.split(' ')[1].split('-')[1]
+        if (endTime == '00:00') {
+          endTime = '23:59'
+        }
+        // 当前时间大于预约结束时间
+        if (new Date(date.split(' ')[0].replace(/\-/g, '/') + ' ' + endTime) < +new Date()) {
+          wx.showToast({
+            title: '预约已结束，请点击完成按钮',
+            icon: 'none'
+          })
+          return
+        }
+        // 当前时间小于预约开始时间
+        if (+new Date(date.split(' ')[0].replace(/\-/g, '/') + ' ' + date.split(' ')[1].split('-')[0]) > +new Date()) {
+          wx.showToast({
+            title: '预约还没开始，还不能开始通话',
+            icon: 'none'
+          })
+          return
+        }
+        wx.setStorageSync('chatOrderId', id)
+
+        //
+        wx.setStorageSync('callEndTime' + this.$parent.globalData.userInfo.consultantId, +new Date(date.split(' ')[0] + ' ' + endTime))
+        if (res) {
+          goPath(`./videoCall/videoCall?callee=${res.data.accid}&consultantId=${this.$parent.globalData.userInfo.consultantId}&memberId=${memberId}&avatar= &name=`)
+        }
+      })
+    },
+    absence (id, index) {
+      this.absence_id = id
+      this.absence_index = index
+      this.show_absent_dialog = true
+    },
+    evaluateResult (memberId) {
+      goPath('/pages/evaluation_results?id=' + memberId)
+    },
+    clickEvaluate (memberId, scheduleId) {
+      // {{item.memberId}}, {{item.scheduleId}}
+      goPath('/pages/click_evaluate?memberId=' + memberId + '&scheduleId=' + scheduleId)
+    },
+    historyEvaluate (id, scheduleId) {
+      // memberId
+      goPath('/pages/history_evaluate?id=' + id)
+    },
+    seeEvaluation (memberId, scheduleId) {
+      goPath('/pages/see_evaluation?memberId=' + memberId + '&scheduleId=' + scheduleId)
+    },
+    absent_confirm () {
+      // todo
+      this.consultantAbsence(this.absence_id, this.absence_index)
+    },
+    finishEvaluate () {
+      this.show_finish_dialog = false
+
+      goPath('/pages/click_evaluate?memberId=' + this.finish_memberId + '&scheduleId=' + this.finish_scheduleId)
+    },
+    finish (id, index, memberId, scheduleId) {
+      // todo
+      this.absence_id = id
+      this.absence_index = index
+      this.finish_memberId = memberId
+      this.finish_scheduleId = scheduleId
+      this.show_finish_dialog1 = true
+    },
+    finish_confirm () {
+      this.completeConsultantSchedule(this.absence_id, this.absence_index)
+    }
+
+  }
+
+  getConsultList ({
+    pageSize = 10,
+    pageNum = 1 } = {}) {
+    // 分页 获取咨询师的咨询列表
+    let { getConsultList } = api
+    getConsultList({
+      pageNum,
+      pageSize
+    }).then(res => {
+      if (res) {
+        if (this.nextPage == 1) {
+          if (res.data.nextPage == 0) {
+            this.loaded = true
+          } else {
+            this.nextPage = res.data.nextPage
+          }
+          this.consultList = res.data.list
+          this.consultList.forEach((item, i) => {
+            this.consultList[i].date = item.dateTime.split(' ')[0] + ' ' + item.beginTime.slice(0, -3) + '-' + item.endTime.slice(0, -3)
+          })
+        } else if (this.nextPage > 1) {
+          this.nextPage = res.data.nextPage
+          res.data.list.forEach((item, i) => {
+            res.data.list[i].date = item.dateTime.split(' ')[0] + ' ' + item.beginTime.slice(0, -3) + '-' + item.endTime.slice(0, -3)
+          })
+          this.consultList.push(...res.data.list)
+        } else {
+          this.loaded = true
+        }
+        this.$apply()
+      }
+    })
+  }
+  getConsultRealTimeList({
+    pageSize = 10,
+    pageNum = 1 } = {}) {
+    // 分页 获取咨询师的咨询列表
+    let { getConsultRealTimeList } = api
+    getConsultRealTimeList({
+      consultantId: this.$parent.globalData.userInfo.consultantId,
+      pageNum,
+      pageSize
+    }).then(res => {
+      if (res) {
+        // this.realTimeList = res.data.list
+        if (this.nextPage1 == 1) {
+          if (res.data.nextPage == 0) {
+            this.loaded1 = true
+          } else {
+            this.nextPage1 = res.data.nextPage
+          }
+          this.realTimeList = res.data.list
+        } else if (this.nextPage1 > 1) {
+          this.nextPage1 = res.data.nextPage
+          this.realTimeList.push(...res.data.list)
+        } else {
+          this.loaded1 = true
+        }
+        this.$apply()
+      }
+    })
+  }
+  commentMenber (data) {
+    // 咨询师评论用户
+    let { commentMenber } = api
+  }
+  events = {}
+  consultantAbsence (id, index) {
+    // 咨询师--更新咨询状态---缺席
+    let { consultantAbsence } = api
+    consultantAbsence({
+      schId: id
+    }).then(res => {
+      if (res) {
+        this.consultList[index].consultStatus = 4
+        wepy.showToast({
+          title: '更新成功',
+          duration: 2000
+          // mask: true
+        })
+        this.show_absent_dialog = false
+        // sleep(2).then(res => {
+        //     this.show_absent_dialog = false
+        // })
+        this.$apply()
+      } else {
+
+      }
+    })
+  }
+
+  completeConsultantSchedule (id, index) {
+    // 咨询师--更新咨询状态---完成
+    let { completeConsultantSchedule } = api
+    completeConsultantSchedule({
+      schId: id
+    }).then(res => {
+      if (res) {
+        this.consultList[index].consultStatus = 1
+        wepy.showToast({
+          title: '更新成功',
+          duration: 2000
+          // mask: true
+        })
+        // sleep(2).then(res => {
+        this.show_finish_dialog1 = false
+        this.show_finish_dialog = true
+        //  this.$apply()
+        // })
+        // sleep(2).then(res => {
+        //     this.show_absent_dialog = false
+        // })
+        this.$apply()
+      } else {
+
+      }
+    })
+  }
+  onReachBottom () {
+    if (!this.loaded && this.currentTab == 0) {
+      this.getConsultList({
+        pageNum: this.nextPage
+      })
+    }
+    if (!this.loaded1 && this.currentTab == 1) {
+      this.getConsultRealTimeList({
+        pageNum: this.nextPage1
+      })
+    }
+  }
+  onLoad () {
+    this.getConsultList()
+    this.getConsultRealTimeList()
+  }
+}
+</script>
+
+<style lang="less">
+@y_color: #ffb400;
+@9_color: #999999;
+
+.container {
+  padding-top: 48rpx;
+  padding-bottom: 48rpx;
+}
+.status_container {
+  font-family: PingFang-SC-Bold;
+  margin: 0 auto;
+  margin-bottom: 26rpx;
+  width: 686rpx;
+  height: 350rpx;
+  flex-wrap: wrap;
+
+  .status_item {
+    width: 686rpx;
+    box-sizing: border-box;
+    font-size: 26rpx;
+  }
+
+  .top {
+    padding: 0 32rpx;
+    height: 70rpx;
+    font-size: 24rpx;
+    align-items: center;
+    justify-content: space-between;
+    background: #2565c3;
+    // @y_color: #FFB400;
+    // @9_color: #999999;
+    border-radius: 28rpx 28rpx 0 0;
+    color: #fff;
+  }
+
+  .top.finish {
+    background: #999999;
+  }
+
+  .top.noevaluated {
+    background: #ffb400;
+  }
+
+  .main {
+    height: 196rpx;
+    justify-content: space-between;
+    align-items: center;
+    padding: 36rpx 32rpx 38rpx 32rpx;
+    background-color: #fff;
+
+    .userinfo {
+      flex-wrap: wrap;
+      .userinfo_item {
+        padding-bottom: 4rpx;
+        width: 542rpx;
+        .bespeak {
+          padding-right: 26rpx;
+          color: #999999;
+        }
+      }
+    }
+    .call_icon {
+      flex-shrink: 0;
+      width: 80rpx;
+      height: 80rpx;
+    }
+  }
+
+  .bottom {
+    height: 84rpx;
+    color: #2565c3;
+    background-color: #fff;
+    border-radius: 0 0 28rpx 28rpx;
+    .button {
+      line-height: 84rpx;
+      text-align: center;
+      width: 25%;
+      border-top: 1px soild #999999;
+    }
+    .button:nth-child(n + 2):nth-child(-n + 3) {
+      border: 1rpx solid #eee;
+      border-bottom: none;
+    }
+    .button:nth-child(1) {
+      border-top: 1rpx solid #eee;
+      border-right: 1rpx solid #eee;
+    }
+    .button:nth-child(4) {
+      border-top: 1rpx solid #eee;
+      border-left: 1rpx solid #eee;
+    }
+    .button:nth-child(n + 2) {
+      margin-left: 1rpx;
+    }
+    .button.disable {
+      color: #999999;
+    }
+    .other {
+      width: 50%;
+      border-left: 1rpx solid #eee;
+      border-right: 1rpx solid #fff;
+    }
+  }
+}
+
+.modal_title {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  text-align: center;
+  margin: 72rpx 0;
+}
+
+.absent_title {
+  text-align: center;
+  .title {
+    color: #000000;
+    font-size: 36rpx;
+  }
+  .remark {
+    color: #999999;
+    font-size: 24rpx;
+    padding-top: 20rpx;
+  }
+}
+/*顶部导航样式*/
+.navbar{
+ flex: none;
+ display: flex;
+ padding-top: 15rpx;
+ padding-bottom: 12rpx;
+ position: fixed;
+ left: 0;
+ top: 0;
+ width: 100%;
+ z-index: 99999;
+ background-color:#fff;
+}
+.navbar .item{
+ position: relative;
+ flex: auto;
+ text-align: center;
+ line-height: 80rpx;
+ font-size: 32rpx;
+ color: rgba(51,51,51,1);
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active{
+ color: rgba(37,101,195,1);
+ font-size: 32rpx;
+ font-family: Microsoft YaHei;
+}
+.navbar .item.active:after{
+ content: "";
+ display: block;
+ position: absolute;
+ bottom: -10rpx;
+ left: 36%;
+ right: 0;
+ height: 6rpx;
+ background: rgba(37,101,195,1);
+ font-size: 32rpx;
+ color: #666666;
+ font-family: Microsoft YaHei;
+ width: 28%;
+ border-radius: 8rpx;
+}
+#one{
+  margin-top: 80rpx;
+  padding: 16rpx 0;
+}
+
+</style>

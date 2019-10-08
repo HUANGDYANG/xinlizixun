@@ -1,0 +1,10 @@
+<view>
+  <h-cropper 
+  bind:upload="uploadTap" 
+  bind:cropper="getCropperImage"
+  bind:start="touchStart"
+  bind:end="touchEnd"
+  bind:move="touchMove"
+  cropperOpt="{{cropperOpt}}"
+  src="{{src}}"></h-cropper>
+</view>

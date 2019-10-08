@@ -1,0 +1,393 @@
+<template>
+  <view class="container">
+    <view class='back_top'>
+      <image src="../images/my_bg@2x.png"
+             class="backe5 {{!compareClientVersion ? 'active' : ''}}"
+             mode="aspectFill"></image>
+      <view class='back_concent'>
+        <view class="back_concent_in {{!compareClientVersion ? 'active' : ''}}">
+          <image src=""
+                 wx:if='{{!userInfo}}'
+                 @tap="login"
+                 class="mainPic"
+                 mode="aspectFill"></image>
+          <image src="{{userInfo.mainPic}}"
+                 wx:else='{{userInfo.mainPic}}'
+                 class="mainPic"
+                 mode="aspectFill"></image>
+          <view class='name'>{{!userInfo ? '点击登录' : userInfo.name}}</view>
+          <view class="hd_out {{!compareClientVersion ? 'active' : ''}}">
+            <view class='posi_rela'
+                  wx:if="{{userInfo}}">
+              <image src="../images/myself_news_icon@2x.png"
+                     class="myself_news_icon"
+                     @tap="myselffNews"></image>
+              <view class='hd'
+                    wx:if="{{messageCount}}"></view>
+            </view>
+          </view>
+          <view class='be_zxs flex flex-a-i-center flex-j-c-center'
+                wx:if='{{memberType == 0 && userInfo}}'
+                @tap='to_data_fill'>
+            <view class='be_zxs_title'>成为咨询师</view>
+            <image src="../images/icon_you@2x.png"
+                   class="icon_you"></image>
+          </view>
+          <view class='be_zxs flex flex-a-i-center flex-j-c-center'
+                wx:if='{{memberType == 1 && userInfo}}'>
+            <view class='be_zxs_title'>正在申请中</view>
+          </view>
+          <view class='is_zxs'
+                wx:if='{{memberType == 2}}'>咨询师</view>
+        </view>
+      </view>
+    </view>
+    <view class='mgt20'>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            style='border-bottom: none;'
+            @tap='to_account_message'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_xinxi@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>账号信息</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+    </view>
+    <view class='mgt20'
+          wx:if='{{memberType == 2  && userInfo}}'>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            @tap='to_scheduling'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_paiban@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>排班管理</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            style='border-bottom: none;'
+            @tap='to_consult_list'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_zixun1@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>咨询列表</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+    </view>
+    <view class='mgt20'>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            @tap='to_my_make'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_yuyue1@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>我的咨询</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            @tap='to_my_test'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_ceping@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>我的测评</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            @tap="to_my_wallet">
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_qianbao@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>我的钱包</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            @tap='to_collect'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_shoucang@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>我的收藏</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            style='border-bottom: none;'
+            @tap='to_my_evaluate'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_pingjia@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>我的评价</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+    </view>
+    <view class='mgt20'>
+      <view class='this flex flex-a-i-center flex-j-c-sb'
+            style='border-bottom: none;'
+            @tap='to_my_contact'>
+        <view class='flex flex-a-i-center'>
+          <image src="../images/icon_aboutus@2x.png"
+                 class="icon_xinxi"></image>
+          <view class='title'>关于我们</view>
+        </view>
+        <image src="../images/icon_youhua@2x.png"
+               class="icon_youhua"></image>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class Person_center extends wepy.page {
+  config = {
+    navigationBarTitleText: '个人中心',
+    navigationStyle: 'custom',
+    enablePullDownRefresh: false
+  }
+  components = {}
+  data = {
+    memberType: false, // 角色
+    userInfo: null, // 用户信息
+    canIUse: wx.canIUse('button.open-type.getUserInfo'),
+    messageCount: '',
+    compareClientVersion: ''
+  }
+
+  computed = {}
+  methods = {
+
+    myselffNews () {
+      this.checkLogin('/pages/my_message')
+    },
+    to_account_message () {
+      this.checkLogin('/pages/account_message')
+    },
+    to_data_fill () {
+      this.checkLogin('/pages/inter_notice')
+    },
+    to_my_make () {
+      this.checkLogin('/pages/my_make')
+    },
+    to_collect () {
+      this.checkLogin('/pages/collect')
+    },
+    to_my_evaluate () {
+      this.checkLogin('/pages/my_evaluate')
+    },
+    to_my_test () {
+      this.checkLogin('/pages/my_test')
+    },
+    to_my_contact () {
+      goPath('/pages/contact')
+    },
+    to_my_wallet () {
+      this.checkLogin('/pages/my_wallet')
+    },
+    to_consult_list () {
+      goPath('/pages/consult_list')
+    },
+    to_scheduling () {
+      goPath('/pages/scheduling')
+    },
+    login () {
+      goPath('/pages/wxInfo')
+    }
+  }
+  checkLogin (path) {
+    if (!this.userInfo) {
+      wepy.showModal({
+        content: '请先进行登录操作', // 提示的内容,
+        // showCancel: false, // 是否显示取消按钮,
+        confirmText: '确定', // 确定按钮的文字，默认为取消，最多 4 个字符,
+        confirmColor: '#2565C3' // 确定按钮的文字颜色,
+      }).then(res => {
+        if (res.confirm) {
+          goPath('/pages/wxInfo')
+        } else if (res.cancel) {
+        }
+      })
+    } else {
+      goPath(path)
+    }
+  }
+  getMessageCount () {
+    let { getMessageCount } = api
+    getMessageCount().then(res => {
+
+      this.messageCount = res.data
+      this.$apply()
+    })
+  }
+  events = {}
+  onLoad (option) {
+    // 判断是否有全局信息的
+  }
+
+  onShow () {
+    this.compareClientVersion = this.$parent.globalData.compareClientVersion
+
+    if (this.$parent.globalData.userInfo) {
+      this.userInfo = Object.assign({}, this.$parent.globalData.userInfo)
+      this.memberType = this.$parent.globalData.userInfo.memberType
+      this.getMessageCount()
+      this.$apply()
+    } else if (this.canIUse) {
+      // canIUse: wx.canIUse('button.open-type.getUserInfo'),
+      this.$parent.userInfoReadyCallback = res => {
+        // this.userInfo = res.data || ''
+        this.userInfo = res.data
+        this.memberType = this.userInfo.memberType
+        // delete this.$parent.globalData.userInfo.memberType
+        this.getMessageCount()
+        this.$apply()
+      }
+    }
+  }
+}
+</script>
+<style lang="less">
+page {
+  margin-bottom: 60rpx;
+  // overflow: hidden;
+}
+.back_top {
+  width: 100%;
+  // height: 273rpx;
+  position: relative;
+}
+.backe5 {
+  width: 100%;
+  height: 380rpx;
+  &.active {
+    height: 273rpx;
+  }
+}
+.back_concent {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.back_concent_in {
+  width: 100%;
+  margin: 140rpx auto 38rpx;
+
+  text-align: center;
+  position: relative;
+  &.active {
+    margin: 29rpx auto 38rpx;
+  }
+}
+.mainPic {
+  width: 134rpx;
+  height: 134rpx;
+  border-radius: 50%;
+  background-color: #333;
+}
+.name {
+  font-size: 32rpx;
+  font-family: PingFangSC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  margin-top: 4rpx;
+}
+.be_zxs {
+  width: 187rpx;
+  height: 64rpx;
+  background: rgba(255, 180, 0, 1);
+  border-radius: 32rpx 0rpx 0rpx 32rpx;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.is_zxs {
+  position: absolute;
+  bottom: 5rpx;
+  right: 220rpx;
+  width: 84rpx;
+  height: 31rpx;
+  border: 1rpx solid rgba(246, 246, 250, 1);
+  border-radius: 16rpx;
+  font-size: 20rpx;
+  font-family: PingFang-SC-Light;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 1);
+  line-height: 31rpx;
+  text-align: center;
+}
+.be_zxs_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+.icon_you {
+  width: 16rpx;
+  height: 14rpx;
+  margin-left: 10rpx;
+}
+.mgt20 {
+  margin-top: 20rpx;
+}
+.this {
+  padding: 30rpx 30rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid rgba(244, 244, 244, 1);
+}
+.icon_youhua {
+  width: 16rpx;
+  height: 28rpx;
+}
+.icon_xinxi {
+  width: 36rpx;
+  height: 36rpx;
+}
+.title {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  margin-left: 20rpx;
+}
+.hd_out {
+  width: 42rpx;
+  height: 36rpx;
+  position: absolute;
+  right: 40rpx;
+  top: 25rpx;
+  &.active {
+    top: 0;
+  }
+}
+.myself_news_icon {
+  width: 100%;
+  height: 100%;
+}
+.posi_rela {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.hd {
+  position: absolute;
+  top: 0;
+  right: -4rpx;
+  width: 12rpx;
+  height: 12rpx;
+  background: rgba(204, 0, 0, 1);
+  border-radius: 50%;
+}
+</style>

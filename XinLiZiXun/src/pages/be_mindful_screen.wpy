@@ -1,0 +1,455 @@
+<template>
+  <view class="container">
+  <!-- <block wx:if="{{!isChooseCity}}"> -->
+    <view class='jgqj'>
+      <view class='jgqj_title'>价格区间（元）</view>
+      <view class='input_out flex flex-a-i-center'>
+        <input class="{{bindinput_small_money1 ? 'not_input' : 'chioce_input'}}" value='{{bindinput_small_money_value}}' type="number" name="" placeholder='最低价' bindinput='bindinput_small_money'/>
+         <view class='gang'>——</view>
+        <input class="{{bindinput_big_money1 ? 'not_input' : 'chioce_input'}}" value='{{bindinput_big_money_value}}' type="number" name="" placeholder='最高价' bindinput='bindinput_big_money'/>
+      </view>
+    </view>
+    <view class='sjd'>
+      <view class='sjd_title'>时间段（时）</view>
+      <view class='flex flex-a-i-center'>
+        <view class="time_small {{time_small_ ? 'not_input' : 'chioce_input'}}">
+          <picker bindchange="bindChanges1" value="{{inde}}" range="{{name}}">
+         <view class='activity_prompt'>
+                <view>{{(name[inde])?name[inde]:'不限'}}</view>
+                <image src="../images/icon_xiala@2x.png" class="icon_xiala" ></image>
+                <!-- {{(name[inde])?name[inde]:'不限'}} <text class='choose'>﹀</text> -->
+         </view>
+          </picker>
+          <!-- <input class="{{bindinput_small_money1 ? 'not_input' : 'chioce_input'}}" type="number" name="" placeholder='不限' bindinput='bindinput_small_money'> -->
+        </view>
+        <view class='gang'>——</view>
+        <view class="time_big {{time_big_ ? 'not_input' : 'chioce_input'}}">
+          <picker bindchange="bindChanges2" value="{{inde2}}" range="{{name2}}">
+         <view class='activity_prompt'>
+                <view>{{(name2[inde2])?name2[inde2]:'不限'}}</view>
+                <image src="../images/icon_xiala@2x.png" class="icon_xiala" ></image>
+                <!-- {{(name[inde])?name[inde]:'不限'}} <text class='choose'>﹀</text> -->
+         </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    <view class='xzxq'>
+      <view class='xzxq_title'>选择星期</view>
+      <view class='flex flex-a-i-center flex-j-c-sa flex-wrap'>
+        <view class="week_this {{time_small0_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(0)'>不限</view>
+        <view class="week_this {{time_small1_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(1)'>星期一</view>
+        <view class="week_this {{time_small2_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(2)'>星期二</view>
+        <view class="week_this {{time_small3_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(3)'>星期三</view>
+        <view class="week_this {{time_small4_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(4)'>星期四</view>
+        <view class="week_this {{time_small5_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(5)'>星期五</view>
+        <view class="week_this {{time_small6_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(6)'>星期六</view>
+        <view class="week_this {{time_small7_ ? 'week_this_chioce' : 'week_this_null'}}" @tap='week(7)'>星期日</view>
+      </view>
+    </view>
+    <view class='xzdd'>
+        <view class='xzdd_title'>选择地点</view>
+        <view class="time_big {{choosedCitys?'chioce_input1':'not_input1'}}" @tap="to_chioce_city">
+            <view>{{choosedCitys?choosedCitys:'不限'}}</view>
+            <image src="../images/icon_tiaoye@2x.png" class="icon_tiaoye"></image>
+        </view>
+    </view>
+    <view class='zxszt'>
+      <view class='zxszt_title'>咨询师状态</view>
+      <view class='flex flex-a-i-center'>
+        <view class="week_this mgr28 {{zxszt0 ? 'week_this_chioce' : 'week_this_null'}}" @tap='zxszt(0)'>不限</view>
+        <view class="week_this mgr28 {{zxszt1 ? 'week_this_chioce' : 'week_this_null'}}" @tap='zxszt(1)'>实时</view>
+      </view>
+    </view>
+    <view class='button flex flex-j-c-sb'>
+      <view class='button_reset' @tap='reset'>重置</view>
+      <view class='button_confirm' @tap='confirm'>确定</view>
+    </view>
+
+
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Be_mindful_screen extends wepy.page {
+    config = {
+      navigationBarTitleText: '筛选',
+      'usingComponents': {
+        'city-choose': '/components/citys/citys'
+      }
+    }
+    components = {}
+    bindinput_small_money(e) {
+      this.bindinput_small_money_value = e.detail.value
+      this.postData.minPrice = e.detail.value
+      if (e.detail.value) {
+        this.bindinput_small_money1 = false
+      } else {
+        this.bindinput_small_money1 = true
+      }
+    }
+    bindinput_big_money(e) {
+      this.bindinput_big_money_value = e.detail.value
+      this.postData.maxPrice = e.detail.value
+      if (e.detail.value) {
+        this.bindinput_big_money1 = false
+      } else {
+        this.bindinput_big_money1 = true
+      }
+    }
+    bindChanges1(e) {
+        // 选择开始时间段的时间
+      var that = this
+      this.setData({
+        inde: e.detail.value // 当前选项的索引值
+      })
+      var inde = e.detail.value
+      var data = that.data.array
+      this.postData.beginTime = this.name[e.detail.value]
+      this.time_small_ = false
+    }
+    bindChanges2(e) {
+      var that = this
+      this.setData({
+        inde2: e.detail.value// 当前选项的索引值
+      })
+      var inde2 = e.detail.value
+      var data = that.data.array
+      this.postData.endTime = this.name[e.detail.value]
+      this.time_big_ = false
+    }
+    data = {
+      name: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00'],
+      name2: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00', '24:00'],
+      bindinput_small_money1: true,
+      bindinput_big_money1: true,
+      time_small_: true,
+      time_big_: true,
+      time_big1_: true,
+      time_small0_: false,
+      time_small1_: false,
+      time_small2_: false,
+      time_small3_: false,
+      time_small4_: false,
+      time_small5_: false,
+      time_small6_: false,
+      time_small7_: false,
+      zxszt0: false,
+      zxszt1: false,
+      bindinput_small_money_value: '',
+      bindinput_big_money_value: '',
+      choosedCitys: '',
+      postData: {
+
+      },
+      isChooseCity: false
+    }
+    computed = {}
+    methods = {
+      chooseCity() {
+        this.isChooseCity = true
+      },
+
+      confirm() {
+        let that = this
+        const pages = getCurrentPages() // 获取页面栈
+
+        const beMindful = pages[pages.length - 2] // 是获取上一个页面的js里面的pages的所有信息。 -2 是上一个页面，-3是上上个页面以此类推。
+
+        if (JSON.stringify(this.postData) == '{}') {
+
+        } else {
+          beMindful.setData({
+            isScreen: true
+          })
+          beMindful.setPostData(this.postData) // 通过方法可以设置， 直接赋值不行，不知道是什么问题哈哈
+          beMindful.getConsultantList(beMindful.data.search) // 触发事件
+        }
+
+        wx.navigateBack()
+      },
+      week(e) {
+        if (e == 0) {
+          this.postData.week = ''
+          this.time_small0_ = true
+          this.time_small1_ = false
+          this.time_small2_ = false
+          this.time_small3_ = false
+          this.time_small4_ = false
+          this.time_small5_ = false
+          this.time_small6_ = false
+          this.time_small7_ = false
+        } else if (e == 1) {
+          this.postData.week = '星期一'
+          this.time_small0_ = false
+          this.time_small1_ = true
+          this.time_small2_ = false
+          this.time_small3_ = false
+          this.time_small4_ = false
+          this.time_small5_ = false
+          this.time_small6_ = false
+          this.time_small7_ = false
+        } else if (e == 2) {
+          this.postData.week = '星期二'
+          this.time_small0_ = false
+          this.time_small1_ = false
+          this.time_small2_ = true
+          this.time_small3_ = false
+          this.time_small4_ = false
+          this.time_small5_ = false
+          this.time_small6_ = false
+          this.time_small7_ = false
+        } else if (e == 3) {
+          this.postData.week = '星期三'
+          this.time_small0_ = false
+          this.time_small1_ = false
+          this.time_small2_ = false
+          this.time_small3_ = true
+          this.time_small4_ = false
+          this.time_small5_ = false
+          this.time_small6_ = false
+          this.time_small7_ = false
+        } else if (e == 4) {
+          this.postData.week = '星期四'
+          this.time_small0_ = false
+          this.time_small1_ = false
+          this.time_small2_ = false
+          this.time_small3_ = false
+          this.time_small4_ = true
+          this.time_small5_ = false
+          this.time_small6_ = false
+          this.time_small7_ = false
+        } else if (e == 5) {
+          this.postData.week = '星期五'
+          this.time_small0_ = false
+          this.time_small1_ = false
+          this.time_small2_ = false
+          this.time_small3_ = false
+          this.time_small4_ = false
+          this.time_small5_ = true
+          this.time_small6_ = false
+          this.time_small7_ = false
+        } else if (e == 6) {
+          this.postData.week = '星期六'
+          this.time_small0_ = false
+          this.time_small1_ = false
+          this.time_small2_ = false
+          this.time_small3_ = false
+          this.time_small4_ = false
+          this.time_small5_ = false
+          this.time_small6_ = true
+          this.time_small7_ = false
+        } else if (e == 7) {
+          this.postData.week = '星期日'
+          this.time_small0_ = false
+          this.time_small1_ = false
+          this.time_small2_ = false
+          this.time_small3_ = false
+          this.time_small4_ = false
+          this.time_small5_ = false
+          this.time_small6_ = false
+          this.time_small7_ = true
+        }
+      },
+      zxszt(e) {
+        if (e == 0) {
+          this.zxszt0 = true
+          this.zxszt1 = false
+        } else if (e == 1) {
+          this.zxszt1 = true
+          this.zxszt0 = false
+        }
+        this.postData.type = e
+      },
+      reset() {
+        this.zxszt0 = false
+        this.zxszt1 = false
+        this.bindinput_small_money1 = true
+        this.bindinput_big_money1 = true
+        this.time_small0_ = false
+        this.time_small1_ = false
+        this.time_small2_ = false
+        this.time_small3_ = false
+        this.time_small4_ = false
+        this.time_small5_ = false
+        this.time_small6_ = false
+        this.time_small7_ = false
+        this.bindinput_small_money_value = ''
+        this.bindinput_big_money_value = ''
+        this.choosedCitys = ''
+        this.setData({
+          inde2: ''
+        })
+        this.time_big_ = true
+        this.setData({
+          inde: ''
+        })
+        this.time_small_ = true
+        this.$apply()
+      },
+      confirm1(e) {
+        // 选择地点的
+        this.choosedCitys = e.detail.choosedCitys
+        this.isChooseCity = false
+        this.postData.city = this.choosedCitys
+      },
+      to_chioce_city() {
+        goPath('/pages/chioce_city')
+      }
+    }
+    /**
+     * wepy 页面栈的兼容方法
+     * */
+    updateChoosedCitys(city) {
+      // this.updatePath = true
+      this.postData.city = city
+      this.choosedCitys = city
+    }
+    events = {}
+    async onLoad(option) {
+    }
+  }
+</script>
+<style lang="less">
+page{
+  background-color: #fff;
+}
+.jgqj,.sjd,.xzxq,.xzdd,.zxszt{
+  padding: 32rpx;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.xzxq{
+  padding-bottom: 14rpx;
+}
+.jgqj_title,.sjd_title,.xzxq_title,.xzdd_title,.zxszt_title{
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(102,102,102,1);
+  margin-bottom: 22rpx;
+}
+.input_out input{
+  width: 200rpx;
+  height: 60rpx;
+  border-radius:30rpx;
+  text-align: center;
+  font-size: 28rpx;
+  padding:0 10rpx;
+}
+.time_small,.time_big{
+  width: 200rpx;
+  height: 60rpx;
+  border-radius:30rpx;
+  text-align: center;
+  font-size: 28rpx;
+  padding:0 10rpx;
+  line-height: 60rpx;
+}
+.time_big{
+  position: relative;
+}
+.chioce_input{
+  background:rgba(255,255,255,1);
+  border:2rpx solid rgba(37,101,195,1);
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.not_input{
+  background:rgba(246,246,250,1);
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+}
+.chioce_input1{
+  background:rgba(255,255,255,1);
+  border:2rpx solid rgba(37,101,195,1);
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+  border-radius: 30rpx;
+}
+.not_input1{
+  background:rgba(246,246,250,1);
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  border-radius: 30rpx;
+  color:rgba(153,153,153,1);
+}
+.gang{
+  color:rgba(204,204,204,1);
+  margin: 0 39rpx;
+}
+.activity_prompt{
+  position: relative;
+}
+.icon_xiala{
+  width: 16rpx;
+  height: 10rpx;
+  position: absolute;
+  right: 10rpx;
+  top: 26rpx;
+}
+.icon_tiaoye{
+  width: 10rpx;
+  height: 16rpx;
+  position: absolute;
+  right: 22rpx;
+  top: 22rpx;
+}
+.week_this{
+  width:150rpx;
+  height:64rpx;
+  border-radius:32rpx;
+  font-size:28rpx;
+  text-align: center;
+  line-height: 64rpx;
+  margin-bottom: 18rpx;
+}
+.mgr28{
+  margin-right: 28rpx;
+  margin-bottom: 0;
+}
+.week_this_null{
+  background:rgba(246,246,250,1);
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+}
+.week_this_chioce{
+  background:rgba(255,255,255,1);
+  border:2rpx solid rgba(37,101,195,1);
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.button{
+  padding: 68rpx 32rpx 60rpx;
+}
+.button_reset{
+  width:330rpx;
+  height:80rpx;
+  background:rgba(246,246,250,1);
+  border-radius:8rpx;
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(0,0,0,1);
+  text-align: center;
+  line-height: 80rpx;
+}
+.button_confirm{
+  width:330rpx;
+  height:80rpx;
+  background:rgba(37,101,195,1);
+  border-radius:8rpx;
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  line-height: 80rpx;
+}
+</style>

@@ -1,0 +1,1330 @@
+<template>
+  <view class="container">
+    <view class='posi_rela'>
+      <swiper class="img" autoplay="true" interval="5000" duration="500">
+        <repeat for="{{courseDetail.banner}}" key="">
+          <swiper-item>
+            <image src="{{item}}" class="img backe5" mode="aspectFill" mode="aspectFill"></image>
+          </swiper-item>
+        </repeat>
+      </swiper>
+      <!-- <image src="{{courseDetail.banner}}" class="img backe5" mode="aspectFill"></image> -->
+      <view class='posi_abso'>
+        <view class='flex flex-j-c-sb'>
+          <view class='flex flex-a-i-center'>
+            <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{courseDetail.graded >= 1}}'></image>
+            <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{courseDetail.graded < 1}}'></image>
+            <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{courseDetail.graded >= 2}}'></image>
+            <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{courseDetail.graded < 2}}'></image>
+            <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{courseDetail.graded >= 3}}'></image>
+            <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{courseDetail.graded < 3}}'></image>
+            <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{courseDetail.graded >= 4}}'></image>
+            <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{courseDetail.graded < 4}}'></image>
+            <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{courseDetail.graded >= 5}}'></image>
+            <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{courseDetail.graded < 5}}'></image>
+            <view class='sell_star'>{{graded}}</view>
+          </view>
+          <!-- <view class='sell_num'>{{courseDetail.gradeNumber}}人评分</view> -->
+          <view wx:if="{{courseDetail.gradeNumber}}" class='sell_num'>{{courseDetail.gradeNumber}}人评分</view>
+          <view wx:else class='sell_num'>暂无评分</view>
+        </view>
+      </view>
+    </view>
+    <view class='title_out'>
+      <view class='title'>{{courseDetail.courseName}}</view>
+      <view class='flex flex-j-c-sb mgt40'>
+        <view class='color37' wx:if='{{courseDetail.isFree == 0}}'>¥0.0</view>
+        <view class='money' wx:if='{{courseDetail.isFree == 1}}'>¥{{courseDetail.price}}</view>
+        <view class='time' wx:if="{{courseDetail.isFree != 0}}">已售：{{!courseDetail.soldOutNum ? '0' : courseDetail.soldOutNum }}</view>
+      </view>
+    </view>
+    <view class='detail_out'>
+      <view class='detail_title'>课程简介</view>
+      <view class='detail_detail'>
+        <import src="../wxParse/wxParse.wxml" />
+        <template is="wxParse" data="{{wxParseData:article.nodes}}" />
+      </view>
+    </view>
+
+    <!-- 全部评分 -->
+    <view class='detail_out'>
+      <view class='detail_title1'>全部评分</view>
+      <view class='detail_detail1' wx:if="{{commentList}}">
+        <repeat for="{{commentList.list}}" key="">
+          <view class='pd30 flex flex-a-i-center'>
+            <image src="{{item.headUrl}}" class="backe5 mainpic" mode="aspectFill"></image>
+            <view class='flex1_'>
+              <view>
+                <view class='flex flex-j-c-sb'>
+                  <view class='pd30_name'>{{item.memberName}}</view>
+                  <view class='pd30_time'>{{item.createTime}}</view>
+                </view>
+              </view>
+              <view class='flex flex-a-i-center' style='margin-top: 10rpx;'>
+                <view class='pinfen_title'>评分</view>
+                <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.grade >= 1}}'></image>
+                <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.grade  < 1}}'></image>
+                <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.grade  >= 2}}'></image>
+                <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.grade  < 2}}'></image>
+                <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.grade  >= 3}}'></image>
+                <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.grade  < 3}}'></image>
+                <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.grade  >= 4}}'></image>
+                <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.grade  < 4}}'></image>
+                <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{item.grade  >= 5}}'></image>
+                <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{item.grade  < 5}}'></image>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <view class='no_more' wx:else>暂无评分</view>
+    </view>
+
+    <!-- 音频 -->
+    <view class='abso_audio' wx:if='{{show_abso_audio}}'>
+      <view class='audiosBox'>
+        <view class="audioOpen" @tap="listenerButtonPlay" wx:if="{{!isOpen}}">
+          <image class='image2' src="../images/icon_bofang@2x.png" />
+        </view>
+        <view class="audioOpen" @tap="listenerButtonPause" wx:if="{{isOpen}}">
+          <image class='image2' src="../images/icon_zanting@2x.png" />
+        </view>
+        <view class='slid'>
+          <view class='slid_title'>{{urlFileName}}</view>
+          <slider @change="sliderChange" block-size="22px" step="2" value="{{offset}}" max="{{max}}" selected-color="#FFB400" block-color='#FFB400' />
+          <view>
+            <text class='times'>{{starttime}}</text> <!-- 进度时长 -->
+
+            <text class='times'>{{duration}}</text> <!-- 总时长 -->
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <HPay @hpay.user="purchase" :show.sync="show_pay_modal" :payType.sync="payType" :price.sync="price"></HPay>
+
+    <!-- flex底部 -->
+    <view class='button_out' wx:if='{{courseDetail.isFree == 0 || courseDetail.payStatus}}'>
+      <view class='flex'>
+        <view wx:if="{{!courseDetail.readyStatus && !courseDetail.commentStatus}}" class='text_center'>
+          <image src="../images/icon_pingfen_yi@2x.png" class="img_icon"></image>
+          <view class='pinfen1'>评分</view>
+        </view>
+        <view wx:if="{{courseDetail.readyStatus && !courseDetail.commentStatus}}" class='text_center' @tap='grade'>
+          <image src="../images/icon_pinfen_wei@2x.png" class="img_icon"></image>
+          <view class='pinfen'>评分</view>
+        </view>
+        <view wx:if="{{courseDetail.commentStatus || isGrade}}" class='text_center'>
+          <image src="../images/icon_pingfen_yi@2x.png" class="img_icon"></image>
+          <view class='pinfen1'>已评分</view>
+        </view>
+        <view class='flex1' @tap='now_play'>{{now_play_title}}</view>
+      </view>
+    </view>
+
+    <!-- flex底部 -->
+    <!-- <view class='button_out' wx:if='{{1}}'>      -->
+    <view class='button_out' wx:if='{{courseDetail.isFree == 1 && !courseDetail.payStatus}}'>
+      <view class='flex'>
+        <view class='shiting' @tap='now_play1'>免费试听</view>
+        <!-- <view class='goumai' @tap="purchase({{courseDetail.courseId}})">立即购买</view> -->
+        <view class='goumai' @tap="showPay()">立即购买</view>
+      </view>
+
+    </view>
+
+    <!-- 赶紧点星星评分吧！ -->
+    <view class='modal flex' wx:if='{{show_modal}}'>
+      <view class='mask'></view>
+      <view class='mgat'>
+        <view class='pd60'>
+          <view class='kcjs'>课程结束</view>
+          <view class='gjdx'>赶紧点星星评分吧！</view>
+        </view>
+        <view class='flex flex-a-i-center h100 flex-j-c-sa'>
+          <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 1}}' @tap='to_grade(1)'></image>
+          <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 1}}' @tap='to_grade(1)'></image>
+          <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 2}}' @tap='to_grade(2)'></image>
+          <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 2}}' @tap='to_grade(2)'></image>
+          <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 3}}' @tap='to_grade(3)'></image>
+          <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 3}}' @tap='to_grade(3)'></image>
+          <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 4}}' @tap='to_grade(4)'></image>
+          <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 4}}' @tap='to_grade(4)'></image>
+          <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 5}}' @tap='to_grade(5)'></image>
+          <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 5}}' @tap='to_grade(5)'></image>
+        </view>
+        <view class='mgat_button flex'>
+          <view class='cancel' @tap='cancel'>取消</view>
+          <view class='submit' @tap='submit'>提交</view>
+        </view>
+      </view>
+    </view>
+
+    <view class='modal1 flex' wx:if='{{show_modal1}}'>
+      <view class='mask'></view>
+      <view class='mgat1'>
+        <view class='pd601'>
+          <view class='stjs'>试听结束，是否购买？</view>
+        </view>
+        <view class='mgat_button flex'>
+          <view class='cancel' @tap='cancel1'>取消</view>
+          <!-- <view class='submit' @tap='submit1'>确定</view> -->
+          <view class='submit' @tap="showPay()">确定</view>
+          <!-- <view class='submit' @tap="purchase({{courseDetail.courseId}})">确定</view> -->
+        </view>
+      </view>
+    </view>
+
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo, sleep } from '../util.js'
+import api from '../api.js'
+import WxParse from '../wxParse/wxParse.js'
+import HPay from '../components/h-pay'
+
+export default class Confidences_detail extends wepy.page {
+  config = {
+    navigationBarTitleText: '课程详情'
+  };
+  components = {
+    HPay: HPay
+  };
+  data = {
+    fristComing: true, // 处理评价的啊啊啊
+    // HPay
+    show_pay_modal: false,
+    payType: 1,
+    price: '',
+
+    commentList: [],
+    courseDetail: {
+      graded: ''
+    },
+    courseId: '',
+    star: 4,
+    star_big: 0,
+    button_name: '',
+    show_modal: false, // 评分弹窗
+    show_modal1: false, // 是否购买？ 弹窗
+    now_play1: true,
+    offset: '',
+    pinfen: 'pinfen',
+    img_icon: '../images/icon_pinfen_wei@2x.png',
+    isGrade: false, // 判断是否已经评分
+    buy: 0,
+    fixedMax: 0,
+    max: 0, // duration 设置最大免费听的时长 根据这个判断 然并卵
+    now_play_title: '立即播放', // 下面蓝色的按钮字体
+    show_abso_audio: false, // 音频的界面组件
+    isOpen: false, // 播放开关图标
+    starttime: '00:00', // 正在播放时长
+    duration: '06:41', // 总时长
+    src:
+      'http://ws.stream.qqmusic.qq.com/M500001VfvsJ21xFqb.mp3?guid=ffffffff82def4af4b12b3cd9337d5e7&uin=346897220&vkey=6292F51E1E384E061FF02C31F716658E5C81F5594D561F2E88B854E81CAAB7806D5E4F103E55D33C16F3FAC506D1AB172DE8600B37E43FAD&fromtag=46',
+    sliderTrue: false, // issue 处理 感觉有问题啊
+    bgMusic: '',
+    urlFileName: '',
+    bgMusic1: ''
+  };
+  computed = {
+    graded() {
+      if (this.courseDetail.graded == null) return ''
+      this.courseDetail.graded = this.courseDetail.graded + ''
+      return this.courseDetail.graded.length >= 3
+        ? this.courseDetail.graded
+        : this.courseDetail.graded + '.0'
+    }
+  };
+
+  listenerButtonStop() {
+    var that = this
+    this.bgMusic.stop()
+  }
+
+  // 购买接口
+  purchaseCourse(id) {
+    let that = this
+    let { purchaseCourse } = api
+    console.log(this.payType, 'this.payType 支付类型')
+    // todo
+    // return;
+    // 购买课程
+    purchaseCourse(id, {
+      payType: this.payType
+    }).then(res => {
+      if (res) {
+        if (!res.data) {
+          // 余额的
+          wx.showToast({
+            title: '支付成功',
+            duration: 2000,
+            mask: true
+          })
+          // that.courseDetail.isFree = 0
+          that.courseDetail.payStatus = true
+          that.show_modal1 = false
+          that.show_pay_modal = false
+          that.isOpen = false
+          that.bgMusic.destroy()
+          that.bgMusic = that.bgMusic1
+          that.urlFileName = that.courseDetail.urlFileName
+          that.$apply()
+          // that.searchMemberCustomizationInfo()
+        } else {
+          // 支付宝的
+          let that = this
+          console.log(res.data, '支付后台返回来的')
+          let postData = {
+            timeStamp: '',
+            nonceStr: '',
+            package: '',
+            paySign: ''
+          }
+
+          postData.timeStamp = res.data.timestamp + ''
+          postData.nonceStr = res.data.nonce
+          postData.paySign = res.data.signature
+          postData.package = res.data.pack
+
+          console.log(postData, '处理后的数据')
+
+          let paymentObj = { ...postData, signType: 'MD5' }
+          wx.requestPayment({
+            ...paymentObj,
+            success(res) {
+              // that.courseDetail.isFree = 0
+              that.courseDetail.payStatus = true
+              that.show_modal1 = false
+              that.show_pay_modal = false
+              // 销毁试听的实例
+              that.isOpen = false
+              that.bgMusic.destroy()
+              that.bgMusic = that.bgMusic1
+              that.urlFileName = that.courseDetail.urlFileName
+              wx.showToast({
+                title: '购买成功',
+                icon: 'success',
+                duration: 2000,
+                mask: true
+              })
+
+              that.$apply()
+              console.log(res, 'success')
+            },
+            complete(res) {
+              that.show_modal1 = false
+              that.$apply()
+              console.log(res, 'complete')
+            },
+            fail(res) {
+              wx.showToast({
+                title: '支付失败',
+                icon: 'none',
+                duration: 2000
+              })
+              console.log(res, 'fail')
+            }
+          })
+        }
+      }
+    })
+  }
+
+  methods = {
+    showPay() {
+      this.show_pay_modal = true
+      this.show_modal1 = false
+    },
+    purchase() {
+      this.purchaseCourse(this.id)
+    },
+    grade() {
+      this.show_modal = true
+    },
+    submit() {
+      let { getCourseCommentList } = api
+      let that = this
+      if (!this.star_big) {
+        wx.showToast({
+          title: '请选择评分',
+          icon: 'none'
+        })
+        return
+      }
+      this.courseComment({
+        id: this.courseDetail.courseId,
+        grade: this.star_big
+      }).then(res => {
+        if (res) {
+          this.show_modal = false
+          wx.showToast({
+            title: '评分成功',
+            icon: 'success',
+            duration: 2000
+          })
+          that.courseDetail.commentStatus = true
+          this.isGrade = true
+          getCourseCommentList({ courseId: this.courseId }).then(res => {
+            this.commentList = res.data
+          })
+          // !commentList.data ? this.commentList = '' : this.commentList = commentList.data
+          // this.img_icon = '../images/icon_pingfen_yi@2x.png'
+          // this.pinfen = 'pinfen1'
+          this.$apply()
+          console.log(res, 111111111111111111111111111111111111)
+        }
+      })
+    },
+    cancel() {
+      // 评价取消按钮
+      this.show_modal = false
+    },
+    cancel1() {
+      // 购买弹窗取消按钮
+      this.show_modal1 = false
+    },
+    submit1() {
+      this.show_modal1 = false
+      // 去另一个差不多一样的页面 跳转记得改
+      // goPath('/pages/confidences_detail_detail')
+    },
+    to_grade(e) {
+      this.star_big = e
+    },
+    // 免费的那个页面播放 我去啊 重复的这个是另一个界面的事件
+    now_play() {
+      // 点击免费试听时
+      var that = this
+      this.duration = this.timeToFormat(this.bgMusic.duration)
+
+      // console.log(that.now_play_title)
+      if (that.now_play_title == '立即播放') {
+        that.now_play_title = '播放中...'
+        this.duration = this.timeToFormat(this.bgMusic.duration)
+
+        that.show_abso_audio = true
+        // bug ios 播放时必须加title 不然会报错导致音乐不播放
+
+        this.bgMusic.onTimeUpdate(() => {
+          // this.bgMusic.duration总时长  this.bgMusic.currentTime当前进度
+          // console.log(this.bgMusic.currentTime)
+          var duration = this.bgMusic.duration
+
+          var offset = this.bgMusic.currentTime
+
+          var currentTime = parseInt(this.bgMusic.currentTime)
+
+          var max = parseInt(this.bgMusic.duration)
+          var min = '0' + parseInt(currentTime / 60)
+          var sec = currentTime % 60
+          if (sec < 10) {
+            sec = '0' + sec
+          }
+          var starttime = min + ':' + sec /*  00:00  */
+
+          this.offset = currentTime
+          this.starttime = starttime
+          // !this.max ? this.max  = max : ''
+          this.max = max
+          this.changePlay = true
+          this.duration = this.timeToFormat(this.bgMusic.duration)
+          console.log(this.max)
+          this.$apply()
+        })
+        // 播放结束
+        this.bgMusic.onEnded(() => {
+          this.starttime = '00:00'
+          // this.offset = 0
+          this.isOpen = false
+          this.now_play_title = '立即播放'
+          console.log('音乐播放结束，免费的！！')
+          if (this.courseDetail.isFree == 1) {
+            if (!this.courseDetail.payStatus) {
+              this.show_modal1 = true
+            } else {
+              if (!this.courseDetail.readyStatus) {
+                this.show_modal = true
+                this.courseDetail.readyStatus = true
+                this.userAlready()
+
+                // this.fristComing = false
+              }
+            }
+          }
+          if (!this.courseDetail.readyStatus) {
+            this.show_modal = true
+            this.courseDetail.readyStatus = true
+            this.userAlready()
+            // this.fristComing = false
+          }
+          if (this.bgMusicTimer) {
+            clearInterval(this.bgMusicTimer)
+          }
+          this.$apply()
+        })
+        this.bgMusic.play()
+        // that.setData({
+        //   isOpen: true,
+        // })
+        this.isOpen = true
+      } else {
+        console.log(1)
+      }
+    },
+
+    // 免费试听按钮 收钱的 免费试听
+    now_play1() {
+      var that = this
+      that.show_abso_audio = true
+      // bug ios 播放时必须加title 不然会报错导致音乐不播放
+
+      this.duration = this.timeToFormat(this.bgMusic.duration)
+
+      this.bgMusic.onTimeUpdate(() => {
+        // this.bgMusic.duration总时长  this.bgMusic.currentTime当前进度
+        var duration = this.bgMusic.duration
+        var offset = this.bgMusic.currentTime
+
+        var currentTime = parseInt(this.bgMusic.currentTime)
+        var min = '0' + parseInt(currentTime / 60)
+        var max = parseInt(this.bgMusic.duration)
+        var sec = currentTime % 60
+        // console.log(currentTime, max)
+        // if(currentTime >= (max* 0.25) && this.courseDetail.isFree == 1){
+        //   if(!this.courseDetail.payStatus) {
+        //     this.bgMusic.pause()
+        //     that.isOpen=false
+        //     this.show_modal1 = true
+        //    }
+        // }
+        this.duration = this.timeToFormat(this.bgMusic.duration)
+        if (sec < 10) {
+          sec = '0' + sec
+        }
+        var starttime = min + ':' + sec /*  00:00  */
+        this.offset = currentTime
+        console.log(this.offset)
+        this.starttime = starttime
+        // !this.max ? this.max  = max : ''
+        this.max = max
+        this.changePlay = true
+        this.$apply()
+      })
+
+      this.bgMusic.onEnded(() => {
+        (this.starttime = '00:00'),
+          // this.offset = 0
+          (this.isOpen = false)
+        !this.max ? (this.max = max) : ''
+        this.max = max
+        this.now_play_title = '立即播放'
+        console.log('音乐播放结束', '收钱的')
+        if (this.courseDetail.isFree == 1) {
+          if (!this.courseDetail.payStatus) {
+            this.show_modal1 = true
+          } else {
+            if (this.courseDetail.readyStatus) {
+              this.show_modal = true
+              this.courseDetail.readyStatus = false
+              // this.fristComing = false
+            }
+          }
+        }
+        if (this.bgMusicTimer) {
+          clearInterval(this.bgMusicTimer)
+        }
+        this.$apply()
+      })
+      this.bgMusic.play()
+      that.isOpen = true
+      this.$apply()
+    },
+
+    // 开始播放按钮 图标按钮
+    listenerButtonPlay: function() {
+      var that = this
+      this.duration = this.timeToFormat(this.bgMusic.duration)
+      // bug ios 播放时必须加title 不然会报错导致音乐不播放
+
+      that.now_play_title = '播放中...'
+
+      this.bgMusic.onTimeUpdate(() => {
+        // this.bgMusic.duration总时长  this.bgMusic.currentTime当前进度
+        // console.log(this.bgMusic.currentTime)
+        var duration = this.bgMusic.duration
+        var offset = this.bgMusic.currentTime
+        var currentTime = parseInt(this.bgMusic.currentTime)
+        var min = '0' + parseInt(currentTime / 60)
+        var max = parseInt(this.bgMusic.duration)
+        var sec = currentTime % 60
+        // if(currentTime >= (max* 0.25) && this.courseDetail.isFree == 1){
+        //   if(!this.courseDetail.payStatus) {
+        //   this.bgMusic.pause()
+        //   that.isOpen=false
+        //   this.show_modal1 = true
+        //   }
+        // }
+        if (sec < 10) {
+          sec = '0' + sec
+        }
+        var starttime = min + ':' + sec /*  00:00  */
+        this.offset = currentTime
+        this.starttime = starttime
+        // !this.max ? this.max  = max : ''
+        this.max = max
+        this.changePlay = true
+        this.duration = this.timeToFormat(this.bgMusic.duration)
+        this.$apply()
+      })
+
+      // 播放结束
+      this.bgMusic.onEnded(() => {
+        this.starttime = '00:00'
+        // this.offset = 0
+        that.isOpen = false
+        this.now_play_title = '立即播放'
+        console.log('音乐播放结束', '按图标播放按钮的')
+        if (this.courseDetail.isFree == 1) {
+          if (!this.courseDetail.payStatus) {
+            this.show_modal1 = true
+          } else {
+            if (!this.courseDetail.readyStatus) {
+              this.show_modal = true
+              this.courseDetail.readyStatus = true
+              // this.fristComing = false
+              this.userAlready()
+            }
+          }
+        }
+        if (this.bgMusicTimer) {
+          clearInterval(this.bgMusicTimer)
+        }
+        this.$apply()
+      })
+      this.bgMusic.play()
+      that.isOpen = true
+      this.$apply()
+    },
+
+    // 暂停播放
+    listenerButtonPause() {
+      this.bgMusic.pause()
+      this.isOpen = false
+      //  this.now_play_title = '立即播放'
+    },
+
+    // 进度条拖拽
+    sliderChange(e) {
+      this.duration = this.timeToFormat(this.bgMusic.duration)
+
+      var that = this
+      that.now_play_title = '播放中...'
+      // this.bgMusic.src = that.data.src;
+      var offset1 = parseInt(e.detail.value) // 获取移动到的数值
+
+      this.bgMusic.seek(offset1)
+      this.sliderTrue = true // 兼容方法
+      if (this.bgMusicTimer) {
+        clearInterval(this.bgMusicTimer)
+      }
+      this.bgMusicTimer = setInterval(() => {
+        console.log(111)
+        var currentTime = parseInt(this.bgMusic.currentTime)
+        var min = '0' + parseInt(currentTime / 60)
+        var max = parseInt(this.bgMusic.duration)
+        var sec = currentTime % 60
+        if (sec < 10) {
+          sec = '0' + sec
+        }
+        this.offset = this.currentTime
+        var starttime = min + ':' + sec
+        this.starttime = starttime
+      }, 100)
+      // this.bgMusic.onTimeUpdate(() => {
+      //   // this.bgMusic.duration总时长  this.bgMusic.currentTime当前进度
+      //   // console.log(this.bgMusic.currentTime)
+      //   var duration = this.bgMusic.duration
+      //   console.log(this.bgMusic.duration)
+
+      //   var offset = this.bgMusic.currentTime
+      //   var currentTime = parseInt(this.bgMusic.currentTime)
+      //   console.log(currentTime / 60)
+
+      //   var min = '0' + parseInt(currentTime / 60)
+      //   var max = parseInt(this.bgMusic.duration)
+      //   var sec = currentTime % 60
+
+      // // 判断是否小于鱼10
+      //   if (sec < 10) {
+      //     sec = '0' + sec
+      //   };
+
+      //   var starttime = min + ':' + sec   /*  00:00  */
+      //   this.offset = this.sliderTrue ? offset1 : currentTime
+      //   console.log(this.offset, '拖动的')
+      //   this.starttime = starttime
+      //   // !this.max ? this.max  = max : ''
+      //   this.max = max   //
+      //   this.duration = this.timeToFormat(this.bgMusic.duration)
+      //   // this.changePlay = true
+      //   this.sliderTrue ? this.bgMusic.seek(offset1) : ''
+      //   console.log(currentTime >= (this.max * 0.25), '11111111111')
+      //   console.log(currentTime, this.max, '11111111111')
+
+      // if(this.offset >= (this.max * 0.25) && this.courseDetail.isFree == 1){
+      //   if(!this.courseDetail.payStatus) {
+      //      this.bgMusic.seek(this.max* 0.25)
+      //     this.bgMusic.pause()
+      //     this.starttime = starttime
+      //     this.bgMusic.seek(this.max* 0.25)  // 限制试听的
+      //     that.show_modal1 = true
+      //     that.isOpen = false
+      //     this.sliderTrue = false
+      //     console.log(this.max* 0.25, '限制试听的');
+      //   }
+      // }
+
+      //   this.sliderTrue = false
+      //   this.$apply()
+      // })
+      // sleep(1).then(res => {
+      //   this.bgMusic.onTimeUpdate(() => {
+      //   // this.bgMusic.duration总时长  this.bgMusic.currentTime当前进度
+      //   // console.log(this.bgMusic.currentTime)
+      //     console.log(11111)
+      //   // this.sliderTrue ? this.bgMusic.seek(offset1) : this.sliderTrue = false
+
+      //     var duration = this.bgMusic.duration
+      //     var offset = this.bgMusic.currentTime
+      //     var currentTime = parseInt(this.bgMusic.currentTime)
+      //     var min = '0' + parseInt(currentTime / 60)
+      //     var max = parseInt(this.bgMusic.duration)
+      //     var sec = currentTime % 60
+      // // if(currentTime >= (max* 0.25) && this.courseDetail.isFree == 1){
+      // //   if(!this.courseDetail.payStatus) {
+      // //   this.bgMusic.pause()
+      // //   that.isOpen=false
+      // //   this.show_modal1 = true
+      // //   }
+      // // }
+      //     if (sec < 10) {
+      //       sec = '0' + sec
+      //     };
+      //     var starttime = min + ':' + sec   /*  00:00  */
+      //     this.offset = currentTime
+      //     this.starttime = starttime
+      //   // !this.max ? this.max  = max : ''
+      //     this.max = max
+      //     this.changePlay = true
+      //     console.log(offset1)
+      //     console.log(currentTime, 'currentTime')
+
+      // // if (this.offset >= (this.max * 0.25) && this.courseDetail.isFree == 0) {
+      // //   if (!this.courseDetail.payStatus) {
+      // //     this.bgMusic.seek(this.max * 0.25)
+      // //     this.bgMusic.pause()
+      // //     this.starttime = starttime
+      // //     this.bgMusic.seek(this.max * 0.25)  // 限制试听的
+      // //     that.show_modal1 = true
+      // //     that.isOpen = false
+      // //     this.sliderTrue = false
+      // //     console.log(this.max * 0.25, '限制试听的')
+      // //   }
+      // // }
+      // // this.bgMusic.seek(offset1)
+      //     this.duration = this.timeToFormat(this.bgMusic.duration)
+      //   // this.sliderTrue = false
+      //     this.$apply()
+      //   })
+      // })
+
+      // 播放结束
+      // this.bgMusic.onEnded(() => {
+      //   this.starttime = '00:00'
+      //   // this.offset = 0
+      //   that.isOpen = false
+      //   this.now_play_title = '立即播放'
+      //   console.log('音乐播放结束', '拖动的')
+      //   if (this.courseDetail.isFree == 1) {
+      //     if (!this.courseDetail.payStatus) {
+      //       this.show_modal1 = true
+      //     } else {
+      //       if (!this.courseDetail.readyStatus) {
+      //         this.show_modal = true
+      //         this.courseDetail.readyStatus = true
+      //         this.userAlready()
+      //         // this.fristComing = false
+      //       }
+      //     }
+      //   }
+      //   this.$apply()
+      // })
+      // offset slider的位置
+
+      this.offset = offset1
+
+      console.log(e.detail.value, '拖动')
+      this.bgMusic.play()
+
+      that.isOpen = true
+      // console.log(offset1 >= (that.max* 0.25), '2222222222222');
+
+      // console.log(offset, '11111111111111111111111111111111111111111111111111111111111')
+      // if(offset1 >= (that.max* 0.25) && this.courseDetail.isFree == 1 ){
+      //   if(!this.courseDetail.payStatus){
+      //     that.show_modal1 = true
+      //     this.bgMusic.seek(that.max* 0.25);
+      //     this.bgMusic.pause()
+      //     that.isOpen= false
+      //   }
+      // }
+    }
+  };
+  timeToFormat(times) {
+    var result = '00:00'
+    var hour, minute, second
+    if (times > 0) {
+      minute = Math.floor(times / 60)
+      if (minute < 10) {
+        minute = '0' + minute
+      }
+
+      second = Math.floor((times - 60 * minute) % 60)
+      if (second < 10) {
+        second = '0' + second
+      }
+      result = minute + ':' + second
+    }
+    return result
+  }
+  initAudio() {
+    // this.bgMusic.title = this.courseDetail.courseName
+    // this.bgMusic.epname = this.courseDetail.courseName
+    // console.log(this.bgMusic.duration, 'durationdurationdurationdurationdurationdurationduration');
+  }
+  events = {};
+  // watch = {
+  //   show_abso_audio(){
+  //     this.show_modal1 = true
+  //   }
+  // }
+  async onLoad(option) {
+    this.bgMusic = wx.createInnerAudioContext() // 音频
+    this.bgMusic1 = wx.createInnerAudioContext() // 音频
+    // this.bgMusic.volume = 1
+    // this.bgMusic1.volume = 1
+    //  this.bgMusic = wx.getBackgroundAudioManager()  // 音频
+    // this.bgMusic1 = wx.getBackgroundAudioManager()  // 音频
+    let { getCourseDetail, getCourseCommentList } = api
+
+    this.courseId = option.courseId
+    // this.courseId = 2
+
+    // getCourseDetail 课程详情
+    let courseDetail = await getCourseDetail({ id: this.courseId })
+    // if(!courseDetail) return;
+    this.courseDetail = courseDetail.data
+
+    console.log(this.courseDetail)
+    this.courseDetail.banner = this.courseDetail.banner.split(',')
+    this.src = courseDetail.data.url
+    this.price = courseDetail.data.price
+    this.id = courseDetail.data.courseId
+
+    if (this.courseDetail.payStatus && this.courseDetail.isFree) {
+      // 免费
+      this.bgMusic.src = courseDetail.data.url
+      this.urlFileName = courseDetail.data.urlFileName
+    } else if (!this.courseDetail.payStatus && this.courseDetail.isFree) {
+      // 免费 试听
+      this.bgMusic.src = courseDetail.data.auditionUrl // 试听
+      this.bgMusic1.src = courseDetail.data.url
+      this.urlFileName = courseDetail.data.auditionUrlFileName
+    } else {
+      // 已购买
+      this.bgMusic.src = courseDetail.data.url
+      this.urlFileName = courseDetail.data.urlFileName
+    }
+
+    // sleep(2).then(res=>{
+    //   this.duration = this.timeToFormat(this.bgMusic.duration)
+    // })
+    this.bgMusic.onPlay(res => {
+      console.log('onPlay onPlay onPlay')
+      this.duration = this.timeToFormat(this.bgMusic.duration)
+    })
+    // this.bgMusic1.onPlay(res => {
+    //   console.log('onPlay onPlay onPlay')
+    //   this.duration = this.timeToFormat(this.bgMusic1.duration)
+    // })
+    console.log(this.src, 'url')
+    this.$apply()
+    console.log(courseDetail, '课程详情')
+
+    if (this.courseDetail.content) WxParse.wxParse('article', 'html', this.courseDetail.content, this, 5)
+
+    // getCourseCommentList 评分列表
+    let commentList = await getCourseCommentList({ courseId: this.courseId })
+    !commentList.data
+      ? (this.commentList = '')
+      : (this.commentList = commentList.data)
+    console.log(this.commentList, '评分列表')
+    //
+    // this.bgMusic.onCanplay( () => {
+    //   console.log(111111);
+    //
+    // })
+    this.$apply()
+  }
+
+  userAlready() {
+    let { userAlready } = api
+    userAlready({
+      courseId: this.courseDetail.courseId
+    }).then(res => {
+      console.log(res, 'userAlready')
+      if (res) {
+      }
+    })
+  }
+  courseComment(params) {
+    let { courseComment } = api
+    return courseComment(params)
+  }
+  // 页面卸载时停止播放
+  onUnload() {
+    if (this.bgMusicTimer) {
+      clearInterval(this.bgMusicTimer)
+    }
+    var that = this
+    this.bgMusic.destroy()
+    // this.now_play_title = '立即播放'
+    // that.listenerButtonStop()//停止播放
+    console.log('离开')
+  }
+  onHide() {
+    this.bgMusic.stop()
+    this.isOpen = false
+  }
+}
+</script>
+<style lang="less">
+page {
+  height: 100%;
+  // overflow-y: hidden;
+}
+.img {
+  width: 100%;
+  height: 422rpx;
+  vertical-align: middle;
+}
+.posi_rela {
+  position: relative;
+  width: 100%;
+  height: 422rpx;
+}
+.posi_abso {
+  width: 750rpx;
+  /*height:80rpx;*/
+  background: rgba(7, 8, 9, 1);
+  opacity: 0.6;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 28rpx 31rpx;
+}
+.title_out {
+  padding: 40rpx 33rpx;
+  background-color: #fff;
+}
+.title {
+  font-size: 38rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(51, 51, 51, 1);
+  line-height: 58rpx;
+}
+.time {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(153, 153, 153, 1);
+}
+.mgt40 {
+  margin-top: 40rpx;
+}
+.detail_out {
+  margin-top: 20rpx;
+  background-color: #fff;
+}
+.detail_title {
+  padding: 36rpx 31rpx;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+}
+.detail_title1 {
+  padding: 36rpx 31rpx;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+  border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+}
+.detail_detail {
+  padding: 40rpx 31rpx 120rpx;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+}
+.detail_detail1 {
+  padding: 21rpx 31rpx 120rpx;
+}
+.no_more {
+  height: 240rpx;
+  //   line-height: 158rpx;
+  //   font-size: 32rpx;
+  //   // padding: 21rpx 31rpx 120rpx;
+  //   text-align: center;
+}
+.button {
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  background: rgba(37, 101, 195, 1);
+  border-radius: 4rpx;
+  width: 686rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  margin-top: 5rpx;
+  margin-left: 32rpx;
+}
+.button_out {
+  width: 100%;
+  height: 98rpx;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0rpx 1rpx 12rpx 0rpx rgba(3, 3, 3, 0.11);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+.money {
+  font-size: 40rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+.sell_num {
+  font-size: 26rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+.star_icon {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 6rpx;
+}
+.sell_star {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 180, 0, 1);
+  margin-left: 13rpx;
+}
+.color37 {
+  color: rgba(37, 101, 195, 1);
+}
+.img_icon {
+  width: 34rpx;
+  height: 34rpx;
+  margin-top: 17rpx;
+}
+.pinfen {
+  font-size: 22rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+.pinfen1 {
+  font-size: 22rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(153, 153, 153, 1);
+}
+.text_center {
+  text-align: center;
+  width: 150rpx;
+  height: 98rpx;
+}
+.flex1 {
+  flex: 1;
+  height: 98rpx;
+  background: rgba(37, 101, 195, 1);
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  line-height: 98rpx;
+}
+.shiting {
+  width: 50%;
+  text-align: center;
+  height: 98rpx;
+  line-height: 98rpx;
+  background: rgba(255, 255, 255, 1);
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+.goumai {
+  width: 50%;
+  text-align: center;
+  height: 98rpx;
+  line-height: 98rpx;
+  background: rgba(37, 101, 195, 1);
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+.abso_audio {
+  position: fixed;
+  bottom: 98rpx;
+  width: 100%;
+  left: 0;
+}
+
+/**index.wxss**/
+.audiosBox {
+  padding: 17rpx 32rpx;
+  margin: auto;
+  height: 120rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(7, 8, 9, 1);
+  opacity: 0.7;
+}
+/*按钮大小  */
+.audioOpen {
+  width: 70rpx;
+  height: 70rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.image2 {
+  width: 60rpx;
+  height: 60rpx;
+}
+/*进度条长度  */
+.slid {
+  flex: 1;
+  position: relative;
+}
+.slid view {
+  display: flex;
+  justify-content: space-between;
+}
+.slid view > text:nth-child(1) {
+  /*color: #4c9dee;*/
+  margin-left: 13rpx;
+}
+.slid view > text:nth-child(2) {
+  margin-right: 6rpx;
+}
+slider {
+  width: 520rpx;
+  margin: 0;
+  margin-left: 35rpx;
+}
+/*横向布局  */
+.times {
+  width: 100rpx;
+  text-align: center;
+  display: inline-block;
+  font-size: 24rpx;
+  color: #999999;
+  margin-top: 5rpx;
+}
+.title view {
+  text-indent: 2em;
+}
+.slid_title {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  margin-left: 35rpx;
+}
+
+/*dialog*/
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+.modal1 {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+.mask {
+  overflow: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.mgat {
+  margin: auto;
+  z-index: 999999;
+  background-color: #fff;
+  border-radius: 24rpx;
+  width: 580rpx;
+  height: 380rpx;
+}
+.mgat1 {
+  margin: auto;
+  z-index: 999999;
+  background-color: #fff;
+  border-radius: 24rpx;
+  width: 580rpx;
+  height: 304rpx;
+}
+.pd60 {
+  padding: 50rpx 0 37rpx;
+  border-bottom: 1rpx solid rgba(238, 238, 238, 1);
+  bottom: 0;
+  left: 0;
+}
+.pd601 {
+  padding: 92rpx;
+}
+.kcjs {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  text-align: center;
+}
+.stjs {
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  text-align: center;
+}
+.gjdx {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  text-align: center;
+  margin-top: 20rpx;
+}
+.h100 {
+  height: 100rpx;
+  padding: 0 103rpx;
+}
+.img_star {
+  width: 46rpx;
+  height: 46rpx;
+}
+.mgat_button {
+  height: 88rpx;
+}
+.cancel {
+  width: 50%;
+  background: rgba(246, 246, 250, 1);
+  border-radius: 0rpx 0rpx 0rpx 24rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  line-height: 88rpx;
+}
+.submit {
+  width: 50%;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 0rpx 0rpx 24rpx 0rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(248, 248, 248, 1);
+  line-height: 88rpx;
+}
+
+.star_icon {
+  width: 18rpx;
+  height: 18rpx;
+  margin-right: 6rpx;
+}
+.sell_star {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  margin-left: 13rpx;
+}
+.sell_num {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(246, 246, 250, 1);
+}
+
+.pd30 {
+  padding: 30rpx 0;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+
+.mainpic {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+}
+.flex1_ {
+  flex: 1;
+  margin-left: 40rpx;
+}
+.pd30_name {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.pd30_time {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+}
+.pinfen_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  margin-right: 16rpx;
+}
+</style>

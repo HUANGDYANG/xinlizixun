@@ -1,0 +1,341 @@
+<template>
+  <view class="container">
+
+    <view class='three_this'
+          @tap='to_detail'>
+      <view class='three_top'>
+        <image src=""
+               class='three_img backe5'
+               mode="aspectFill"></image>
+        <view class='three_top_right'>
+          <view class='flex flex-j-c-sb'>
+            <view class='flex flex-a-i-center'>
+              <view class='three_top_right_name'>张三丰</view>
+              <view class='three_top_right_man'
+                    wx:if='{{!autoplay}}'>约满</view>
+              <view class='three_top_right_ke'
+                    wx:if='{{autoplay}}'>可约</view>
+            </view>
+            <view class='flex flex-a-i-center'
+                  wx:if='{{manglu == 0}}'>
+              <image src="../images/icon_manglu@2x.png"
+                     class='icon_manglu'></image>
+              <view class='three_top_right_manglu'>忙碌</view>
+            </view>
+            <view class='flex flex-a-i-center'
+                  wx:if='{{manglu == 1}}'>
+              <image src="../images/icon_zaixian@2x.png"
+                     class='icon_manglu'></image>
+              <view class='three_top_right_zaixian'>在线</view>
+            </view>
+            <view class='flex flex-a-i-center'
+                  wx:if='{{manglu == 2}}'>
+              <image src="../images/icon_lixian@2x.png"
+                     class='icon_manglu'></image>
+              <view class='three_top_right_lixian'>离线</view>
+            </view>
+          </view>
+          <view class='three_top_bottom'>
+            <view class='three_top_bottom_work'>国家二级</view>
+            <view class='three_top_bottom_work'>国家二级</view>
+            <view class='three_top_bottom_work'>国家二级</view>
+          </view>
+        </view>
+      </view>
+      <view class='three_bottom'>
+        <view class='opa0'></view>
+        <view class='three_bottom_right'>
+          <view class='flex flex-j-c-sb'>
+            <view class='three_bottom_right_left'>
+              <image src="../images/icon_dizhi@2x.png"
+                     class='icon_dizhi'></image>
+              <view class='three_bottom_right_left_title'>广州</view>
+            </view>
+            <view class='three_bottom_right_right'>¥499/次</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class='three_this'>
+      <view class='three_top'>
+        <image src=""
+               class='three_img backe5'
+               mode="aspectFill"></image>
+        <view class='three_top_right'>
+          <view class='flex flex-j-c-sb'>
+            <view class='flex flex-a-i-center'>
+              <view class='three_top_right_name'>张三丰</view>
+              <view class='three_top_right_man'
+                    wx:if='{{!autoplay}}'>约满</view>
+              <view class='three_top_right_ke'
+                    wx:if='{{autoplay}}'>可约</view>
+            </view>
+            <view class='flex flex-a-i-center'
+                  wx:if='{{manglu == 0}}'>
+              <image src="../images/icon_manglu@2x.png"
+                     class='icon_manglu'></image>
+              <view class='three_top_right_manglu'>忙碌</view>
+            </view>
+            <view class='flex flex-a-i-center'
+                  wx:if='{{manglu == 1}}'>
+              <image src="../images/icon_zaixian@2x.png"
+                     class='icon_manglu'></image>
+              <view class='three_top_right_zaixian'>在线</view>
+            </view>
+            <view class='flex flex-a-i-center'
+                  wx:if='{{manglu == 2}}'>
+              <image src="../images/icon_lixian@2x.png"
+                     class='icon_manglu'></image>
+              <view class='three_top_right_lixian'>离线</view>
+            </view>
+          </view>
+          <view class='three_top_bottom'>
+            <view class='three_top_bottom_work'>国家二级</view>
+            <view class='three_top_bottom_work'>国家二级</view>
+            <view class='three_top_bottom_work'>国家二级</view>
+          </view>
+        </view>
+      </view>
+      <view class='three_bottom'>
+        <view class='opa0'></view>
+        <view class='three_bottom_right'>
+          <view class='flex flex-j-c-sb'>
+            <view class='three_bottom_right_left'>
+              <image src="../images/icon_dizhi@2x.png"
+                     class='icon_dizhi'></image>
+              <view class='three_bottom_right_left_title'>广州</view>
+            </view>
+            <view class='three_bottom_right_right'>¥499/次</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class='search_out flex flex-a-i-center'>
+      <view class='flex1'>
+        <image src="../images/icon_sousuo@2x.png"
+               class='icon_sousuo'></image>
+        <input type=""
+               name=""
+               placeholder="请输入..."
+               bindinput='bindinput'
+               value='{{search}}' />
+      </view>
+      <view class='flex flex-a-i-center'>
+        <view class='harp'></view>
+        <view class='flex flex-a-i-center'
+              @tap='search'>
+          <view class='saixuan'>取消</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+export default class Be_mindful_search extends wepy.page {
+  config = {
+    navigationBarTitleText: '走心聊'
+  };
+  components = {};
+  data = {
+    autoplay: true,
+    manglu: 1,
+    search: ''
+  };
+  bindinput(e) {
+    this.search = e.detail.value
+    console.log(e.detail.value)
+  }
+  computed = {};
+  methods = {
+    search() {
+      this.search = ''
+    },
+    to_detail() {
+      goPath('/pages/be_mindful_detail')
+    }
+  };
+  events = {};
+  async onLoad(option) {}
+}
+</script>
+<style lang="less">
+page {
+  margin-bottom: 20rpx;
+  background-color: #fff;
+}
+.container {
+  margin-top: 100rpx;
+}
+.three_this {
+  padding: 36rpx 32rpx;
+  background-color: #fff;
+  border-bottom: 2rpx solid rgba(244, 244, 244, 1);
+}
+.three_top {
+  display: flex;
+  align-items: center;
+}
+.three_img {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+}
+.three_top_right {
+  margin-left: 26rpx;
+  flex: 1;
+}
+.three_top_right_name {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.three_top_right_man {
+  margin-left: 15rpx;
+  font-size: 18rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+  background: rgba(255, 255, 255, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 15rpx;
+  padding: 3rpx 14rpx;
+}
+.three_top_right_ke {
+  margin-left: 15rpx;
+  font-size: 18rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 15rpx;
+  padding: 3rpx 14rpx;
+}
+.three_top_right_manglu {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(231, 43, 43, 1);
+  margin-left: 9rpx;
+}
+.three_top_right_zaixian {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  margin-left: 9rpx;
+}
+.three_top_right_lixian {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(153, 153, 153, 1);
+  margin-left: 9rpx;
+}
+.icon_manglu {
+  width: 22rpx;
+  height: 22rpx;
+}
+.three_top_bottom {
+  margin-top: 24rpx;
+  display: flex;
+}
+.three_top_bottom_work {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  background: rgba(246, 247, 250, 1);
+  border-radius: 4rpx;
+  padding: 0rpx 6rpx;
+  margin-right: 10rpx;
+  height: 38rpx;
+  line-height: 38rpx;
+}
+.three_bottom {
+  display: flex;
+}
+.opa0 {
+  width: 88rpx;
+  opacity: 0;
+}
+.three_bottom_right {
+  flex: 1;
+  margin-left: 26rpx;
+  margin-top: 34rpx;
+}
+.three_bottom_right_left {
+  display: flex;
+  align-items: center;
+}
+.icon_dizhi {
+  width: 22rpx;
+  height: 24rpx;
+}
+.three_bottom_right_left_title {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(102, 102, 102, 1);
+  margin-left: 15rpx;
+}
+.three_bottom_right_right {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(37, 101, 195, 1);
+}
+
+.search_out {
+  padding: 20rpx 32rpx;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f6f6fa;
+}
+.harp {
+  width: 2rpx;
+  height: 36rpx;
+  background: rgba(204, 204, 204, 1);
+  margin-left: 27rpx;
+}
+.saixuan {
+  font-size: 26rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(37, 101, 195, 1);
+  margin-left: 25rpx;
+}
+.icon_shaixuan {
+  width: 28rpx;
+  height: 26rpx;
+  margin-left: 8rpx;
+}
+.flex1 {
+  flex: 1;
+  height: 60rpx;
+  position: relative;
+}
+.flex1 input {
+  width: 100%;
+  height: 100%;
+  padding-left: 72rpx;
+  padding-right: 26rpx;
+  font-size: 26rpx;
+  background: rgba(255, 255, 255, 1);
+  border-radius: 30px;
+}
+.icon_sousuo {
+  width: 26rpx;
+  height: 26rpx;
+  position: absolute;
+  left: 20rpx;
+  top: 17rpx;
+}
+</style>

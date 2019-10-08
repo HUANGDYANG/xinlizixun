@@ -1,0 +1,67 @@
+<template>
+  <view class="container">
+      <view class="text">
+           {{commentMenberInfo.content}}
+      </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+
+export default class See_evaluation extends wepy.page {
+    config = {
+      navigationBarTitleText: '查看评价'
+    }
+    components = {
+    }
+
+    data = {
+      memberId: '',
+      scheduleId: '',
+      commentMenberInfo: {}
+    }
+    methods = {}
+
+    events = {}
+
+     onLoad(option) {
+      let { memberId, scheduleId } = option
+      
+      this.memberId = memberId
+      this.scheduleId = scheduleId
+      this.getCommentMenberInfo()
+    }
+
+    getCommentMenberInfo() {
+    let { getCommentMenberInfo } = api
+      // 咨询师评论用户
+      getCommentMenberInfo({
+        memberId: this.memberId,
+        scheduleId: this.scheduleId,
+      }).then(res => {
+        this.commentMenberInfo = res.data
+        this.$apply()
+      })
+    }
+}
+</script>
+
+<style lang="less">
+page {
+    background: #fff;
+}
+.text {
+  margin: 0 auto;
+  width: 686rpx;
+  height: 400rpx;
+  background: #F6F6FA;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  color: #333333;
+  padding: 36rpx 32rpx 36rpx 32rpx;
+  margin-top: 48rpx;
+}
+</style>

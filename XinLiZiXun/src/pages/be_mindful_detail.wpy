@@ -1,0 +1,573 @@
+<template>
+  <view class="container">
+    <view class='header'>
+      <image src="{{consultantDetail.mainPic}}" class='backe5 mainPic' mode="aspectFill"></image>
+      <view class='name'>{{consultantDetail.consultantName}}</view>
+      <view class='flex zxf_out flex-j-c-center'>
+        <view class='zxf'>咨询费：</view>
+        <view class='money'> ¥{{consultantDetail.price}}/次</view>
+      </view>
+    </view>
+    <view class='wdbq flex flex-wrap'>
+      <view class='wdbq_title'>我的标签</view>
+      <repeat for='{{consultantDetail.tags}}'>
+        <view class='wdbq_this' wx:if='{{index < viewLength}}'>{{item.name}}</view>
+      </repeat>
+      <view class='more_bq'>
+        <view class='more_bq_title' @tap='more'>{{more_title}}</view>
+        <image src="../images/icon_xiala@2x.png" class='icon_xiala'></image>
+      </view>
+    </view>
+    <view class='zxsc_out flex'>
+      <view class='zxsc'>咨询时长</view>
+      <view class='zxsc_time'>{{consultantDetail.duration}}小时</view>
+    </view>
+    <view class='xxdz_out flex'>
+      <view class='xxdz'>线下地址</view>
+      <view class='xxdz_time'>
+        <view class='flex flex-a-i-center flex-j-c-sb'>
+          <!-- 广州市天河区中山大广州市天河区中山大道714号瑞道714号瑞 -->
+          <!-- <view class='address ellipsis'>{{consultantDetail.address}}</view> -->
+          <view class='address'>{{consultantDetail.address}}</view>
+          <image src="../images/zhuangqi_phone_icon@2x.png" @tap="to_address_map" class='zhuangqi_phone_icon'></image>
+        </view>
+      </view>
+    </view>
+    <view class='grjs_out'>
+      <view class='grjs_title'>个人介绍</view>
+      <view class='grjs_detail'>
+        <import src="../wxParse/wxParse.wxml"/>
+        <view>
+          <template is="wxParse" data="{{wxParseData:article.nodes}}"/>
+        </view>
+      </view>
+    </view>
+
+    <view class='modal flex' wx:if='{{show_modal1}}'>
+     <view class='mask' catchtouchmove="preventTouchMove"></view>
+       <view class='mgat'>
+          <view class='modal_title'>咨询师在5分钟之内没有接通电话，请联系客服退款</view>
+          <view class='modal_detail'>*若有相关疑问，可联系客服。</view>
+          <view class='modal_detail' style='margin: 0;opacity: 0;'></view>
+          <view class='modal_bottom flex'>
+            <view class='modal_bottom_cancel' @tap='cancel1'>联系客服</view>
+            <view class='modal_bottom_confirm' @tap='confirm1'>确定</view>
+          </view>
+       </view>
+   </view>
+
+    <view class='bottom'>
+      <view class='flex h100'>
+        <view class='shoucang' @tap='favedConsultant({{consultantDetail.consultantId}})'>
+          <view wx:if='{{consultantDetail.fav == 0}}'>
+            <image src="../images/icon_shoucang_gray@2x.png" class='icon_shoucang_gray'></image>
+            <view class='shoucang_title'>收藏</view>
+          </view>
+          <view wx:else>
+            <image src="../images/icon_yishoucang@2x.png" class='icon_shoucang_gray'></image>
+            <view class='shoucang_title shoucang_title1'>已收藏</view>
+          </view>
+        </view>
+        <view class='zxyy' @tap='to_order({{consultantDetail.consultantId}}, {{consultantDetail.price}})'>在线预约</view>
+        <view class='sszx' @tap='to_consult'>实时咨询</view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo, sleep } from '../util.js'
+  import api from '../api.js'
+  import WxParse from '../wxParse/wxParse.js'
+
+  export default class Be_mindful_detail extends wepy.page {
+    config = {
+      navigationBarTitleText: '咨询师详情'
+    }
+    components = {
+    }
+    data = {
+    // mock data
+      view: ['专业', '幽默风趣', '温柔有耐心', '责任心强', '抑郁症', '家庭纠', '家庭纠纷', '家庭纠纠纷', '家庭纷', '家庭纠纷', '家纠纷', '家庭纠纷纠'],
+      viewLength: 6,
+      more_title: '更多',
+      shoucang: 0,
+      consultantId: '',
+      consultantDetail: {},
+      show_modal1: false,
+      serviceMobile: ''
+    }
+    computed = {}
+    methods = {
+      cancel1() {
+        this.show_modal1 = false
+        wx.makePhoneCall({
+          phoneNumber: this.serviceMobile
+        })
+      },
+      confirm1() {
+        this.show_modal1 = false
+      },
+      to_address_map() {
+        goPath('/pages/address_map?latitude=' + this.consultantDetail.latitude + '&longitude=' + this.consultantDetail.longitude)
+      },
+      more() {
+        if (this.more_title == '更多') {
+          this.viewLength = 9999
+          this.more_title = '收起'
+        } else if (this.more_title == '收起') {
+          this.viewLength = 6
+          this.more_title = '更多'
+        }
+      },
+      shoucang() {
+        wx.showToast({
+          title: '收藏成功',
+          icon: 'success',
+          duration: 2000
+        })
+        this.shoucang = 1
+      },
+      to_consult() {
+        if (this.consultantId == this.consultantDetail.consultantId) {
+          wx.showToast({
+            title: '请不要咨询自己',
+            icon: 'none'
+          })
+          return
+        }
+
+        if (this.onlineStatus == 0 && !wx.getStorageSync('buyTime' + this.consultantDetail.consultantId)) {
+          wx.showToast({
+            title: '咨询师离线中，无法咨询',
+            icon: 'none'
+          })
+          return
+        }
+
+        if (this.onlineStatus == 2 && !wx.getStorageSync('buyTime' + this.consultantDetail.consultantId)) {
+          console.log(wx.getStorageSync('buyTime' + this.consultantDetail.consultantId))
+
+          wx.showToast({
+            title: '咨询师忙碌中，无法咨询',
+            icon: 'none'
+          })
+          return
+        }
+
+      // 退款的 先这样先
+        console.log(wx.getStorageSync('buyTime' + this.consultantDetail.consultantId), (new Date(wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) + 1000 * 60 * 5)), '退款的')
+
+        if (wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) != true && wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) && (wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) + 1000 * 60 * 5) < +new Date()) {
+      // wx.showToast({
+        //   title: '咨询师5分钟之内没有接通电话，请联系客服退还金额',
+        //   icon: 'none',
+        //   mask: 2000
+        // })
+          this.show_modal1 = true
+          // wx.setStorageSync('chatTo' + this.consultantDetail.consultantId, null)
+          // wx.setStorageSync('consultingLengthTime' + this.consultantDetail.consultantId, null)
+          // wx.setStorageSync('buyTime' + this.consultantDetail.consultantId, null)
+
+          wx.setStorageSync('consultingLengthTime' + this.consultantDetail.consultantId, null) // 要付钱了
+          wx.setStorageSync('turnOnTime' + this.consultantDetail.consultantId, null) // 要付钱了
+          wx.setStorageSync('turnEndTime' + this.consultantDetail.consultantId, null) // 要付钱了
+          wx.setStorageSync('chatTo' + this.consultantDetail.consultantId, null)
+          wx.setStorageSync('buyTime' + this.consultantDetail.consultantId, null)
+          wx.setStorageSync('chatOrderId' + this.data.consultantId, null)
+        // sleep(2).then(res => {
+        //    goPath(`/pages/consult?avatar=${this.consultantDetail.mainPic}&consultantName=${this.consultantDetail.consultantName}&consultantId=${this.consultantDetail.consultantId}&price=${this.consultantDetail.price}`)
+        // })
+        } else {
+          if (wx.getStorageSync('turnEndTime' + this.consultantDetail.consultantId)) {
+            console.log('如果已经接通了', wx.getStorageSync('turnEndTime' + this.consultantDetail.consultantId))
+            console.log("wx.getStorageSync('turnEndTime') < +new Date()", wx.getStorageSync('turnEndTime' + this.consultantDetail.consultantId) < +new Date())
+            console.log("wx.getStorageSync('turnEndTime') < +new Date()", new Date(wx.getStorageSync('turnEndTime' + this.consultantDetail.consultantId)))
+
+            if (wx.getStorageSync('turnEndTime' + this.consultantDetail.consultantId) < +new Date()) {
+              console.log('到期了')
+          // init
+              wx.setStorageSync('consultingLengthTime' + this.consultantDetail.consultantId, null) // 要付钱了
+              wx.setStorageSync('turnOnTime' + this.consultantDetail.consultantId, null) // 要付钱了
+              wx.setStorageSync('turnEndTime' + this.consultantDetail.consultantId, null) // 要付钱了
+              wx.setStorageSync('chatTo' + this.consultantDetail.consultantId, null)
+              wx.setStorageSync('buyTime' + this.consultantDetail.consultantId, null)
+              wx.setStorageSync('chatOrderId' + this.data.consultantId, null)
+            // wx.setStorageSync('consultingLengthTime', null) // 通行证
+              goPath(`/pages/consult?avatar=${this.consultantDetail.mainPic}&consultantName=${this.consultantDetail.consultantName}&consultantId=${this.consultantDetail.consultantId}&price=${this.consultantDetail.price}`)
+            } else {
+              console.log('没有到期的')
+              goPath(`./videoCall/videoCall?callee=${wx.getStorageSync('chatTo' + this.consultantDetail.consultantId)}&consultantId=${this.consultantDetail.consultantId}&avatar=11&name=11&price=11&client=true`)
+            }
+          } else {
+          // 没有接通
+            console.log('没有接通')
+            if (wx.getStorageSync('chatTo' + this.consultantDetail.consultantId)) {
+            // 有 chatTo 缓存
+              console.log('有 chatTo 缓存', wx.getStorageSync('chatTo' + this.consultantDetail.consultantId))
+          // 判断一直没有接通的
+              goPath(`./videoCall/videoCall?callee=${wx.getStorageSync('chatTo' + this.consultantDetail.consultantId)}&consultantId=${this.consultantDetail.consultantId}&avatar=11&name=11&price=11&client=true`)
+            } else {
+            // 没有 chatTo 缓存 跳到咨询详情页
+              console.log('没有 chatTo 缓存')
+              goPath(`/pages/consult?avatar=${this.consultantDetail.mainPic}&consultantName=${this.consultantDetail.consultantName}&consultantId=${this.consultantDetail.consultantId}&price=${this.consultantDetail.price}`)
+            }
+          }
+        }
+      // wx.makePhoneCall({
+      //   phoneNumber: '1340000'
+      // })
+      },
+      to_order(id, price) {
+        if (this.consultantId == this.consultantDetail.consultantId) {
+          wx.showToast({
+            title: '请不要预约自己',
+            icon: 'none'
+          })
+          return
+        }
+        if (this.consultantDetail.subscribeStatus) {
+          wx.showToast({
+            title: '咨询师已约满',
+            mask: true,
+            icon: 'none',
+            duration: 1500
+          })
+          return
+        }
+        goPath('/pages/order?consultantId=' + id + '&price=' + price)
+      },
+      favedConsultant(id) {
+        // console.log(id) ; return;
+        let { favedConsultant } = api
+        favedConsultant(id).then(res => {
+          this.consultantDetail.fav = !this.consultantDetail.fav
+          this.$apply()
+          wx.showToast({
+            icon: 'success',
+            mask: true,
+            title: res.message
+          })
+        })
+      }
+    }
+    events = {}
+
+    getConsultantDetail(id) {
+      let { getConsultantDetail } = api
+      if (!id) return
+      getConsultantDetail(id).then(res => {
+        console.log(res, 'getConsultantDetail 获取咨询师详情')
+        if (res) {
+          this.consultantDetail = res.data
+          if (this.consultantDetail.content) {
+            WxParse.wxParse('article', 'html', this.consultantDetail.content, this, 5)
+          }
+
+          this.$apply()
+        }
+      })
+    }
+    async onLoad(option) {
+      let { id, onlineStatus } = option;
+
+      this.onlineStatus = onlineStatus
+
+      this.serviceMobile = this.$parent.globalData.contactusInfo.serviceMobile
+      // this.consultantId = id
+      this.getConsultantDetail(id)
+      if (this.$parent.globalData.userInfo.consultantId) {
+        this.consultantId = this.$parent.globalData.userInfo.consultantId
+      }
+    }
+    onShow() {
+      if (this.buyTime) {
+        clearInterval(this.buyTime)
+      }
+      this.buyTime = setInterval(() => {
+        if (wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) != true && wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) && (wx.getStorageSync('buyTime' + this.consultantDetail.consultantId) + 1000 * 60 * 5) < +new Date()) {
+          this.show_modal1 = true
+          // wx.setStorageSync('chatTo' + this.consultantDetail.consultantId, null)
+          // wx.setStorageSync('consultingLengthTime' + this.consultantDetail.consultantId, null)
+          // wx.setStorageSync('buyTime' + this.consultantDetail.consultantId, null)
+          wx.setStorageSync('consultingLengthTime' + this.consultantDetail.consultantId, null) // 要付钱了
+          wx.setStorageSync('turnOnTime' + this.consultantDetail.consultantId, null) // 要付钱了
+          wx.setStorageSync('turnEndTime' + this.consultantDetail.consultantId, null) // 要付钱了
+          wx.setStorageSync('chatTo' + this.consultantDetail.consultantId, null)
+          wx.setStorageSync('buyTime' + this.consultantDetail.consultantId, null)
+          wx.setStorageSync('chatOrderId' + this.data.consultantId, null)
+          this.$apply();
+          clearInterval(this.buyTime)
+        }
+      }, 1000)
+    }
+  }
+</script>
+<style lang="less">
+page{
+  margin-bottom: 120rpx;
+}
+.header{
+  background-color: #fff;
+  padding: 50rpx 0 40rpx;
+  text-align: center;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.mainPic{
+  width: 115rpx;
+  height: 115rpx;
+  border-radius: 50%;
+}
+.name{
+  font-size:36rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(0,0,0,1);
+  margin-top: 30rpx;
+}
+.zxf{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:#666;
+}
+.money{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:#2565C3;
+}
+.zxf_out{
+  margin-top: 15rpx;
+}
+.wdbq{
+  padding: 36rpx 32rpx;
+  background-color: #fff;
+  margin-bottom: 20rpx;
+}
+.wdbq_this{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  padding: 13.5rpx 32rpx;
+  background:rgba(246,247,250,1);
+  border-radius:32rpx;
+  margin-bottom: 20rpx;
+  margin-right: 20rpx;
+  align-self: center;
+}
+.wdbq_title{
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  padding: 13.5rpx 0;
+  margin-bottom: 20rpx;
+  margin-right: 20rpx;
+  align-self:center;
+}
+.icon_xiala{
+  width: 16rpx;
+  height: 10rpx;
+  position: absolute;
+  right: 22rpx;
+  top: 27rpx;
+}
+.more_bq{
+  width: 160rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  text-align: center;
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(37,101,195,1);
+  background:rgba(246,247,250,1);
+  border-radius:32rpx;
+  position: relative;
+}
+.zxsc_out{
+  padding: 35rpx 32rpx;
+  background-color: #fff;
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.xxdz_out{
+  padding: 35rpx 32rpx;
+  background-color: #fff;
+  margin-bottom: 20rpx;
+}
+.zxsc,.xxdz{
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  margin-right: 36rpx;
+}
+.zxsc_time,.xxdz_time{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+}
+.xxdz_time{
+  flex: 1;
+}
+.zhuangqi_phone_icon{
+  width: 36rpx;
+  height: 36rpx;
+}
+.address{
+  padding-right: 30rpx;
+  width: 450rpx;
+  border-right: 2rpx solid rgba(238,238,238,1);
+}
+.grjs_out{
+  background-color: #fff;
+}
+.grjs_title{
+  padding: 35rpx 32rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(51,51,51,1);
+  border-bottom: 2rpx solid rgba(238,238,238,1);
+}
+.grjs_detail{
+  padding: 47rpx 32rpx 60rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+  line-height:46rpx;
+}
+.bottom{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 98rpx;
+}
+.h100{
+  height: 100%;
+}
+.shoucang{
+  width: 150rpx;
+  text-align: center;
+  background-color: #fff;
+}
+.icon_shoucang_gray{
+  width: 34rpx;
+  height: 34rpx;
+  margin-top: 15rpx;
+}
+.shoucang_title{
+  font-size:22rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(153,153,153,1);
+}
+.shoucang_title1{
+  color:rgba(37,101,195,1);
+}
+.zxyy{
+  width: 300rpx;
+  background:rgba(255,180,0,1);
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  line-height: 98rpx;
+}
+.sszx{
+  width: 306rpx;
+  background:rgba(37,101,195,1);
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  line-height: 98rpx;
+}
+
+/*dialog*/
+.modal{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  z-index: 9999;
+}
+.mask{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 10000;
+}
+.mgat{
+  margin: auto;
+  z-index: 999;
+  background-color: #fff;
+  border-radius:24rpx;
+  width: 580rpx;
+  z-index: 10001;
+  overflow: hidden;
+}
+
+.modal_title{
+  font-size:36rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  text-align: center;
+  margin-top: 72rpx;
+  padding: 0 10rpx;
+}
+.modal_detail{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  margin: 10rpx 0 20rpx;
+  text-align: center;
+  padding: 0 57rpx;
+}
+.modal_bottom{
+  width: 100%;
+  height: 88rpx;
+}
+.modal_bottom_cancel{
+  width: 50%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background:rgba(246,246,250,1);
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+}
+.modal_bottom_confirm{
+  width: 50%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background:rgba(37,101,195,1);
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(248,248,248,1);
+}
+.no_more{
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  text-align: center;
+  margin-top: 90rpx;
+  color:rgba(153,153,153,1);
+}
+</style>

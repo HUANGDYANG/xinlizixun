@@ -1,0 +1,599 @@
+<template>
+  <view class="container">
+
+    <view class='yyxx_out'>
+      <view class='yyxx_title_out flex flex-a-i-center'>
+        <image src="../images/icon_yuyue@2x.png"
+               class='icon_yuyue'></image>
+        <view class='yyxx_title'>预约消息</view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this'>
+        <view class='zxs'>咨询师</view>
+        <view class='zxs_name'>{{consultantDetail.consultantName}}</view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this'>
+        <view class='zxs'>咨询地址</view>
+        <view class='zxs_name'>{{consultantDetail.address}}</view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this'>
+        <view class='zxs'>预约时间</view>
+        <view class='zxs_name'>{{orderTime}}</view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this'>
+        <view class='zxs'>咨询时长</view>
+        <view class='zxs_name'>1小时</view>
+      </view>
+    </view>
+    <view class='lfz_out'>
+      <view class='yyxx_title_out flex flex-a-i-center'>
+        <image src="../images/icon_laifangzhe@2x.png"
+               class='icon_yuyue'></image>
+        <view class='yyxx_title'>来访者基本信息</view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>姓名</view>
+        <input value="{{postData.name}}"
+               type=""
+               name=""
+               placeholder="请输入姓名..."
+               bindinput='name'
+               value="{{postData.name}}" />
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>联系方式</view>
+        <input value="{{postData.mobile}}"
+               maxlength="11"
+               type="number"
+               name=""
+               placeholder="请输入手机号码..."
+               bindinput='phone' />
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>性别</view>
+        <picker bindchange="bindChangesSex"
+                value="{{sexInde}}"
+                range="{{sexType}}">
+          <view class='flex flex-a-i-center'>
+            <view class="{{time_small_sex?'qxz':'qxz_true'}}">{{(sexType[sexInde])?sexType[sexInde]:'请选择'}}</view>
+            <image src="../images/icon_xiala@2x.png"
+                   class="icon_xiala"></image>
+          </view>
+        </picker>
+        <!-- <input value="{{postData.sex == 0 ? '男' : '女'}}"  maxlength="1" type="" name="" placeholder="请输入性别..." bindinput='sex'> -->
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>年龄</view>
+        <input value="{{postData.age}}"
+               maxlength="3"
+               type="number"
+               name=""
+               placeholder="请输入年龄..."
+               bindinput='age' />
+      </view>
+    </view>
+    <view class='lfz_out'>
+      <view class='yyxx_title_out flex flex-a-i-center'>
+        <image src="../images/icon_lianxiren@2x.png"
+               class='icon_yuyue'></image>
+        <view class='yyxx_title'>紧急联系人</view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>姓名</view>
+        <input value="{{postData.exigencyName}}"
+               type=""
+               name=""
+               placeholder="请输入姓名..."
+               bindinput='urg_name' />
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>联系方式</view>
+        <input value="{{postData.exigencyMoblie}}"
+               maxlength="11"
+               type=""
+               name=""
+               placeholder="请输入手机号码..."
+               bindinput='urg_phone' />
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>关系</view>
+        <view>
+          <picker bindchange="bindChanges1"
+                  value="{{inde}}"
+                  range="{{type}}">
+            <view class='flex flex-a-i-center'>
+              <view class="{{time_small_?'qxz':'qxz_true'}}">{{(type[inde])?type[inde]:'请选择'}}</view>
+              <image src="../images/icon_xiala@2x.png"
+                     class="icon_xiala"></image>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    <view class='read_out flex flex-a-i-center'>
+      <image src="../images/publish_check_default_icon@2x.png"
+             class="publish_check_default_icon"
+             wx:if='{{!show_gou}}'
+             @tap='show_gou'></image>
+      <image src="../images/publish_check_icon@2x.png"
+             class="publish_check_default_icon"
+             wx:if='{{show_gou}}'
+             @tap='show_gou'></image>
+      <view class='flex'>
+        <view class='readed'>我已阅读并同意</view>
+        <view class='zqxy'
+              @tap='to_detail'>《知情协议》</view>
+      </view>
+    </view>
+    <view class='flex h320'>
+      <form bindsubmit="formSubmit"
+            report-submit>
+        <!-- <view class='mgat' ><button form-type="submit">提交支付</button></view> -->
+        <button class='mgat'
+                form-type="submit">提交支付</button>
+      </form>
+    </view>
+
+    <HPay @hpay.user="purchase"
+          tip="（免费咨询师请选余额支付）"
+          :show.sync="show_pay_modal"
+          :payType.sync="payType"
+          :price.sync="price"></HPay>
+
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo, sleep } from '../util.js'
+import api from '../api.js'
+import HPay from '../components/h-pay'
+
+export default class Line_detail extends wepy.page {
+  config = {
+    navigationBarTitleText: '资料填写'
+  };
+  components = {
+    HPay: HPay
+  };
+  name(e) {
+    // 姓名
+    this.postData.name = e.detail.value
+  }
+  phone(e) {
+    // 手机号码
+    this.postData.mobile = e.detail.value
+  }
+  sex(e) {
+    this.sex1 = e.detail.value
+    e.detail.value == '男' ? (this.postData.sex = 0) : (this.postData.sex = 1)
+  }
+  age(e) {
+    this.postData.age = e.detail.value
+  }
+  urg_name(e) {
+    // 紧急联系人姓名
+    this.postData.exigencyName = e.detail.value
+  }
+  urg_phone(e) {
+    // 紧急联系人手机号
+    this.postData.exigencyMoblie = e.detail.value
+  }
+  bindChanges1(e) {
+    // 关系
+    var that = this
+    console.log('picker发送选择改变，携带值为', e.detail.value)
+    // this.setData({
+    //   inde: e.detail.value // 当前选项的索引值
+    // })
+    this.inde = e.detail.value
+    var inde = e.detail.value
+    var data = that.data.array
+    this.time_small_ = false
+    this.postData.relation = this.type[inde]
+  }
+  bindChangesSex(e) {
+    var that = this
+    console.log('picker发送选择改变，携带值为', e.detail.value)
+    // this.setData({
+    //   inde: e.detail.value // 当前选项的索引值
+    // })
+    this.sexInde = e.detail.value
+    var sexInde = e.detail.value
+    this.time_small_sex = false
+    this.postData.sex = sexInde
+  }
+  data = {
+    show_pay_modal: false,
+    price: '',
+    payType: 1,
+
+    inde: '',
+    type: ['父亲', '母亲', '伴侣', '同事'],
+    sexInde: '',
+    sexType: ['男', '女'],
+    time_small_: true,
+    time_small_sex: true,
+    show_gou: false,
+    name1: '',
+    phone1: '',
+    sex1: '', // 判断输入是否是男或女
+    age1: '',
+    urg_name1: '',
+    urg_phone1: '',
+    consultantDetail: {},
+    orderTime: '', // 预约时间
+    postData: {
+      consultantId: '',
+      scheduleId: 0, // 排班id
+      consultType: 0, // 预约类型
+      name: '', // 姓名
+      mobile: '', // 手机号码
+      sex: '', // 性别0男1女
+      age: '', // 年龄
+      exigencyName: '', // 紧急联系人姓名
+      exigencyMoblie: '', // 紧急联系人手机号
+      relation: '', // 关系
+      formId: ''
+    }
+  };
+
+  computed = {};
+  methods = {
+    formSubmit(e) {
+      this.postData.formId = e.detail.formId
+      this.submit()
+    },
+    purchase() {
+      let that = this
+      this.subscribeConsultant({
+        ...this.postData,
+        payType: this.payType
+      }).then(res => {
+        if (res) {
+          if (!res.data) {
+            // 余额的
+            wx.showToast({
+              title: '支付成功',
+              duration: 3000,
+              mask: true
+            })
+            this.show_pay_modal = false
+            sleep(2).then(res => {
+              goPath('/pages/my_make', 'rd')
+            })
+          } else {
+            // 先不弄等对好排班 再接 接好了
+            console.log(res.data, '支付后台返回来的')
+            let postData = {
+              timeStamp: '',
+              nonceStr: '',
+              package: '',
+              paySign: ''
+            }
+
+            postData.timeStamp = res.data.timestamp + ''
+            postData.nonceStr = res.data.nonce
+            postData.paySign = res.data.signature
+            postData.package = res.data.pack
+
+            console.log(postData, '处理后的数据')
+            let paymentObj = { ...postData, signType: 'MD5' }
+            wx.requestPayment({
+              ...paymentObj,
+              success(res) {
+                // prevPage.onLoad()
+                wx.showToast({
+                  title: '购买成功',
+                  icon: 'success',
+                  duration: 3000,
+                  mask: true
+                })
+                that.show_pay_modal = false
+                sleep(2).then(res => {
+                  goPath('/pages/my_make', 'rd')
+                })
+
+                console.log(res, 'success')
+              },
+              complete(res) {
+
+                console.log(res, 'complete')
+              },
+              fail(res) {
+                wx.showToast({
+                  title: '支付失败',
+                  icon: 'none',
+                  duration: 3000,
+                  mask: true
+                })
+
+                sleep(2).then(res => {
+                  goPath('/pages/my_make', 'rd')
+                })
+                console.log(res, 'fail')
+              }
+            })
+          }
+        }
+      })
+    },
+    show_gou() {
+      this.show_gou = !this.show_gou
+    },
+    to_detail() {
+      goPath('/pages/agreement')
+    }
+  };
+  events = {};
+  submit() {
+    // 验证的！
+    let phoneReg = /(^1[3|4|5|7|8|9]\d{9}$)|(^09\d{8}$)/
+    let nameReg = /^[\u4E00-\u9FA5]{2,4}$/
+    let nameStrictReg = /^(?:[\u4e00-\u9fa5]+)(?:·[\u4e00-\u9fa5]+)*$|^[a-zA-Z0-9]+\s?[\.·\-()a-zA-Z]*[a-zA-Z]+$/
+    let nameStrictReg2 = /^(?:[\u4e00-\u9fa5]+)(?:●[\u4e00-\u9fa5]+)*$|^[a-zA-Z0-9]+\s?[\.·\-()a-zA-Z]*[a-zA-Z]+$/
+
+    let sexReg = /^男|女$/
+    // console.log(this.postData);
+    // return;
+
+    if (!this.postData.name) {
+      wx.showToast({
+        title: '请输入姓名',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!nameStrictReg.test(this.postData.name)) {
+      wx.showToast({
+        title: '姓名有误',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!this.postData.mobile) {
+      wx.showToast({
+        title: '请输入手机号码',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (this.postData.mobile.length < 11) {
+      wx.showToast({
+        title: '手机号有误',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+    else if (this.time_small_sex) {
+      wx.showToast({
+        title: '请选择性别',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!this.postData.age) {
+      wx.showToast({
+        title: '请输入年龄',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!this.postData.exigencyName) {
+      wx.showToast({
+        title: '请输入紧急联系人姓名',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!nameReg.test(this.postData.exigencyName)) {
+      wx.showToast({
+        title: '姓名有误',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!this.postData.exigencyMoblie) {
+      wx.showToast({
+        title: '请输入紧急联系人手机号码',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (this.postData.exigencyMoblie.length < 11) {
+      wx.showToast({
+        title: '手机号有误',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!phoneReg.test(this.postData.exigencyMoblie)) {
+      wx.showToast({
+        title: '手机号有误',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (this.time_small_) {
+      wx.showToast({
+        title: '请选择关系',
+        icon: 'none',
+        duration: 2000
+      })
+    } else if (!this.show_gou) {
+      wx.showToast({
+        title: '请先阅读《知情协议》',
+        icon: 'none',
+        duration: 2000
+      })
+    } else {
+      // console.log(11)
+      this.show_pay_modal = true
+    }
+  }
+  /**
+   *
+   */
+  getConsultantDetail(id) {
+    let { getConsultantDetail } = api
+    getConsultantDetail(id).then(res => {
+      console.log(res, '咨询师详情')
+      this.consultantDetail = res.data
+      console.log(111111111, 'aaaaaaaaaaaaaaaaaaaaaa')
+
+      this.$apply()
+    })
+  }
+  subscribeConsultant(params) {
+    let { subscribeConsultant } = api
+    return subscribeConsultant(params)
+  }
+  async onLoad(option) {
+    let { consultantId, orderTime, consultType, scheduleId, price } = option
+    this.postData.mobile = this.$parent.globalData.userInfo.mobile
+    this.postData.name = this.$parent.globalData.userInfo.name
+    this.price = price
+    console.log(option)
+
+    this.orderTime = orderTime
+    this.postData.consultType = consultType
+    this.postData.scheduleId = scheduleId
+    this.postData.consultantId = consultantId
+    this.consultantId = consultantId
+    // console.log(consultType, scheduleId);
+    this.getConsultantDetail(consultantId)
+    this.getMemberLastSchedule()
+  }
+
+  getMemberLastSchedule() {
+    // 查询用户的上一次预约记录
+    let { getMemberLastSchedule } = api
+    getMemberLastSchedule().then(res => {
+      console.log(res, '查询用户的上一次预约记录')
+      if (res) {
+        Object.assign(this.postData, res.data)
+
+        // this.postData.exigencyMoblie = res.data.exigencyMoblie
+        // this.postData.mobile = res.data.mobile
+        // this.postData.name = res.data.name
+        // this.postData.exigencyName = res.data.exigencyName
+        // this.postData.age = res.data.age
+        // this.postData.sex = res.data.sex
+        // this.postData.relation = res.data.relation
+        // this.postData.consultantId = consultantId
+
+        console.log(
+          this.type.indexOf(res.data.relation),
+          'this.type.indexOf(res.data.relation)'
+        )
+        this.inde = this.type.indexOf(res.data.relation)
+        this.sexInde = res.data.sex
+        this.time_small_ = false
+        this.time_small_sex = false
+        this.$apply()
+      }
+    })
+  }
+}
+</script>
+<style lang="less">
+page {
+  /*background-color: #fff;*/
+}
+.read_out {
+  margin-top: 20rpx;
+  padding: 60rpx 32rpx 0;
+  background-color: #fff;
+}
+.yyxx_out {
+  padding: 50rpx 32rpx 0;
+  background-color: #fff;
+}
+.lfz_out {
+  padding: 50rpx 32rpx 0;
+  background-color: #fff;
+  margin-top: 20rpx;
+}
+.icon_yuyue {
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 10rpx;
+}
+.yyxx_title {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Bold;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 1);
+  margin-bottom: 10rpx;
+}
+.zxs {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+}
+.zxs_name {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(37, 101, 195, 1);
+  max-width: 413rpx;
+}
+.yyxx_this {
+  padding: 25rpx 0;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+.yyxx_this input {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  text-align: right;
+}
+.icon_xiala {
+  width: 16rpx;
+  height: 10rpx;
+}
+.qxz {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  margin-right: 15rpx;
+}
+.qxz_true {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  margin-right: 15rpx;
+}
+.publish_check_default_icon {
+  margin-right: 18rpx;
+  width: 36rpx;
+  height: 36rpx;
+}
+.readed {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  margin-right: 10rpx;
+}
+.zqxy {
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: #2565c3;
+  text-decoration: underline;
+}
+.h320 {
+  height: 320rpx;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.mgat {
+  display: inline-block;
+  margin: auto;
+  width: 330rpx;
+  height: 80rpx;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 1);
+  text-align: center;
+  line-height: 80rpx;
+}
+</style>

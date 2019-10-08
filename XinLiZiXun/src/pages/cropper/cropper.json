@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "h-cropper": "/components/wx-cropper/index"
+    
+  },
+  "navigationBarTitleText": "截取图片"
+}

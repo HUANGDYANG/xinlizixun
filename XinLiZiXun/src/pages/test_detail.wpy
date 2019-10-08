@@ -1,0 +1,657 @@
+<template>
+  <view class="container">
+      <view wx:for="{{evaluationExamList}}" wx:for-item='item' wx:for-index='idx' wx:key='idx' >
+        <view  hidden="{{idx != showIndex - 1}}">
+          <view class="pd32" >
+            <view class="this">{{showIndex}}、</view>
+            <!-- 总提数 -->
+            <!-- <view class="total">|{{total}}</view> -->
+            <view style="display: inline;padding-left: 20rpx;">{{item.questionTitle}}</view>
+          </view>
+          <view class="pd46">
+            <view wx:for="{{item.answers}}" wx:for-item='item2' wx:for-index='idx2' wx:key='idx2'>
+              <view
+                class="option flex flex-a-i-center"
+                style="background:{{item2.select?'#2565C3':'#fff'}};"
+                @tap="selAnserFun({{idx}},{{idx2}})"
+              >
+                <view class="{{item2.select?'option_title_true':'option_title'}}">{{option[idx2].option_id}}</view>
+                <view class="{{item2.select?'option_this_true':'option_this'}}">{{item2.answer}}</view>
+              </view>
+            </view>
+          </view>
+          <view class="bottom flex flex-j-c-sb">
+            <view class="back_topic" @tap="prev">上一题</view>
+            <view
+              class="go_topic"
+              @tap="next('{{idx}}')"
+              wx:if="{{showIndex != evaluationExamList.length}}"
+            >下一题</view>
+
+            <view
+              class="go_topic"
+              @tap="result({{idx}})"
+              wx:if="{{showIndex == evaluationExamList.length && !questStatus}}"
+            >查看结果</view>
+            <view
+              class="go_topic"
+              @tap="result({{idx}})"
+              wx:if="{{showIndex == evaluationExamList.length && questStatus}}"
+            >填写问卷</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 提示框 -->
+      <view class="hintBox" hidden="{{hidenHint}}">
+        <view class="til">您已完成{{molecule}}/3的答题，休息一下吧!</view>
+        <view class="imgBox">
+          <!-- 第一张 -->
+          <image src="../images/hint.jpg" wx:if="{{molecule == 1}}"/>
+          <!-- 第二张 -->
+          <image src="../images/hint2.jpg" wx:else/>
+        </view>
+        <view class="continue" @tap="toggaleHint">继续答题</view>
+      </view>
+
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+var earr = []
+for (var i = 65; i <= 90; i++) {
+  //     if (i > 90 && i < 97) {
+  //         continue;
+  //     }
+  // 接受一个指定的 Unicode 值，然后返回一个字符串
+  earr.push(String.fromCharCode(i))
+}
+export default class Test_detail extends wepy.page {
+  config = {
+    navigationBarTitleText: '测试详情'
+  };
+  components = {};
+  data = {
+    earr: earr,
+    clickGroupId: {
+      0: [
+        {
+          id: 27,
+          select: false
+        }
+      ],
+      1: [
+        {
+          id: 27,
+          select: false
+        }
+      ],
+      2: [
+        {
+          id: 27,
+          select: false
+        }
+      ]
+    },
+    option: [
+      {
+        option_id: 'A',
+        option_this: '非常不同意'
+      },
+      {
+        option_id: 'B',
+        option_this: '有点不同意'
+      },
+      {
+        option_id: 'C',
+        option_this: '不确定'
+      },
+      {
+        option_id: 'D',
+        option_this: '有点同意'
+      },
+      {
+        option_id: 'E',
+        option_this: '非常同意'
+      },
+      {
+        option_id: 'F',
+        option_this: '非常同意'
+      },
+      {
+        option_id: 'G',
+        option_this: '非常同意'
+      }
+      
+    ],
+    evaluationExamList: [],
+    showIndex: 1,
+    total: 0,
+    answerIds: {}, // 不用数组是因为直接赋值过去会 出现undefined
+    postAnswerIds: {},
+    evaluationId: '', // 接手的老铁不好意思啊，这里用来evaluationId 其他用了id
+    testStorageArr: {
+      // 111: {
+      //   // key测试详情的id
+      //   page: '', // 测试到的页数
+      //   answerIds: '' // 回答的数组
+      // }
+    },
+    testStorage: {
+      //   page: '', // 测试到的页数
+      //   answerIds: '' // 回答的数组
+    },
+    onclick: false,
+    questStatus: '',//是否填写调查问卷
+    memberName: '',
+    age: '',
+    department: '',
+    qresult: '',
+    setStorage: true,
+    hidenHint:true,//隐藏做题提示框
+    molecule:1,//3分之1 的分子
+  };
+
+  computed = {};
+  onShow() {
+
+
+  }
+  onUnload() {
+    // 需要一个变量控制
+
+    if (this.setStorage) this.setTestStorage()
+  }
+  onHide() {
+
+    if (this.setStorage) this.setTestStorage()
+  }
+  methods = {
+    //隐藏显示提示框
+    toggaleHint(){
+      let sign  = true;
+      if(this.hidenHint){
+        sign = false;
+      }
+      this.hidenHint = sign;
+    },
+
+    //选择答案
+    selAnserFun(bigIdx, smallIdx, questionId) {
+
+      let answers = this.evaluationExamList[bigIdx].answers;
+
+      for(let x in answers){
+        answers[x].select = false;
+      }
+
+      answers[smallIdx].select = true;
+
+      this.evaluationExamList[bigIdx].answers = answers;
+
+    },
+    //下一道题
+    next(showIndex) {
+      let answers = this.evaluationExamList[showIndex].answers;
+      let signId = '';
+      for(let x in answers){
+        if(answers[x].select){
+          signId = answers[x].id;
+        }
+      }
+      if(signId == ''){
+        wx.showToast({
+          title: '请选择题目',
+          icon: 'none'
+        })
+        return false;
+      }else{
+        this.postAnswerIds[this.evaluationExamList[showIndex].questionId] = signId;
+        if (this.showIndex < this.total) {
+          this.showIndex++;
+          this.onclick = false;
+
+
+          //判断是否显示提示框
+          //首先提数要大于60
+          if(this.total >= 60){
+            //三分之一
+            let signOne = parseInt(this.total/3)+1;
+            //三分之二
+            let signTwo = ((signOne - 1) * 2) + 1;
+            //第一阶段
+            if(this.showIndex == signOne){
+              this.hidenHint = false;
+              this.molecule = 1;
+            }
+            //第二阶段
+            else if(this.showIndex == signTwo){
+              this.hidenHint = false;
+              this.molecule = 2;
+            }
+            
+          }
+        }
+
+      }
+      
+      
+    },
+    prev() {
+      if (this.showIndex > 1) {
+        this.showIndex--
+      }
+      // this.setTestStorage()
+    },
+    //提交
+    result(showIndex) {
+      var answers = this.evaluationExamList[showIndex].answers;
+      var signId = '';
+      for(var x in answers){
+        if(answers[x].select){
+          signId = answers[x].id;
+        }
+      }
+      this.postAnswerIds[this.evaluationExamList[showIndex].questionId] = signId;
+      // let answerIdsArr = Object.values(this.answerIds)
+
+      let signPostAnswer = this.postAnswerIds;
+      let answerIdsArr = [];
+      let number = 0;  
+      for(let x in signPostAnswer){
+        answerIdsArr.push(signPostAnswer[x]);
+        if(signPostAnswer[x] != '' && signPostAnswer[x] != undefined){
+            number += 1;
+        }
+      }
+
+      if(number != answerIdsArr.length){
+        wx.showToast({
+          title: '请选择完所有问题',
+          icon: 'none'
+        })
+        return false;
+      }
+
+
+      //本来的赋值方法，但是部分手机不兼容
+      // console.log(Object.values(this.postAnswerIds))
+      // var answerIdsArr = Object.values(this.postAnswerIds)
+
+
+      // let answerIdsKeyArr = Object.keys(this.answerIds)
+      if (answerIdsArr[answerIdsArr.length- 1] == '' || answerIdsArr[answerIdsArr.length- 1] == undefined) {
+        wx.showToast({
+          title: '请选择完所有问题',
+          icon: 'none'
+        })
+        return false;
+      }
+
+
+      let questionList = [];
+      // for (var [key, value] of Object.entries(this.postAnswerIds)) {
+      //   questionList.push({ [key]: value })
+      // }
+      for(let k in this.postAnswerIds){
+        let signObj = {};
+        signObj[k] = this.postAnswerIds[k];
+        questionList.push(signObj);
+      }
+
+
+      let that = this;
+      let { getEvaluationResult } = api;
+      let params = {
+        evaluationId:that.evaluationId,
+        answerIds:JSON.stringify(questionList),
+        memberName:that.memberName,
+        age:that.age,
+        department:that.department
+      }
+      wepy.showLoading({
+          title: '提交中...', //提示的内容,
+          mask: true, //显示透明蒙层，防止触摸穿透,
+      });
+
+      getEvaluationResult(params)
+        .then((res) => {
+          if(res.code == 0){
+            wepy.hideLoading();
+            if(!that.questStatus || that.questStatus == 'undefined'){
+              wx.redirectTo({
+                url:'/pages/test_result?scoreId='+res.data.scoreId
+              });
+            }else{
+              wx.navigateTo({
+                url:'/pages/questionnaire?scoreId='+res.data.scoreId+"&evaluationId="+res.data.evaluationId
+              });
+            }
+          }else{
+            wepy.hideLoading();
+            wepy.showToast({
+              title: JSON.stringify(res.message),
+              icon: 'none',
+              duration: 5000
+            })
+          }
+          
+        });
+
+
+      return false;
+      
+      if (!this.questStatus || this.questStatus == 'undefined') {
+        this.setStorage = false;
+
+        let skipUrl = '/pages/test_result?id='+this.evaluationId+'&answerIds='+JSON.stringify(arr)+'&memberName='+this.memberName+'&age='+this.age+'&department='+this.department;
+
+        wx.redirectTo({
+          url:skipUrl
+        });
+        // wx.redirectTo({
+        //   url: `/pages/test_result?id=${
+        //     this.evaluationId
+        //   }&answerIds=${JSON.stringify(arr)}&memberName=${
+        //     this.memberName
+        //   }&age=${this.age}&department=${this.department}`
+        // })
+        // 清除storage
+        // delete this.testStorageArr[this.evaluationId]
+        // wx.setStorageSync('testStorageArr', this.testStorageArr)
+
+        // 答题次数
+        var testPay = wx.getStorageSync('testPay')
+
+
+      } else {
+        
+        let skipUrl2 = '/pages/questionnaire?id='+this.evaluationId+'&answerIds='+JSON.stringify(arr)+'&memberName='+this.memberName+'&age='+this.age+'&department='+this.department;
+
+        wx.navigateTo({
+          url:skipUrl2
+        });
+        // wx.navigateTo({
+        //   url: `/pages/questionnaire?id=${
+        //     this.evaluationId
+        //   }&answerIds=${JSON.stringify(arr)}&memberName=${
+        //     this.memberName
+        //   }&age=${this.age}&department=${this.department}`
+        // })
+        // this.setStorage = false
+      }
+    }
+  };
+  events = {};
+  async onLoad(option) {
+    let { id, canQuestionnaireStatus, memberName, age, department } = option;
+
+    // this.questStatus = canQuestionnaireStatus;
+    this.memberName = memberName
+    this.age = age
+    this.department = department
+
+    this.evaluationId = id;
+
+    //获取是否显示调查问卷
+    this.getTestMsg(id);
+    this.getEvaluationExamList(id)
+  }
+
+  //获取是否需要填写调查问卷
+  getTestMsg(id){
+      let that = this;
+      let { getEvaluationDetail } = api;
+      getEvaluationDetail(id).then((res) => {
+        if (res.data) {
+          that.questStatus = res.data.canQuestionnaireStatus;
+        }
+
+      });
+  }
+
+
+  setTestStorage() {
+    this.testStorage.showIndex = this.showIndex;
+    this.testStorage.answerIds = this.postAnswerIds
+    // this.testStorageArr[this.evaluationId] = this.testStorage
+    // wx.setStorageSync('testStorageArr', this.testStorageArr)
+  }
+  // initStorage(id) {
+  //   let testStorageArr = wx.getStorageSync('testStorageArr');
+  //   this.testStorageArr = testStorageArr || {}
+  //   if (testStorageArr && testStorageArr.hasOwnProperty(id)) {
+  //     this.testStorage = testStorageArr[id]
+  //     this.postAnswerIds = this.testStorage.answerIds
+  //     //设置显示第几条
+  //     this.showIndex = parseInt(this.testStorage.showIndex) || 1;
+  //     //如果缓存答题数量大于总条数，回归第一条
+  //     if(this.showIndex > this.total){
+  //       this.showIndex = 1;
+  //     }
+
+  //     console.log(Object.values(this.postAnswerIds))
+  //     let answerIds = Object.values(this.postAnswerIds);
+  //     this.evaluationExamList.forEach((res, i) => {
+  //       this.evaluationExamList[i].answers.forEach((item1, i1) => {
+  //         if (answerIds.includes(item1.id)) {
+  //           this.evaluationExamList[i].answers[i1].select = true;
+  //         }
+  //       })
+  //     })
+  //   } else {
+  //     this.testStorageArr[id] = {
+  //       answerIds: '',
+  //       page: ''
+  //     }
+  //   }
+  // }
+  goBack(qresult, callback) {
+    // wx.navigateBack()
+    this.result = true
+    this.qresult = qresult
+
+    callback()
+  }
+  setStorage() {
+    // wx.navigateBack()
+    this.setStorage = false
+  }
+  getEvaluationResult({ answerIds, evaluationId }) {
+    let { getEvaluationResult } = api
+    return getEvaluationResult({ answerIds, evaluationId })
+  }
+  async getEvaluationExamList(id) {
+    let { getEvaluationExamList } = api;
+    let res = await getEvaluationExamList({ evaluationId: id });
+    if (res) {
+
+      this.evaluationExamList = res.data;
+
+      this.evaluationExamList.forEach((item, i) => {
+        // this.evaluationExamList[i].answers.reverse()
+        // 选择设false
+        this.evaluationExamList[i].answers.forEach((item1, i1) => {
+          this.evaluationExamList[i].answers[i1].select = false
+        })
+      })
+      this.total = this.evaluationExamList.length;
+      //显示第几条
+      // this.initStorage(id);
+      this.$apply()
+    }
+  }
+}
+</script>
+<style lang="less">
+
+.hintBox{
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  z-index: 3;
+  padding-top: 0.1rpx;
+  .til{
+    text-align: center;
+    font-size: 28rpx;
+    color: #333;
+    margin-top: 50rpx;
+  }
+  .imgBox{
+    text-align: center;
+    margin-top: 150rpx;
+    image{
+      width: 350rpx;
+      height: 250rpx;
+      margin: 0 auto;
+    }
+  }
+  .continue{
+    position: inherit;
+    width: 200rpx;
+    height: 80rpx;
+    line-height: 76rpx;
+    border-radius: 10rpx;
+    text-align: center;
+    border: 2rpx solid #2565c3;
+    font-size: 36rpx;
+    color: #2565c3;
+    bottom: 200rpx;
+    margin: auto;
+    left: 0;
+    right: 0;
+  }
+}
+
+
+
+.circle {
+  width: 54rpx;
+
+  height: 54rpx;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.container {
+  padding-bottom: 200rpx;
+}
+.pd32 {
+  padding: 34rpx 32rpx;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+  background-color: #fff;
+}
+.this {
+  color: #2565c3;
+  display: inline;
+}
+.total {
+  color: #666;
+  display: inline;
+}
+.pd46 {
+  padding: 46rpx 32rpx 20rpx;
+}
+.option {
+  width: 100%;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 1);
+  border-radius: 20rpx;
+  margin-bottom: 26rpx;
+}
+.option_title {
+  box-sizing: content-box;
+  width: 54rpx;
+  height: 54rpx;
+  background: rgba(255, 255, 255, 1);
+  border: 2rpx solid rgba(102, 102, 102, 1);
+  border-radius: 50%;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(102, 102, 102, 1);
+  text-align: center;
+  line-height: 54rpx;
+  // display: flex;
+  // justify-content: center;
+  // align-items: center;
+  // display: inline-block;
+  // vertical-align: middle;
+  flex: none;
+  position: relative;
+}
+
+.option_title_true {
+  position: relative;
+  box-sizing: content-box;
+  flex: none;
+  border: 2rpx solid transparent;
+  width: 54rpx;
+  height: 54rpx;
+  background: rgba(255, 255, 255, 1);
+  border-radius: 50%;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: #2565c3;
+  text-align: center;
+  line-height: 54rpx;
+}
+.option_this {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(102, 102, 102, 1);
+  margin-left: 22rpx;
+  flex: 1;
+}
+.option_this_true {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 1);
+  margin-left: 22rpx;
+  flex: 1;
+}
+.bottom {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 160rpx;
+  background-color: #fff;
+  padding: 32rpx;
+  width: 100%;
+}
+.back_topic {
+  width: 300rpx;
+  height: 90rpx;
+  border: 1rpx solid rgba(51, 51, 51, 1);
+  border-radius: 45rpx;
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(102, 102, 102, 1);
+  text-align: center;
+  line-height: 90rpx;
+}
+.go_topic {
+  width: 280rpx;
+  height: 90rpx;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 45rpx;
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  line-height: 90rpx;
+  text-align: center;
+}
+</style>

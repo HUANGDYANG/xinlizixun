@@ -1,0 +1,718 @@
+<template>
+  <form @submit="formSubmit1" report-submit>
+    <view class="container">
+      <button form-type="submit" class="form-btn"></button>
+
+      <view class="line20"></view>
+
+      <week :timeBean.sync="timeBean" @dayClick.user="dayClick"></week>
+
+      <view class="scheduling_time">
+        <repeat wx:for="{{timeQuantum}}">
+          <view class="loop" wx:if="{{item.show}}">
+            <view class="time_menu flex">
+              <form @submit="formSubmit2({{index}})" report-submit>
+                <!-- @tap="selectIndex({{index}})" -->
+                <button form-type="submit" class="t_row flex" wx:if="{{!item.expire}}">
+                  <view :class="{radio:1, expire: item.expire, 'active':item.select}"></view>
+                  <view :class="{quantum:1}">{{item.time}}</view>
+                </button>
+              </form>
+              <view class="t_row flex" wx:if="{{item.expire}}">
+                <view
+                  :class="{radio:1, expire: item.expire, disable:  item.expire , active:item.expire }"
+                ></view>
+                <view :class="{quantum:1}">{{item.time}}</view>
+              </view>
+            </view>
+
+            <view wx:if="{{item.select}}" class="consult_button flex">
+              <form @submit="formSubmit(1, {{index}})" report-submit>
+                <button
+                  wx:if="{{!item.expire}}"
+                  form-type="submit"
+                  class="button {{item.consultType == 1 || item.consultType == 3 ? 'active' : ''}}"
+                >线下咨询</button>
+                <!-- @tap.stop="selectConsultType(1, {{index}})" -->
+              </form>
+
+              <form @submit="formSubmit(2, {{index}})" report-submit>
+                <button
+                  wx:if="{{!item.expire}}"
+                  form-type="submit"
+                  class="button {{item.consultType == 2 || item.consultType == 3 ? 'active' : ''}}"
+                >语音咨询</button>
+                <!-- @tap="selectConsultType(2, {{index}})" -->
+              </form>
+              <view
+                wx:if="{{item.expire}}"
+                class="button disable1 {{item.consultType == 1 || item.consultType == 3 ? 'disable' : ''}}"
+              >线下咨询</view>
+              <view
+                wx:if="{{item.expire}}"
+                class="button disable1 {{item.consultType == 2 || item.consultType == 3 ? 'disable' : ''}}"
+              >语音咨询</view>
+            </view>
+          </view>
+        </repeat>
+        <view class="fix_button">
+          <view class="submit_button" @tap="submit_sc">提交排班</view>
+          <!-- <view class='submit_button disable' @tap='submit_sc'>不可更改</view> -->
+        </view>
+        <view class="mask" wx:if="{{show_mask}}"></view>
+      </view>
+    </view>
+  </form>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {
+  goPath,
+  checkInfo,
+  getWeekDayList,
+  prevPageOnLoad,
+  sleep
+} from '../util.js'
+import api from '../api.js'
+import WeekCalendar from '../components/week-calendar'
+let { saveFormId } = api
+export default class Scheduling_arrange extends wepy.page {
+  config = {
+    navigationBarTitleText: '安排排班'
+  };
+  components = {
+    week: WeekCalendar
+  };
+
+  data = {
+    formIdArr: [],
+    //  week Calendar
+    date: '',
+    selectWeek: 0,
+    timeBean: {},
+    show_mask: false,
+    clickDay: '',
+    // consultType 1线下,2语音,3线下+语音
+    timeQuantum: [
+      {
+        time: '00:00-01:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '01:00-02:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '02:00-03:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '03:00-04:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '04:00-05:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '05:00-06:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '06:00-07:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '07:00-08:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '08:00-09:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '09:00-10:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '10:00-11:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '11:00-12:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '12:00-13:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '13:00-14:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '14:00-15:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '15:00-16:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '16:00-17:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '17:00-18:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '18:00-19:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '19:00-20:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '20:00-21:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '21:00-22:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '22:00-23:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      },
+      {
+        time: '23:00-00:00',
+        select: false,
+        expire: false,
+        consultType: '',
+        formId: ''
+      }
+    ],
+    selectIndexs: [],
+    postData: {
+      weekDay: '',
+      dateString: '',
+      // jsonTimes: [{"consultType":"","beginTime":"","endTime":""}]
+      jsonTimes: []
+    },
+    consultantScheduleList: [],
+    consultantId: ''
+  };
+  selectConsultType(type, index, formId) {
+    console.log(type, index, 'selectConsultType')
+    this.timeQuantum[index].formId = formId
+    // 三种可能
+    if (this.timeQuantum[index].consultType === '') {
+      this.timeQuantum[index].consultType = type
+    } else if (this.timeQuantum[index].consultType == type) {
+      this.timeQuantum[index].consultType = ''
+    } else if (this.timeQuantum[index].consultType == 3) {
+      if (type == 2) {
+        this.timeQuantum[index].consultType = 1
+      } else {
+        this.timeQuantum[index].consultType = 2
+      }
+    } else {
+      this.timeQuantum[index].consultType = 3
+    }
+    console.log(this.timeQuantum)
+  }
+  selectIndex(index) {
+    if (this.selectIndexs.indexOf(index) === -1) {
+      this.selectIndexs.push(index)
+      this.timeQuantum[index].select = true // css 样式显示的
+    } else {
+      // 已经存在的
+      this.selectIndexs = this.selectIndexs.filter(idx => {
+        // 去掉已经存在的 元素
+        return idx !== index
+      })
+
+      this.timeQuantum[index].select = false
+    }
+    console.log(this.selectIndexs)
+
+    console.log(this.selectIndexs)
+  }
+  methods = {
+    formSubmit1(e) {
+      saveFormId({
+        formId: e.detail.formId
+      })
+      console.log(e.detail.formId, 'formSubmit1 formSubmit1')
+    },
+    formSubmit2(index, e) {
+      console.log(index)
+
+      this.selectIndex(index)
+      saveFormId({
+        formId: e.detail.formId
+      })
+      console.log(e.detail.formId, 'formSubmit1 formSubmit1')
+    },
+    formSubmit(type, index, e) {
+      saveFormId({
+        formId: e.detail.formId
+      })
+      // this.formIdArr.push(e.detail.formId)
+      // this.postData.formId = e.detail.formId
+      // this.submit()
+      console.log(type, index, e.detail.formId)
+      this.selectConsultType(type, index, e.detail.formId)
+    },
+
+    submit_sc() {
+      // 提交排班
+      // this.show_mask = true
+      // console.log(1111111);
+      // wx.showLoading({
+      //     title: '加载中',
+      //     mask: true
+      // })
+
+      if (this.selectIndexs.length < 1) {
+        wx.showToast({
+          title: '请选择排班时间！',
+          icon: 'none',
+          duration: 2000
+        })
+      } else {
+        this.postData.jsonTimes = []
+        // console.log(this.postData, '开始');
+
+        for (let index = 0; index < this.selectIndexs.length; index++) {
+          console.log(
+            this.timeQuantum[this.selectIndexs[index]].consultType,
+            '发的'
+          )
+
+          if (!this.timeQuantum[this.selectIndexs[index]].consultType) {
+            wx.showToast({
+              title: '请选择排班咨询类型！',
+              icon: 'none',
+              duration: 2000
+            })
+            return;
+          }
+          this.postData.jsonTimes.push({
+            beginTime: this.timeQuantum[this.selectIndexs[index]].time.split(
+              '-'
+            )[0],
+            endTime: this.timeQuantum[this.selectIndexs[index]].time.split(
+              '-'
+            )[1],
+            consultType: this.timeQuantum[this.selectIndexs[index]].consultType,
+            formId: this.timeQuantum[this.selectIndexs[index]].formId
+          })
+        }
+        this.postData.jsonTimes = JSON.stringify(this.postData.jsonTimes)
+
+        console.log(this.postData, '结束')
+        this.consultantScheduling({ ...this.postData }).then(res => {
+          console.log(res, '安排排班')
+          if (!res) {
+            wx.showToast({
+              title: '排班失败',
+              icon: 'fail',
+              duration: 1000
+            })
+          } else {
+            console.log(res, '安排排班')
+            wepy.showToast({
+              title: '排班成功',
+              icon: 'success',
+              duration: 3000,
+              mask: true
+            })
+            sleep(2).then(res => {
+              let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+              let prevPage = pages[pages.length - 2]
+              prevPage.onLoad({
+                selectDay: this.timeBean.selectDay,
+                clickDay: this.clickDay
+              })
+              wx.navigateBack()
+              // wx.redirectTo({
+              //   url: '/pages/scheduling?selectDay=' + this.timeBean.selectDay + '&clickDay=' + this.clickDay
+              // })
+            })
+          }
+        })
+      }
+    },
+
+    dayClick(day) {
+      this.timeBean.selectDay = day.index
+      console.log(day)
+      console.log(this.timeBean)
+      this.selectToday = this.timeBean.weekDayList[this.timeBean.selectDay].day // 选择的日期是
+
+      // let date = this.date.split('/')
+      // date.pop()
+      // date.push(day.clickDay)
+      // this.date = date.join('/')
+
+      if (day.clickDay < 10) {
+        day.clickDay = '0' + day.clickDay
+      }
+      let yymmdd = this.timeBean.yearMonth.split('-').join('') + day.clickDay
+      yymmdd =
+        this.timeBean.weekDayList[day.index].yearMonth.split('-').join('/') +
+        '/' +
+        day.clickDay
+
+      this.clickDay = day.clickDay
+
+      this.clickWeek = this.timeBean.weekDayList[day.index].week
+      this.postData.weekDay = '星期' + this.clickWeek
+      this.postData.dateString = yymmdd
+      console.log(yymmdd, this.clickWeek, '选择的日期和星期')
+
+      // 点击按钮时才发
+      this.getConsultantScheduleList(yymmdd)
+    }
+  };
+  consultantScheduling({ weekDay, dateString, jsonTimes } = {}) {
+    console.log(weekDay, dateString, jsonTimes)
+
+    let { consultantScheduling } = api
+    return consultantScheduling({
+      weekDay,
+      dateString,
+      jsonTimes
+    })
+  }
+  events = {};
+  onLoad(option) {
+    this.weekInit()
+    let { selectDay, clickDay } = option
+    // 设为选择的这一天
+    this.timeBean.selectDay = selectDay
+
+    this.clickDay = clickDay
+    console.log(
+      this.clickDay,
+      this.timeBean.today,
+      ' this.timeBean  this.timeBean  this.timeBean '
+    )
+    this.selectToday = this.timeBean.weekDayList[this.timeBean.selectDay].day // 选择的日期是
+
+    this.consultantId = this.$parent.globalData.userInfo.consultantId // 设定是这个咨询师先
+    this.clickWeek = this.timeBean.weekDayList[this.timeBean.selectDay].week
+    this.postData.weekDay = '星期' + this.clickWeek
+    // this.postData.dateString = this.timeBean.yearMonth.split('-').join('') + this.timeBean.today
+    this.postData.dateString = clickDay
+
+    // this.getConsultantScheduleList(this.timeBean.weekDayList[this.timeBean.selectDay].yearMonth.split('-').join('/') + '/' + this.timeBean.today)
+    this.getConsultantScheduleList(clickDay)
+    // 处理过期的时间 今天
+    // this.timeQuantum.forEach(()=>{
+
+    // })
+
+    console.log(this.postData, 'postData')
+  }
+
+  getConsultantScheduleList(dateTime) {
+    let { getConsultantScheduleList } = api
+    getConsultantScheduleList({
+      consultantId: this.consultantId,
+      dateTime: dateTime
+    }).then(res => {
+      console.log(res, '查询咨询师当天排班列表')
+      this.consultantScheduleList = res.data
+      console.log(
+        this.consultantScheduleList,
+        '查询咨询师当天排班列表!!!!!!!!!!!'
+      )
+
+      let hour = new Date().getHours()
+      this.selectIndexs = []
+      this.timeQuantum.forEach((item, i) => {
+        this.timeQuantum[i].expire = false
+        this.timeQuantum[i].select = false
+        this.timeQuantum[i].consultType = ''
+        this.timeQuantum[i].show = true
+
+        // 今天之前的不显示 时间段
+        this.consultantScheduleList.forEach((conitem, idx) => {
+          if (item.time.split('-')[0] == conitem.beginTime.slice(0, -3)) {
+            this.timeQuantum[i].expire = true
+            this.timeQuantum[i].select = true
+            // this.timeQuantum[i].show = true
+            this.timeQuantum[i].consultType = conitem.consultType
+            this.selectIndexs.push(i)
+          }
+        })
+        if (this.timeBean.today == this.selectToday) {
+          let time = item.time.split('-')[0].slice(0, -3)
+          if (time < hour || time == hour) {
+            console.log(time, hour)
+            // this.selectIndexs.push(i)
+            this.timeQuantum[i].show = false
+          }
+        }
+        this.$apply()
+      })
+
+      console.log(this.timeQuantum)
+
+      this.$apply()
+    })
+  }
+
+  // onReady() {
+  //   let weekOrder = "日一二三四五六"
+  //   let weekDayList = getWeekDayList(this.selectWeek, 8)
+  //   // console.log(week)
+  //   weekDayList.weekOrder = weekOrder
+  //   this.timeBean = weekDayList
+  //   this.timeBean.weekDayList.unshift({placeholder:true, hide:1 })
+  //   // console.log(this.timeBean)
+  // }
+  weekInit() {
+    let weekOrder = '日一二三四五六'
+    let weekDayList = getWeekDayList(this.selectWeek, 8)
+    // console.log(weekDayList)
+    weekDayList.weekOrder = weekOrder
+    this.timeBean = weekDayList
+    this.timeBean.weekDayList.unshift({ placeholder: true, hide: 1 })
+    // 将一个元素推进去，现在先固定
+    // this.timeBean.weekDayList.unshift({placeholder:true, hide:1})
+    this.date =
+      this.timeBean.yearMonth.split('-').join('/') + '/' + this.timeBean.today
+    this.hours_bottom = true
+    console.log(this.timeBean)
+  }
+}
+</script>
+
+<style lang="less">
+page {
+  height: 100%;
+}
+.container {
+  position: relative;
+}
+.form-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  // opacity: 0;
+  // background: aqua;
+}
+button {
+  padding-left: 0;
+  padding-right: 0;
+}
+.form-btn.button-hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  opacity: 0;
+}
+.line20 {
+  width: 100%;
+  height: 20rpx;
+}
+.scheduling_time {
+  margin-bottom: 100rpx;
+  background: #fff;
+  padding: 0 32rpx;
+  padding-top: 36rpx;
+  .time_menu {
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    width: 100%;
+    .t_row {
+      position: relative;
+      // background: red;
+      margin-bottom: 20rpx;
+      align-items: center;
+      flex-shrink: 0;
+      // width: 100%;
+      .radio {
+        margin-right: 20rpx;
+        width: 36rpx;
+        height: 36rpx;
+        border: 2rpx solid rgba(37, 101, 195, 1);
+        border-radius: 100%;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .radio.active {
+        background: rgba(37, 101, 195, 1);
+      }
+      .radio.active::after {
+        display: inline-block;
+        position: absolute;
+        content: '';
+        line-height: 36rpx;
+        width: 12rpx;
+        height: 8rpx;
+        // right: 1rpx;
+        bottom: 12rpx;
+        border: 2rpx solid #fff;
+        border-width: 0 0 4rpx 4rpx;
+        transform: rotate(-43deg);
+        z-index: 10;
+      }
+      .radio.disable {
+        background: rgba(153, 153, 153, 1);
+      }
+      .radio.expire {
+        border: 2rpx solid rgba(153, 153, 153, 1);
+      }
+      .quantum {
+        font-size: 28rpx;
+        color: rgba(51, 51, 51, 1);
+      }
+      .quantum.expire {
+        // border: 2rpx solid rgba(153, 153, 153, 1);
+        color: rgba(153, 153, 153, 1);
+      }
+    }
+  }
+  .consult_button {
+    padding-left: 56rpx;
+    align-items: center;
+    width: 646rpx;
+    flex-shrink: 0;
+    width: 100%;
+    height: 100rpx;
+    background: rgba(246, 246, 250, 1);
+    .button {
+      border: 2rpx solid rgba(37, 101, 195, 1);
+      border-radius: 64rpx;
+      width: 160rpx;
+      height: 64rpx;
+      line-height: 64rpx;
+      text-align: center;
+      font-size: 28rpx;
+      margin-left: 20rpx;
+      color: rgba(37, 101, 195, 1);
+    }
+    .button.active {
+      background: rgba(37, 101, 195, 1);
+      color: #fff;
+    }
+
+    .button.disable1 {
+      border: 2rpx solid rgba(153, 153, 153, 1);
+      color: rgba(153, 153, 153, 1);
+    }
+    .button.disable {
+      color: #fff;
+      background: rgba(153, 153, 153, 1);
+    }
+  }
+  .loop {
+    padding-bottom: 26rpx;
+  }
+}
+
+.fix_button {
+  z-index: 9999;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: #fff;
+  width: 100%;
+  height: 98rpx;
+  .submit_button {
+    width: 686rpx;
+    height: 88rpx;
+    background: rgba(37, 101, 195, 1);
+    border-radius: 4rpx;
+    text-align: center;
+    line-height: 88rpx;
+    margin: 5rpx auto;
+    font-size: 32rpx;
+    font-family: PingFang-SC-Medium;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+  }
+  .submit_button.disable {
+    background: rgba(153, 153, 153, 1);
+  }
+}
+</style>

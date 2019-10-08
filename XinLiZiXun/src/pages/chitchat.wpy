@@ -1,0 +1,24 @@
+<template>
+  <view class="container"></view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import { goPath, checkInfo } from '../util.js';
+// import api from '../config.js'
+
+export default class Chitchat extends wepy.page {
+  config = {
+    navigationBarTitleText: '咨询列表'
+  };
+  components = {};
+
+  data = {};
+  methods = {};
+
+  events = {};
+}
+</script>
+
+<style lang="less">
+</style>

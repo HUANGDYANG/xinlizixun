@@ -1,0 +1,305 @@
+<template>
+  <view>
+    <view style="background:#fff">
+      <view class="line"></view>
+    </view>
+
+    <!-- <view class='row'>
+    <view class='row' bindtap='lastWeek'>
+        <text class='iconfont icon-sanjiaoleft' ></text>
+        <view style='font-size:28rpx;color:#999999'>上一周</view>
+    </view>
+    <view class='timeType'>{{timeBean.yearMonth}}</view>
+    <view class='row' bindtap='nextWeek'>
+        <view style='font-size:28rpx; color:#999999'>下一周</view>
+        <text class='iconfont icon-sanjiaoright' ></text>
+    </view>
+    </view>-->
+    <view class="row">
+      <view class="this_day flex1">
+        <repeat for="{{timeBean.weekOrder}}" data-index="{{index}}">
+          <view class="'weekType'">{{ '周' + item }}</view>
+        </repeat>
+
+        <repeat for="11111111111111" key>
+          <!-- 收集formid 不需要要的话改回原来的代码 -->
+          <form
+            @submit="itemClick"
+            report-submit
+            data-index="{{index}}"
+            class="dateType"
+            data-clickday="{{timeBean.weekDayList[index].day}}"
+          >
+            <!-- <view
+              wx:if="{{timeBean.weekDayList[index].expire}}"
+              data-index="{{index}}"
+              class="dateType {{!timeBean.weekDayList[index].week ? 'hidden' : ''}}"
+            >-->
+            <view
+              wx:if="{{timeBean.weekDayList[index].expire}}"
+              data-index="{{index}}"
+              class="{{!timeBean.weekDayList[index].week ? 'hidden' : ''}}"
+            >
+              <view
+                :class="{ disable_c:1 , date: 1,  today: timeBean.today == timeBean.weekDayList[index].day }"
+              >{{ timeBean.weekDayList[index].day }}</view>
+            </view>
+            <!-- <view
+              wx:else
+              data-index="{{index}}"
+              data-clickday="{{timeBean.weekDayList[index].day}}"
+              class="dateType {{!timeBean.weekDayList[index].week ? 'hidden' : ''}}"
+              @tap="itemClick"
+            >-->
+            <button
+              form-type="submit"
+              wx:else
+              data-index="{{index}}"
+              data-clickday="{{timeBean.weekDayList[index].day}}"
+              class="{{!timeBean.weekDayList[index].week ? 'hidden' : ''}}"
+            >
+              <!-- class="date today disable_c" -->
+              <view
+                :class="{ active: index == timeBean.selectDay, date: 1, today: timeBean.today == timeBean.weekDayList[index].day}"
+              >{{ timeBean.weekDayList[index].day }}</view>
+            </button>
+          </form>
+        </repeat>
+      </view>
+    </view>
+
+    <view style="background:#fff">
+      <view class="line line90"></view>
+    </view>
+    <!-- <view class='line-shadow'></view>
+    <view class='suspension' bindtap='addMenuClick'>
+      <text class='iconfont icon-tianjia' ></text>
+    </view>-->
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+
+export default class WeekCalendar extends wepy.component {
+  props = {
+    timeBean: {
+      // 属性名 在wxml调用组件时利用该属性传递组件显示的数据
+      type: Object, // 类型（必填），目前接受的类型包括：String, Number, Boolean, Object, Array, null（表示任意类型）
+      value: '', // 属性初始值（可选），如果未指定则会根据类型选择一个
+      twoWay: true
+    }
+  };
+
+  data = {};
+
+  components = {};
+
+  methods = {
+    lastWeek: function(e) {
+      // 点击了上一周
+      this.triggerEvent('lastWeek')
+    },
+
+    nextWeek: function(e) {
+      // 点击了下一周
+      this.triggerEvent('nextWeek')
+    },
+
+    itemClick: function(e) {
+      wx.request({
+        url: 'https://miniprogram.careyourfeeling.cn/consultant/saveFormId',
+        method: 'POST',
+        data: {
+          formId: e.detail.formId
+        },
+        header: {
+          'content-type': 'application/x-www-form-urlencoded;',
+          accessToken: wx.getStorageSync('token')
+        }
+      })
+      // 长度14个 现在先以默认显示的格式，有需要再改动态的
+      // 点击了某一日，传递该日的下标
+      let day = {}
+      day.index = e.currentTarget.dataset.index
+      day.clickDay = e.currentTarget.dataset.clickday
+      this.$apply()
+      // this.triggerEvent('dayClick', index);
+      this.$emit('dayClick', day)
+    }
+  };
+}
+</script>
+
+<style type="less">
+form > view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dateType {
+  justify-content: center;
+  button {
+    overflow: visible;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+page {
+  font-family: PingFang-SC-Medium;
+}
+/* compoents/weekCalendar/weekCalendar.wxss */
+.row {
+  height: 264rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  background: #fff;
+  /* background: red; */
+  padding: 0 56rpx;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5rpx;
+  padding-top: 5rpx;
+  margin-top: 10rpx;
+  flex: 1;
+}
+
+/* .select-column{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5rpx;
+  padding-top: 5rpx;
+  margin-left: 5rpx;
+  margin-right: 5rpx;
+  margin-top: 10rpx;
+  flex: 1;
+  border-top-left-radius:20rpx;
+  border-top-right-radius:20rpx;
+  background: #36d6a6;
+} */
+
+.flex1 {
+  flex-wrap: wrap;
+  /* width: calc(100% - 112rpx); */
+  width: 100%;
+  display: flex;
+  height: 220rpx;
+  /* background: red; */
+  text-align: center;
+}
+
+.hidden {
+  visibility: hidden;
+}
+.timeType {
+  padding-top: 46rpx;
+  font-size: 35rpx;
+  font-weight: bold;
+}
+
+/* date */
+.dateType {
+  text-align: center;
+  flex: 0 0 auto;
+  width: 14.25%;
+  display: flex;
+  align-items: center;
+  .date {
+    position: relative;
+    margin: 0 auto;
+    color: #2565c3;
+    border-radius: 100%;
+    line-height: 60rpx;
+    font-size: 32rpx;
+    height: 60rpx;
+    width: 60rpx;
+    text-align: center;
+    &.active {
+      /* 选中 */
+      background: #2565c3;
+      color: #fff;
+    }
+    &.today {
+    }
+    &.disable {
+      background: rgba(153, 153, 153, 1);
+      color: #fff;
+    }
+    &.disable_c {
+      /* 禁止 */
+      color: rgba(153, 153, 153, 1);
+    }
+    &.today::after {
+      /* 今天 */
+      border: 2rpx solid rgba(255, 180, 0, 1);
+      border-radius: 100%;
+      width: 30rpx;
+      height: 30rpx;
+      position: absolute;
+      top: -20rpx;
+      right: -20rpx;
+      content: '今';
+      font-size: 22rpx;
+      line-height: 30rpx;
+      text-align: center;
+      color: rgba(255, 180, 0, 1);
+    }
+  }
+}
+
+.weekType {
+  flex: 0 0 auto;
+  width: 14.25%;
+  color: #666666;
+  font-size: 28rpx;
+}
+.next_line {
+  /* margin-bottom: 100rpx; */
+}
+
+.line {
+  z-index: 9999;
+  height: 2rpx;
+  width: 100%;
+  background-color: #eeeeee;
+}
+
+.line90 {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.line-shadow {
+  height: 3rpx;
+  width: 100%;
+  background-color: gainsboro;
+  box-shadow: 5px 0px 5px 0px gainsboro;
+}
+
+.iconfont {
+  font-family: 'iconfont' !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/**
+*字体图标，左右箭头，书，米饭，可以修改界面对图标进行修改替换
+*/
+/* .icon-sanjiaoleft:before { content: "\e6b6"; }
+
+.icon-sanjiaoright:before { content: "\e6b7"; }
+
+.icon-book1:before { content: "\e631"; }
+
+.icon-mifan:before { content: "\e606"; }
+  */
+</style>

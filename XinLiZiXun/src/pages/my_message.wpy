@@ -1,0 +1,241 @@
+<template>
+  <view class="container">
+    <view wx:if="{{messageList}}">
+    <repeat for="{{loopData}}" key="" item="content">
+      <view class='for'>
+        <view class='time'>{{index}}</view>
+        <repeat for="{{content}}" index="i" item="item">
+          <view class='this' wx:if="{{item.msgType != 3}}">
+            <!-- 消息内容(type为0、1直接显示,type为2返回的是评论人的名称，为3返回单号)*/ -->
+            <view class='title'>{{item.msgTitle}}</view>
+            <view class='detail' wx:if="{{item.msgType == 0}}">{{item.msgContent}}</view>
+            <view class='detail' wx:if="{{item.msgType == 1}}">{{item.msgContent}}</view>
+            <view class='detail' wx:if="{{item.msgType == 2}}">来自 <view class='cFFB400'>{{item.msgContent}}</view> 的评论~</view>
+            <view class='flex flex-a-i-center flex-j-c-sb mgt20'>
+              <view class='text' wx:if="{{item.msgType == 0}}" @tap="to_evaluate({{item.entityId}}, {{item.id}}, {{index}}, {{i}})">立即评价</view>
+              <view class='text' wx:if="{{item.msgType == 1}}" @tap="to_make_detail({{item.entityId}}, {{item.id}}, {{index}}, {{i}})">查看详情</view>
+              <view class='text' wx:if="{{item.msgType == 2}}" @tap="to_rec_com({{item.entityId}}, {{item.id}}, {{index}}, {{i}})">立即查看</view>
+              <image src='../images/icon_youhua@2x.png' class='icon_youhua'></image>
+            </view>
+              <view class='hd' wx:if="{{!item.readStatus}}"></view>
+          </view>
+          <view class='this' wx:if="{{item.msgType == 3}}">
+            <view class='title'>{{item.msgTitle}}</view>
+            <view class='detail' style='border-bottom: none;'>单号：{{item.msgContent}}  <view class='cFFB400' @tap="clipboardData({{index}}, {{i}}, {{item.id}})">复制</view></view>
+            <view class='hd' wx:if="{{!item.readStatus}}"></view>
+          </view>
+       </repeat>
+      </view>
+    </repeat>
+    </view>
+    <view class="no_more" wx:else>
+      <text>暂无消息</text>
+    </view>
+    <view class='no_more' wx:if='{{loaded}}'>- 没有更多啦 -</view>
+
+
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class My_message extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的消息'
+    }
+    components = {}
+    // 消息类型,0需要评价,1预约成功,2收到评价,3定制礼物
+    data = {
+      messageList: '',
+      loopData: {
+        // '': []
+      },
+      nextPage: 1, // 下一页
+      loaded: false
+    }
+
+    computed = {}
+    methods = {
+      to_make_detail(id, msgId, date, i) {
+        this.updateReadStatus(msgId, date, i)
+        goPath('/pages/make_detail?id=' + id)
+      },
+      to_rec_com(id, msgId, date, i) {
+        this.updateReadStatus(msgId, date, i)
+        goPath('/pages/rec_com?id=' + id)
+      },
+      to_evaluate(id, msgId, date, i) {
+        this.updateReadStatus(msgId, date, i)
+        goPath('/pages/evaluate?id=' + id)
+      },
+      clipboardData(date, i, msgId) {
+        this.updateReadStatus(msgId, date, i)
+
+        wx.setClipboardData({
+          data: this.loopData[date][i].msgContent,
+          success() {
+          wx.showToast({
+              title: '复制成功'
+            })
+        }
+        })
+      }
+    }
+    events = {}
+    async onLoad(option) {
+      this.getMessageList()
+    }
+
+    onReachBottom() {
+      if (!this.loaded) {
+        this.getMessageList({
+        pageNum: this.nextPage
+      })
+      }
+    }
+    updateReadStatus(id, date, i) {
+      // 更新阅读状态
+      let { updateReadStatus } = api
+      updateReadStatus(id).then(res => {
+
+        if (res) {
+          this.loopData[date][i].readStatus = 1
+          let pages = getCurrentPages() // 获取当前页面js里面的pages里的所有信息。
+          let prevPage = pages[pages.length - 2]
+          prevPage.getMessageCount()
+          this.$apply()
+        }
+      })
+    }
+
+    getMessageList({
+      pageNum = 1,
+      pageSize = 10
+    } = {}) {
+      let { getMessageList } = api
+      // 我的消息 分页
+      getMessageList({
+        pageNum,
+        pageSize
+      }).then(res => {
+      //  if(!res) return
+        if (res) {
+          if (this.nextPage == 1) {
+          if (res.data.nextPage == 0) {
+            this.loaded = true
+          } else {
+            this.nextPage = res.data.nextPage
+          }
+          this.messageList = res.data.list
+          this.messageList.forEach((item, i) => {
+            let arr = item.msgTime.split(' ')[0].split('-')
+            let date = arr[0] + '年' + arr[1] + '月' + arr[2] + '日'
+            item.date = date
+            if (!this.loopData[date]) this.loopData[date] = []
+            this.loopData[date].push(item)
+          })
+        } else if (this.nextPage > 1) {
+          this.nextPage = res.data.nextPage
+          if (res.data.nextPage == 0) this.loaded = true
+          res.data.list.forEach((item, i) => {
+            let arr = item.msgTime.split(' ')[0].split('-')
+            let date = arr[0] + '年' + arr[1] + '月' + arr[2] + '日'
+            item.date = date
+            if (!this.loopData[date]) this.loopData[date] = []
+            this.loopData[date].push(item)
+          })
+        }
+
+
+          this.$apply()
+        }
+      })
+    }
+}
+</script>
+<style lang="less">
+page{
+  margin-bottom: 50rpx;
+}
+.hd {
+  width: 20rpx;
+  height: 20rpx;
+  position: absolute;
+  right: 20rpx;
+  top: 20rpx;
+  background: red;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &::after {
+    content: '';
+    width: 8rpx;
+    height: 8rpx;
+    background: #fff;
+    border-radius: 50%;
+  }
+}
+.container{
+  padding: 0 32rpx;
+}
+.for{
+  margin-top: 40rpx;
+}
+.time{
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(153,153,153,1);
+  text-align: center;
+}
+.this{
+  position: relative;
+  margin-top: 20rpx;
+  background:rgba(255,255,255,1);
+  border:1rpx solid rgba(238,238,238,1);
+  border-radius:24rpx;
+  padding: 26rpx 30rpx;
+}
+.title{
+  font-size:32rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(0,0,0,1);
+}
+.detail{
+  font-size:26rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  margin: 10rpx 0 0;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.mgt20{
+  margin-top: 20rpx;
+}
+.text{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.icon_youhua{
+  width: 8rpx;
+  height: 14rpx;
+}
+.cFFB400{
+  display: inline;
+  color:#FFB400;
+}
+.no_more{
+  font-size:24rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(153,153,153,1);
+  text-align: center;
+  margin-top: 90rpx;
+}
+</style>

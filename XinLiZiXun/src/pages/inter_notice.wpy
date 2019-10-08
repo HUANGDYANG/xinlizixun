@@ -1,0 +1,130 @@
+<template>
+  <view class="container">
+     <import src="../wxParse/wxParse.wxml"/>
+
+    <view class='title_out'>“走心聊”咨询师入驻须知</view>
+    <repeat for="{{notifyList}}">
+      <view class='mgt20'>
+        <view class='pd32 flex flex-a-i-center'>
+          <view class='blue_shu'></view>
+          <view class='title'>{{item.title}}</view>
+        </view>
+        <view class='pd32' style='border-bottom: none;'>
+          <!-- <view class='detail'>拥有执业所在地法律要求的执业资格。</view> -->
+           <view class='detail'>
+             <rich-text nodes="{{item.content}}"></rich-text>
+             <!-- <template class="promise_out2" is="wxParse" data="{{wxParseData:article.nodes}}"/> -->
+           </view>
+        </view>
+      </view>
+    </repeat>
+    <view class='posi_fix'>
+      <view class='button' @tap='to_data_fill'>我已阅读，申请入驻走心聊</view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  // import WxParse from '../wxParse/wxParse.js'
+  
+  export default class Inter_notice extends wepy.page {
+    config = {
+      navigationBarTitleText: '入驻须知'
+    }
+    components = {}
+    data = {
+      notifyList: ''
+    }
+    computed = {}
+    methods = {
+      to_data_fill() {
+        goPath('/pages/data_fill', 'rd')
+      // wx.navigateBack()
+      }
+    }
+    getNotifyList() {
+    // 入驻须知
+      let { getNotifyList } = api
+      getNotifyList().then(res => {
+        this.notifyList = res.data
+      // this.notifyList.forEach((item, i) => {
+      //   this.notifyList[i].content = WxParse.wxParse('article.' + i, 'html', item.content, this, 5);
+      // })
+        this.$apply()
+      })
+      // return $get('/notify/list')
+    }
+    events = {}
+    async onLoad(option) {
+      this.getNotifyList()
+    }
+  }
+</script>
+<style lang="less">
+.container{
+  padding-bottom: 200rpx;
+}
+.title_out{
+  background-color: #fff;
+  padding: 30rpx;
+  font-size:38rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(37,101,195,1);
+  text-align: center;
+}
+.mgt20{
+  margin-top: 20rpx;
+}
+.pd32{
+  padding: 32rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.blue_shu{
+  width:8rpx;
+  height:28rpx;
+  background:rgba(20,98,170,1);
+  border-radius:4rpx;
+}
+.title{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  margin-left: 14rpx;
+}
+.detail{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  line-height:42rpx;
+}
+.instructions{
+  color:#1462AA;
+}
+.posi_fix{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 98rpx;
+  background-color: #fff;
+}
+.button{
+  width:686rpx;
+  height:88rpx;
+  background:rgba(37,101,195,1);
+  border-radius:4rpx;
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  text-align: center;
+  margin: 5rpx auto 0;
+  line-height: 88rpx;
+}
+</style>

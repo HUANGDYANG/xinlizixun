@@ -1,0 +1,1057 @@
+<template>
+  <view class="container">
+    <view class="fix_top"
+          wx:if="{{!show_top}}">
+      <image src="../images/bg_money@2x.png"></image>
+      <view class="balance_frame flex">
+        <view class="balance_t">余额</view>
+        <view class="balance_m">{{balance ? balance : '0.00'}}</view>
+        <view class="given1 flex"
+              wx:if="{{memberType != 2}}">
+          <view class="">赠送金额：{{couponPrice ? couponPrice : '0.00'}}</view>
+          <view wx:if="{{couponDate}}">即将在{{couponDate}}过期</view>
+        </view>
+        <view class="balance_b flex flex-j-c-sb flex-a-i-center"
+              wx:if="{{memberType == 2}}">
+          <view class="line"></view>
+          <view class="given flex flex-column flex-j-c-sa flex-a-i-center">
+            <view class="">赠送金额：{{couponPrice ? couponPrice : '0.00'}}</view>
+            <view class="expires"
+                  wx:if="{{couponDate}}">即将在{{couponDate}}过期</view>
+          </view>
+
+          <view class="deposit flex flex-column flex-a-i-center flex-j-c-sa">
+            <view class="may">可提现：{{!depositMoney ? '0.00' : depositMoney}}</view>
+            <view class="button"
+                  @tap="toDeposit">提现</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- <view style="height: 360rpx; background:red;"></view> -->
+    <view style="height: 360rpx;"></view>
+
+    <view :class="{show_top:1, active: show_top}">
+
+      <view class="tab flex"
+            wx:if="{{memberType == 2}}">
+        <view class="expense {{selectIncome === 0 ? 'active' : ''}}"
+              @tap="selectButton(0)">消费明细</view>
+        <view class="income {{selectIncome === 1 ? 'active' : ''}}"
+              @tap="selectButton(1)">收入明细</view>
+        <view class="income {{selectIncome === 2 ? 'active' : ''}}"
+              @tap="selectButton(2)">提现明细</view>
+      </view>
+
+      <!-- search_container 消费明细的搜索框-->
+      <view class="search_container flex"
+            wx:if="{{selectIncome === 0}}">
+        <view class="search_v flex">
+          <input @input="inputSearch"
+                 class="search_i"
+                 type="text"
+                 placeholder="请输入..."
+                 value="{{keyword}}" />
+          <image class="icon_sousuo"
+                 src="../images/icon_sousuo@2x.png" />
+        </view>
+        <view class="v_line"></view>
+        <view @tap="showSelectType"
+              class="all_expense {{ showType ? 'up_arrow' : 'down_arrow' }}"
+              style="color: {{selecTypeIndex !== '' ? '#2565c3' : ''}}">{{selecTypeIndex !== '' ? typeArray[selecTypeIndex] : "全部消费"}}</view>
+        <view class="options_v"
+              wx:if="{{showType}}">
+          <repeat for="{{typeArray}}">
+            <view class="item flex"
+                  @tap="selecType({{index}})">
+              <view class="i_name {{selecTypeIndex === index ? 'active' : ''}}">{{item}}</view>
+              <image wx:if="{{selecTypeIndex === index}}"
+                     class="i_tick"
+                     src="../images/icon_tick_money@2x.png" />
+            </view>
+          </repeat>
+        </view>
+      </view>
+
+      <!-- 消费明细 items -->
+      <scroll-view class="expense_container"
+                   scroll-y
+                   style="height: {{memberType == 2 ? '874rpx;' : '974rpx'}}"
+                   wx:if="{{selectIncome === 0}}"
+                   bindscrolltolower="handlScrolltolower">
+        <repeat for="{{consumeList}}">
+          <view class="touch-item {{item.isTouchMove ? 'touch-move-active' : ''}}"
+                data-index="{{index}}"
+                @tap.stop="to_entity({{item.entityId}}, {{item.payType}}, {{item.commentStatus}}, {{index}})"
+                @touchstart="touchstart"
+                @touchmove="touchmove">
+            <view class="content">
+              <view class="expense">
+                <view class="header flex">
+                  <view class="header_time">{{item.payTime}}</view>
+                  <view class="header_handle"
+                        wx:if="{{item.payType == 0 && item.commentStatus == false && item.consultantStatus == 1}}"
+                        @tap.stop="to_evaluate({{item.entityId}})">提交评论</view>
+                  <view class="header_handle"
+                        wx:elif="{{item.payType == 0 && item.commentStatus}}"
+                        @tap.stop="to_see({{item.entityId}})">查看评论</view>
+                  <view class="header_handle"
+                        wx:elif="{{item.payType == 1}}"
+                        @tap.stop="to_confidences_detail({{item.entityId}})">查看课程</view>
+                </view>
+                <view class="main flex">
+                  <view class="main_item flex">
+                    <view class="main_l"
+                          wx:if="{{item.payType == 0}}">预约医生：</view>
+                    <view class="main_l"
+                          wx:elif="{{item.payType == 1}}">课程名字：</view>
+                    <view class="main_l"
+                          wx:elif="{{item.payType == 2}}">套餐名字：</view>
+                    <view class="main_l"
+                          wx:elif="{{item.payType == 3}}">测评名字：</view>
+                    <view class="main_l"
+                          wx:elif="{{item.payType == 4}}">咨询医生：</view>
+                    <view class="main_c">{{item.payTitle}}</view>
+                  </view>
+                  <view class="main_item flex">
+                    <view class="main_l">{{item.payType == 0 ? '预约时间：' : '购买时间：'}}</view>
+                    <view class="main_c">{{item.payType == 0 ? item.subscribeTime : item.payTime}}</view>
+                  </view>
+                  <view class="main_item flex">
+                    <view class="main_l"
+                          wx:if="{{item.payType != 4}}">{{item.payType == 0 ? '预约价格：' : '购买价格：'}}</view>
+                    <view class="main_l"
+                          wx:if="{{item.payType == 4}}">咨询价格：</view>
+                    <view class="main_c">¥{{item.payMoney}}</view>
+                  </view>
+
+                  <view class="arrow_icon">
+                    <image src="../images/icon_youhua_money@2x.png" />
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view class="del"
+                  @tap.stop="del({{item.id}})"
+                  data-index="{{index}}">
+              <image class="del_icon"
+                     src="../images/icon_delete_money@2x.png" />
+            </view>
+          </view>
+        </repeat>
+        <view class="no_more">-没有更多啦-</view>
+      </scroll-view>
+      <view class="mask"
+            wx:if="{{showType}}"
+            @tap="showSelectType"></view>
+
+      <!-- @scroll="scroll"
+        scroll-with-animation
+        @scrolltoupper="upper" -->
+
+      <!-- 收入明细items -->
+      <scroll-view scroll-y
+                   style="height: 914rpx;"
+                   class="income_container"
+                   wx:if="{{selectIncome === 1}}"
+                   bindscrolltolower="handlScrolltolower1">
+        <repeat for="{{incomeList}}">
+          <view class="income_item flex">
+            <view class="source_msg flex">
+              <image src="{{item.payMemberMainPic}}"></image>
+              <view>
+                <view class="name">{{item.payMemberName}}</view>
+                <view class="time">{{item.payTime}}</view>
+              </view>
+            </view>
+            <view class="price">¥{{item.price}}</view>
+          </view>
+        </repeat>
+        <view class="no_more">-没有更多啦-</view>
+      </scroll-view>
+
+      <!-- 提现明细 -->
+      <scroll-view scroll-y
+                   style="height: 914rpx;"
+                   class="deposit_container"
+                   wx:if="{{selectIncome === 2}}"
+                   bindscrolltolower="handlScrolltolower2">
+        <repeat for="{{withdrawList}}">
+          <view class="item">
+            <view class="deposit_content flex flex-j-c-sb ">
+              <view class="status_box flex flex-column ">
+                <view wx:if="{{item.withdrawStatus == 0}}"
+                      class="status audit">待审核</view>
+                <view wx:if="{{item.withdrawStatus == 1}}"
+                      class="status pass">通过审核</view>
+                <view wx:if="{{item.withdrawStatus == 2}}"
+                      class="status">审核失败</view>
+                <view wx:if="{{item.withdrawStatus == 3}}"
+                      class="status pass">已汇款</view>
+                <view class="date">{{item.date}}</view>
+              </view>
+              <view wx:if="{{item.withdrawStatus == 0}}"
+                    class="price audit">-¥{{item.price}}</view>
+              <view wx:if="{{item.withdrawStatus == 1}}"
+                    class="price pass">-¥{{item.price}}</view>
+              <view wx:if="{{item.withdrawStatus == 2}}"
+                    class="price">-¥{{item.price}}</view>
+              <view wx:if="{{item.withdrawStatus == 3}}"
+                    class="price pass">-¥{{item.price}}</view>
+
+            </view>
+          </view>
+        </repeat>
+        <view class="no_more">-没有更多啦-</view>
+      </scroll-view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo } from '../util.js'
+import api from '../api.js'
+import HDelmove from '../components/h-delmove'
+
+export default class My_wallet extends wepy.page {
+  config = {
+    navigationBarTitleText: '我的钱包',
+    'usingComponents': {
+      'slide-view': '/components/slide-view/index'
+    }
+  }
+  components = {
+    delmove: HDelmove
+  }
+  computed = {
+    // depositStatus (index) {
+    //   console.log(index, 'index index index')
+
+    //   // 提现状态,0待审核,1通过审核,2审核失败,3已汇款
+    //   return this.withdrawList[index]
+    // }
+  }
+  data = {
+    // 0预约，1课程，2定制，3测评
+    show_top: false,  // 去最上面
+    showType: false, // 显示搜索类型的视图
+    selecTypeIndex: '', // 选择要搜索的类型
+    typeArray: ['咨询消费', '课程消费', '商城消费', '测评消费'],
+    consumeList: [], // 消费明细列表
+    incomeList: [], // 收益明细列表
+    withdrawList: [], // 提现明细列表
+    memberType: 0, // 判断角色的 2是咨询师
+    selectIncome: 0, // 选了消费还是明细
+    // slide
+    items: [],
+    startX: 0, // 开始坐标
+    startY: 0,
+
+    keyword: '',
+    payType: '',
+    couponPrice: '',
+    couponDate: '',
+    balance: '',
+    id: '',
+    nextPage: 1, // 下一页
+    loaded: false,
+    nextPage1: 1, // 下一页
+    loaded1: false,
+    nextPage2: 2, // 下一页
+    loaded2: false,
+    depositMoney: ''
+  }
+  methods = {
+    toDeposit () {
+      console.log(this.depositMoney)
+      goPath('/pages/deposit?depositMoney=' + this.depositMoney)
+    },
+    to_entity (entityId, payType, commentStatus, index) {
+      console.log(entityId, payType, commentStatus, index)
+      if (this.consumeList[index].payType == 0) {
+        // 预约详情
+        goPath('/pages/make_detail?id=' + entityId + '&payStatus=1')
+      } else if (this.consumeList[index].payType == 1) {
+        // 课程详情
+        goPath('/pages/confidences_detail?courseId=' + entityId)
+      } else if (this.consumeList[index].payType == 2) {
+        // 定制详情
+        goPath('/pages/custom_detail?id=' + entityId)
+      } else if (this.consumeList[index].payType == 3) {
+        // 测试
+        goPath('/pages/heart_know_detail?id=' + entityId)
+      }
+    },
+    to_evaluate (id) {
+      goPath('/pages/evaluate?id=' + id)
+    },
+    to_confidences_detail (id) {
+      goPath('/pages/confidences_detail?courseId=' + id)
+    },
+    to_see (id) {
+      console.log(this.id, 'this.idthis.id memberId')
+      // goPath(`/pages/see_evaluation?memberId=${this.id}&scheduleId=${id}`)
+
+      goPath(`/pages/see_com?id=${id}`)
+    },
+    inputSearch (e) {
+      console.log(e.detail.value)
+      this.nextPage = 1
+      this.loaded = false
+      this.keyword = e.detail.value
+      this.getConsumeList()
+    },
+    selectButton (button) {
+      console.log(typeof button)
+      console.log(Number(button))
+      this.selectIncome = Number(button)
+      this.showType = false
+    },
+    showSelectType () {
+      this.showType = !this.showType
+    },
+    selecType (type) {
+      console.log(type)
+      this.nextPage = 1
+      this.loaded = false
+      if (this.selecTypeIndex === type) {
+        this.selecTypeIndex = ''
+      } else {
+        this.selecTypeIndex = type
+      }
+      this.getConsumeList()
+
+      // 搜索消费明细
+      // this.getConsumeList()
+    },
+    // scroll() {
+    //     this.show_top = true
+    // },
+    // upper() {
+    //     this.show_top = false
+    // }
+    // 手指触摸动作开始 记录起点X坐标
+    touchstart (e) {
+      console.log('开始')
+
+      // 开始触摸时 重置所有删除
+      this.data.consumeList.forEach(function (v, i) {
+        if (v.isTouchMove)// 只操作为true的
+        { v.isTouchMove = false }
+      })
+
+      this.startX = e.changedTouches[0].clientX,
+        this.startY = e.changedTouches[0].clientY,
+        this.consumeList = this.data.consumeList
+    },
+
+    // 滑动事件处理
+    touchmove (e) {
+      var that = this,
+        index = e.currentTarget.dataset.index, // 当前索引
+        startX = that.data.startX, // 开始X坐标
+        startY = that.data.startY, // 开始Y坐标
+        touchMoveX = e.changedTouches[0].clientX, // 滑动变化坐标
+        touchMoveY = e.changedTouches[0].clientY, // 滑动变化坐标
+        // 获取滑动角度
+        angle = that.angle({ X: startX, Y: startY }, { X: touchMoveX, Y: touchMoveY })
+      that.data.consumeList.forEach(function (v, i) {
+        v.isTouchMove = false
+        // 滑动超过30度角 return
+        if (Math.abs(angle) > 30) return
+        if (i == index) {
+          if (touchMoveX > startX) // 右滑
+          { v.isTouchMove = false } else // 左滑
+          { v.isTouchMove = true }
+        }
+      })
+      // 更新数据
+      this.consumeList = that.data.consumeList
+    },
+
+    // 删除事件
+    del (id, e) {
+      wepy.showModal({
+        content: '请确认是否删除！', // 提示的内容,
+        // showCancel: false, // 是否显示取消按钮,
+        confirmText: '确定', // 确定按钮的文字，默认为取消，最多 4 个字符,
+        confirmColor: '#2565C3' // 确定按钮的文字颜色,
+      }).then(res => {
+        // todo 发送请求删除
+        if (res.confirm) {
+          this.delConsume(id).then(res => {
+            console.log('发送请求删除')
+            if (res) {
+              wx.showToast({
+                title: '删除成功'
+              })
+              this.data.consumeList.splice(e.currentTarget.dataset.index, 1)
+              this.consumeList = this.data.consumeList
+              this.$apply()
+            }
+          })
+          this.$apply()
+        }
+      })
+    },
+
+    handlScrolltolower () {
+      if (!this.loaded) {
+        this.getConsumeList({
+          pageNum: this.nextPage
+        })
+      }
+    },
+    handlScrolltolower1 () {
+      if (!this.loaded1) {
+        this.getIncomeList({
+          pageNum: this.nextPage1
+        })
+      }
+    },
+    handlScrolltolower2 () {
+      if (!this.loaded2) {
+        this.getConsultantWithdrawList({
+          pageNum: this.nextPage2
+        })
+      }
+    }
+  }
+
+  /**
+   * 计算滑动角度
+   * @param {Object} start 起点坐标
+   * @param {Object} end 终点坐标
+   */
+  angle (start, end) {
+    var _X = end.X - start.X,
+      _Y = end.Y - start.Y
+    // 返回角度 /Math.atan()返回数字的反正切值
+    return 360 * Math.atan(_Y / _X) / (2 * Math.PI)
+  }
+
+  events = {}
+
+  onLoad () {
+    // 判断用户是否是咨询师
+    this.memberType = this.$parent.globalData.userInfo.memberType
+    // this.memberType = 0
+    this.$apply()
+    // mock 数据
+    for (var i = 0; i < 10; i++) {
+      this.data.items.push({
+        // content: i + " 向左滑动删除哦,向左滑动删除哦,向左滑动删除哦,向左滑动删除哦,向左滑动删除哦",
+        isTouchMove: false // 默认全隐藏删除
+      })
+    }
+    console.log(this.items)
+
+    this.getConsumeList()
+
+    //   咨询师的
+    if (this.memberType == 2) {
+      this.getIncomeList()
+      this.getConsultantWithdrawList()
+    }
+    // 获取全局的钱包信息
+    this.getMemberInfo()
+  }
+
+  // 我的钱包
+  getConsumeList ({ payType = '', keyword = '', pageNum = 1, pageSize = 10 } = {}) {
+    let { getConsumeList } = api
+    // 消费明细 分页 获取搜索 都在这一个接口
+    getConsumeList({
+      payType: this.selecTypeIndex,
+      keyword: this.keyword,
+      pageNum,
+      pageSize
+    }).then(res => {
+      console.log(res, '获取消费明细列表')
+      if (!res) {
+        this.consumeList = []
+      } else {
+        for (var i = 0; i < res.data.list.length; i++) {
+          if (res.data.list[i].subscribeTime) {
+            res.data.list[i].subscribeTime = res.data.list[i].subscribeTime.replace(/\//g, '-')
+          }
+          res.data.list[i].isTouchMove = false // 默认全隐藏删除
+        }
+        // this.consumeList = res.data.list
+
+        if (this.nextPage == 1) {
+          console.log(this.nextPage, 'this.nextPage')
+
+          if (res.data.nextPage == 0) {
+            this.loaded = true
+          } else {
+            this.nextPage = res.data.nextPage
+          }
+          this.consumeList = res.data.list
+        } else if (this.nextPage > 1) {
+          this.nextPage = res.data.nextPage
+          if (res.data.nextPage == 0) this.loaded = true
+          this.consumeList.push(...res.data.list)
+        }
+        console.log(this.consumeList)
+        this.$apply()
+      }
+    })
+  }
+  getConsultantWithdrawList ({ pageNum = 1, pageSize = 10 } = {}) {
+    let { getConsultantWithdrawList } = api
+    getConsultantWithdrawList({
+      pageNum,
+      pageSize
+    }).then(res => {
+      console.log(res, 'getConsultantWithdrawList')
+
+      if (res) {
+        // this.withdrawList = res.data.list
+        // this.withdrawList = [
+        //   {
+        //     'id': 2,
+        //     'memberId': 2,
+        //     'consultantId': 4,
+        //     'consultantName': 'vicczhang',
+        //     'withdrawStatus': 2,
+        //     'withdrawType': 1,
+        //     'price': 1.1,
+        //     'bankName': '建设银行',
+        //     'bankUserName': 'vicczhang',
+        //     'bankNo': '123123',
+        //     'orderNo': '20190505153514259280456',
+        //     'createTime': '2019-05-05 15:35:14.0',
+        //     'updateTime': '2019-05-05 15:35:30.0'
+        //   },
+        //   {
+        //     'id': 1,
+        //     'memberId': 2,
+        //     'consultantId': 4,
+        //     'consultantName': 'vicczhang',
+        //     'withdrawStatus': 3,
+        //     'withdrawType': 1,
+        //     'price': 0.1,
+        //     'bankName': '建设银行',
+        //     'bankUserName': 'vicczhang',
+        //     'bankNo': '22334411111',
+        //     'orderNo': '20190505153045166289309',
+        //     'createTime': '2019-05-05 15:30:45.0',
+        //     'updateTime': '2019-05-05 15:34:43.0'
+        //   },
+        //   {
+        //     'id': 1,
+        //     'memberId': 2,
+        //     'consultantId': 4,
+        //     'consultantName': 'vicczhang',
+        //     'withdrawStatus': 0,
+        //     'withdrawType': 1,
+        //     'price': 0.1,
+        //     'bankName': '建设银行',
+        //     'bankUserName': 'vicczhang',
+        //     'bankNo': '22334411111',
+        //     'orderNo': '20190505153045166289309',
+        //     'createTime': '2019-05-05 15:30:45.0',
+        //     'updateTime': '2019-05-05 15:34:43.0'
+        //   },
+        //   {
+        //     'id': 1,
+        //     'memberId': 2,
+        //     'consultantId': 4,
+        //     'consultantName': 'vicczhang',
+        //     'withdrawStatus': 2,
+        //     'withdrawType': 1,
+        //     'price': 0.1,
+        //     'bankName': '建设银行',
+        //     'bankUserName': 'vicczhang',
+        //     'bankNo': '22334411111',
+        //     'orderNo': '20190505153045166289309',
+        //     'createTime': '2019-05-05 15:30:45.0',
+        //     'updateTime': '2019-05-05 15:34:43.0'
+        //   }
+        // ]
+        if (this.nextPage2 == 1) {
+          if (res.data.nextPage == 0) {
+            this.loaded2 = true
+            console.log(' this.loaded2 = true')
+          } else {
+            this.nextPage2 = res.data.nextPage
+          }
+          this.withdrawList = res.data.list
+        } else if (this.nextPage2 > 1) {
+          this.nextPage2 = res.data.nextPage
+          if (res.data.nextPage == 0) this.loaded2 = true
+          this.withdrawList.push(...res.data.list)
+        }
+        //   this.incomeList = res.data.list
+
+        this.withdrawList.forEach((item, i) => {
+          this.withdrawList[i].date = item.createTime.split(' ')[0] + ' ' + item.createTime.split(' ')[1].slice(0, 5)
+        })
+        this.$apply()
+      }
+      this.$apply()
+    })
+  }
+  delConsume (id) {
+    let { delConsume } = api
+    // 删除消费明细
+    return delConsume(id)
+  }
+
+  getIncomeList ({ pageNum = 1, pageSize = 10 } = {}) {
+    // 咨询师收益明细 分页
+    let { getIncomeList } = api
+    getIncomeList({
+      pageNum,
+      pageSize
+    }).then(res => {
+      console.log(res, '咨询师收益明细')
+      if (res) {
+        if (this.nextPage1 == 1) {
+          if (res.data.nextPage == 0) {
+            this.loaded1 = true
+            console.log(' this.loaded1 = true')
+          } else {
+            this.nextPage1 = res.data.nextPage
+          }
+          this.incomeList = res.data.list
+        } else if (this.nextPage1 > 1) {
+          this.nextPage1 = res.data.nextPage
+          if (res.data.nextPage == 0) this.loaded1 = true
+          this.incomeList.push(...res.data.list)
+        }
+        //   this.incomeList = res.data.list
+        this.$apply()
+      }
+    })
+  }
+
+  getMemberInfo () {
+    let { getMemberInfo } = api
+    getMemberInfo().then(res => {
+      console.log(res, 'getMemberInfo getMemberInfo getMemberInfo ')
+
+      this.id = res.data.id
+      this.couponPrice = res.data.couponPrice
+      if (res.data.couponDate) {
+        this.couponDate = res.data.couponDate.split(' ')[0]
+      }
+      this.balance = res.data.balance
+      this.depositMoney = res.data.depositMoney
+      this.$apply()
+    })
+  }
+}
+</script>
+
+<style lang="less">
+page {
+  font-family: PingFang-SC-Medium;
+  overflow-y: hidden;
+}
+.show_top.active {
+  position: absolute;
+  top: 0;
+}
+// 提现明细
+.deposit_container {
+  margin-top: 20rpx;
+  .item {
+    padding: 20rpx 32rpx;
+    height: 132rpx;
+    background: #fff;
+    .deposit_content {
+      .status_box {
+        .status {
+          color: #666666;
+          font-size: 22rpx;
+        }
+        .date {
+          color: #333333;
+          font-size: 26rpx;
+        }
+      }
+      .price {
+        align-self: flex-end;
+        color: #999999;
+        font-size: 30rpx;
+      }
+      .price.audit {
+        color: #2565c3;
+      }
+      .price.pass {
+        color: #54ad32;
+      }
+    }
+  }
+}
+// 收入明细
+.income_container {
+  margin-top: 20rpx;
+  // border-top: 20rpx soild rgba(246, 246, 250, 1);
+  background: rgba(246, 246, 250, 1);
+  .income_item {
+    background: #fff;
+    height: 132rpx;
+    padding: 0 32rpx;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20rpx;
+    // border-bottom: 20rpx soild rgba(246, 246, 250, 1);
+    .source_msg {
+      align-items: center;
+      > image {
+        flex: 0 0 auto;
+        height: 60rpx;
+        width: 60rpx;
+        margin-right: 26rpx;
+      }
+      .name {
+        font-size: 28rpx;
+        color: rgba(0, 0, 0, 1);
+      }
+      .time {
+        font-size: 24rpx;
+        color: rgba(102, 102, 102, 1);
+      }
+    }
+    .price {
+      color: rgba(220, 77, 77, 1);
+      font-size: 30rpx;
+    }
+  }
+}
+
+// 消费明细
+.expense_container {
+  // z-index: -100;
+  position: relative;
+  .expense {
+    background: #fff;
+    // margin-bottom: 20rpx;
+    border-bottom: 20rpx solid rgba(242, 242, 242, 1);
+  }
+  .header {
+    padding: 0 32rpx;
+    align-items: center;
+    justify-content: space-between;
+    height: 80rpx;
+    border-bottom: 2rpx solid rgba(242, 242, 242, 1);
+    .header_time {
+      font-size: 26rpx;
+    }
+    .header_handle {
+      font-size: 30rpx;
+      color: rgba(37, 101, 195, 1);
+    }
+  }
+  .main {
+    padding: 34rpx 32rpx;
+    height: 220rpx;
+    align-content: space-between;
+    flex-flow: row wrap;
+    position: relative;
+    .main_item {
+      flex: 0 0 auto;
+      width: 100%;
+      font-size: 28rpx;
+      .main_l {
+        color: rgba(153, 153, 153, 1);
+      }
+      .main_c {
+        color: rgba(51, 51, 51, 1);
+      }
+    }
+    .arrow_icon {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      margin-top: -13rpx;
+      margin-right: 32rpx;
+      image {
+        width: 16rpx;
+        height: 26rpx;
+      }
+    }
+  }
+}
+
+.mask {
+  position: absolute;
+  z-index: 0;
+  height: 100%;
+}
+// 余额
+.fix_top {
+  width: 100%;
+  position: fixed;
+  height: 360rpx;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  image {
+    z-index: -1;
+    position: absolute;
+    width: 100%;
+    height: 360rpx;
+  }
+
+  .balance_frame {
+    // z-index: 3;
+    font-family: PingFang-SC-Medium;
+    color: #fff;
+    flex-wrap: wrap;
+    text-align: center;
+    > view {
+      flex: 0 0 auto;
+      width: 100%;
+    }
+    .balance_t {
+      margin-top: 50rpx;
+      font-size: 30rpx;
+      margin-bottom: 34rpx;
+    }
+    .balance_m {
+      font-size: 72rpx;
+      line-height: 54rpx;
+      height: 54rpx;
+    }
+    .given1 {
+      padding: 0 32rpx;
+      bottom: 36rpx;
+      position: absolute;
+      font-size: 24rpx;
+      justify-content: space-between;
+    }
+    .balance_b {
+      position: absolute;
+      bottom: 18rpx;
+
+      // background: red;
+      height: 110rpx;
+      padding: 0 44rpx;
+      .given {
+        height: 100%;
+        // padding: 0 32rpx;
+        // bottom: 36rpx;
+        // position: absolute;
+        font-size: 26rpx;
+        // justify-content: space-between;
+        .expires {
+        }
+      }
+      .line {
+        height: 80%;
+        width: 2rpx;
+        background-color: #80a0f2;
+        // margin: 0 auto;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .deposit {
+        height: 100%;
+        padding-right: 16rpx;
+        .may {
+          font-size: 26rpx;
+          color: #fff;
+        }
+        .button {
+          border-radius: 10rpx;
+          padding: 6rpx 40rpx;
+          background: #fff;
+          color: #2565c3;
+          font-size: 26rpx;
+        }
+      }
+    }
+  }
+}
+
+// 两个选项
+.tab {
+  z-index: 3;
+  position: relative;
+  background: #fff;
+  height: 100rpx;
+  line-height: 100rpx;
+  > view {
+    position: relative;
+    text-align: center;
+    width: 50%;
+    font-size: 32rpx;
+    color: rgba(51, 51, 51, 1);
+    &.active {
+      color: rgba(37, 101, 195, 1);
+    }
+    &.active::after {
+      display: inline-block;
+      content: '';
+      width: 100rpx;
+      height: 6rpx;
+      border-radius: 6rpx;
+      background: rgba(37, 101, 195, 1);
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      margin-left: -50rpx;
+    }
+  }
+}
+
+// 搜索框
+.search_container {
+  z-index: 9999;
+  background: rgba(246, 246, 250, 1);
+  height: 100rpx;
+  padding: 0 32rpx;
+  align-items: center;
+  position: relative;
+  // background: red;
+  .search_v {
+    flex: 0 0 auto;
+    align-items: center;
+    width: 520rpx;
+    height: 60rpx;
+    position: relative;
+    background: #fff;
+    border-radius: 60rpx;
+    .search_i {
+      padding-left: 72rpx;
+      // padding: 4rpx 72rpx;
+      font-size: 26rpx;
+    }
+    .icon_sousuo {
+      width: 26rpx;
+      height: 26rpx;
+      position: absolute;
+      left: 20rpx;
+    }
+  }
+  .v_line {
+    flex: 0 0 auto;
+    width: 2rpx;
+    height: 36rpx;
+    background: rgba(204, 204, 204, 1);
+    margin: 0 20rpx;
+  }
+  .all_expense {
+    flex: 0 0 auto;
+    font-size: 26rpx;
+    color: rgba(102, 102, 102, 1);
+    position: relative;
+  }
+  .all_expense.down_arrow::after {
+    position: absolute;
+    content: '';
+    font-size: 0;
+    width: 0;
+    height: 0;
+    bottom: -4rpx;
+    right: -26rpx;
+    border-style: solid;
+    border-width: 14rpx 10rpx;
+    border-color: rgba(153, 153, 153, 1) transparent transparent;
+  }
+  .all_expense.up_arrow::after {
+    position: absolute;
+    content: '';
+    font-size: 0;
+    width: 0;
+    height: 0;
+    bottom: 10rpx;
+    right: -26rpx;
+    border-style: solid;
+    border-width: 14rpx 10rpx;
+    border-color: transparent transparent rgba(153, 153, 153, 1);
+  }
+  .options_v {
+    width: 100%;
+    background: #fff;
+    z-index: 9999;
+    height: 324rpx;
+    position: absolute;
+    bottom: -322rpx;
+    left: 0;
+    .item {
+      height: 25%;
+      padding: 0 52rpx 0 30rpx;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+      .i_name {
+        font-size: 28rpx;
+        color: rgba(51, 51, 51, 1);
+        &.active {
+          color: rgba(37, 101, 195, 1) !important;
+        }
+      }
+      .i_tick {
+        width: 22rpx;
+        height: 16rpx;
+      }
+    }
+  }
+}
+
+// 没有更多啦
+.no_more {
+  height: 120rpx;
+  // background: rgba(242, 242, 242, 1);
+  font-size: 24rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(246, 246, 250, 1);
+  text-align: center;
+  // padding-top: 90rpx;
+  //   padding-bottom: 58rpx;
+  //   background: rgba(153,153,153,1);
+  //   height: 60rpx;
+}
+
+// slide-view
+.touch-item {
+  font-size: 28rpx;
+  display: flex;
+  /* justify-content: space-between; */
+  /* border-bottom:2rpx solid #ccc; */
+  width: 100%;
+  overflow: hidden;
+}
+.content {
+  width: 100%;
+  margin-right: 0;
+  -webkit-transition: all 0.4s;
+  transition: all 0.4s;
+  -webkit-transform: translateX(124rpx);
+  transform: translateX(124rpx);
+  margin-left: -124rpx;
+}
+.del {
+  background-color: rgba(224, 102, 102, 1);
+  width: 124rpx;
+  height: 302rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  -webkit-transform: translateX(180rpx);
+  transform: translateX(180rpx);
+  -webkit-transition: all 0.4s;
+  transition: all 0.4s;
+  .del_icon {
+    width: 34rpx;
+    height: 36rpx;
+  }
+}
+.touch-move-active .content,
+.touch-move-active .del {
+  -webkit-transform: translateX(0);
+  transform: translateX(0);
+}
+</style>

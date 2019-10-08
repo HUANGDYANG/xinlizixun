@@ -1,0 +1,226 @@
+<template>
+  <view class="container">
+
+<view wx:if="{{historyCommentlist}}">
+  <repeat for="{{loopData}}">
+    <repeat for="{{item}}" item="day" index="i">
+    <view class="time_container flex">
+      <view class="time">{{day.date}}</view>
+        <view class="line">
+            <view wx:if="{{i == 0}}" class="ticon_v frist_ticon">
+                <!-- 第一条最上icon -->
+                <image class="time_lishi" src="../images/icon_time_lishi@2x.png"></image>
+            </view>
+            <view class="ticon_v">
+                <image class="time_lishi" src="../images/icon_time_lishi@2x.png"></image>
+            </view>
+        </view>
+      <view class="evaluate_container">
+        <text class="evaluate">评价：</text>
+        <text class="content">{{day.content}}</text>
+        <view class="triangle"></view>
+      </view>
+    </view>
+    </repeat>
+    <view class="time_container flex year_container">
+      <view class="time year">{{index}}</view>
+        <view class="line year_line">
+            <view class="cicon_v year_icon">
+              <image class="clock_icon" src="../images/icon_clock_lishi@2x.png"></image>
+            </view>
+        </view>
+      <view class="evaluate_container hide"></view>
+    </view>
+    </repeat>
+</view>
+<view class='no_more' wx:else>暂无评价</view>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy';
+import { goPath, checkInfo } from '../util.js';
+import api from '../api.js';
+
+export default class History_evaluate extends wepy.page {
+  config = {
+    navigationBarTitleText: '历史评价'
+  };
+
+  components = {};
+
+  data = {
+    // historyCommentlist: [],
+    historyCommentlist: '',
+    loopData: {
+      // '':[]
+    },
+    frist: 0
+  };
+
+  computed = {
+    fristIcon () {
+      return this.frist++
+    }
+  }
+
+  methods = {};
+
+  events = {};
+
+  getHistoryCommentlist({
+    memberId
+  } = {}) {
+    let { getHistoryCommentlist } = api
+    // 咨询师对某一用户的所有评论(历史评论)
+   getHistoryCommentlist({
+     memberId
+   }).then(res => {
+     if(res){
+      this.historyCommentlist = res.data
+      this.historyCommentlist.forEach((item, i) => {
+        let dayArr = item.createTime.split(' ')[0].split('-')
+        let year = dayArr[0]
+        if(!this.loopData[year]) this.loopData[year] = [];
+        this.loopData[year].push({
+          date: dayArr[1] + '-' + dayArr[2],
+          content: item.content
+        })
+      })
+
+      this.$apply()
+     }
+
+   })
+  }
+
+  onLoad(option) {
+    let { id } = option
+    this.getHistoryCommentlist({
+      memberId: id
+    })
+  }
+}
+</script>
+
+<style lang="less">
+page {
+  background: #fff;
+}
+.container {
+    padding: 32rpx;
+    margin-top: 60rpx;
+}
+.time_container {
+  .time {
+    padding-top:20rpx;
+    font-family: PingFang-SC-Medium;
+    width: 100%;
+    color: #333333;
+    font-size: 28rpx;
+    justify-content: space-around;
+  }
+
+  .line {
+    border: #1765c5 solid 2rpx;
+    margin-right: 48rpx;
+    position: relative;
+  }
+  .line.year_line {
+    height: 130rpx;
+  }
+
+  .evaluate_container {
+    margin-top: 20rpx;
+    flex: 0 0 auto;
+    border-radius: 12rpx;
+    box-sizing: border-box;
+    min-height: 180rpx;
+    width: 480rpx;
+    padding: 24rpx 18rpx 24rpx 32rpx;
+    background: #f6f6fa;
+    line-height: 26rpx;
+    position: relative;
+    .evaluate {
+      color: #2565c3;
+      font-size: 28rpx;
+    }
+    .content {
+      font-family: PingFang-SC-Medium;
+      color: #666666;
+      font-size: 24rpx;
+    }
+    .triangle {
+      width: 0;
+      height: 0;
+      border-width: 34rpx;
+      border-style: solid;
+      border-color: transparent #f6f6fa transparent transparent;
+      position: absolute;
+      left: -50rpx;
+      top: 8rpx;
+    }
+  }
+}
+
+.ticon_v {
+    width: 40rpx;
+    height: 40rpx;
+    background: #fff;
+    position: absolute;
+    left: 0;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    bottom: 0;
+}
+.time_lishi {
+    width: 20rpx;
+    height: 20rpx;
+}
+.frist_ticon{
+    top: -40rpx;
+}
+
+.year_container {
+    .year {
+        font-size: 32rpx;
+        color: #2565C3;
+    }
+    .hide {
+        min-height: 80rpx !important;
+        visibility: hidden;
+    }
+    .cicon_v {
+        width: 54rpx;
+        height: 54rpx;
+        background: #fff;
+        position: absolute;
+        left: 0;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        bottom: -8rpx;
+    }
+    .clock_icon {
+        width:34rpx;
+        height: 34rpx;
+    }
+    .cicon_v.year_icon {
+      // top: 50rpx;
+      z-index: 10000;
+    }
+}
+
+// .no_score {
+//   height:240rpx;
+//   line-height: 158rpx;
+//   font-size: 32rpx;
+//   // padding: 21rpx 31rpx 120rpx;
+//   text-align: center;
+// }
+</style>

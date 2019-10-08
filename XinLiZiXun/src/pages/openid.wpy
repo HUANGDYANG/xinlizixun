@@ -1,0 +1,57 @@
+<template>
+<view class="container">
+  <view class="userinfo"  @tap="getCommentInfo">
+1111111111111111111 
+    
+  </view>
+</view>
+
+</template>
+<script>
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Rec_com extends wepy.page {
+    config = {
+      navigationBarTitleText: '收到评论'
+    }
+    components = {}
+    data = {
+      openid: ''
+    }
+    
+    computed = {}
+    methods = {
+     
+    }
+    events = {}
+    getCommentInfo(id) {
+      let that = this
+      wx.login({
+      success: function (res) {
+        if (res.code) {
+          wx.getUserInfo({
+            success: function (res) {
+            }
+          });
+          var appid = ""        //这里是我的appid，需要改成你自己的
+          var secret = ""    //密钥也要改成你自己的
+          var openid = ""
+          var l = 'https://api.weixin.qq.com/sns/jscode2session?appid=' + appid + '&secret=' + secret + '&js_code=' + res.code + '&grant_type=authorization_code';
+          wx.request({
+            url: l,
+            data: {},
+            method: 'GET', 
+            success: function (res) {
+            }
+          });
+        } else {
+        }
+      }
+    });
+    }
+  }
+</script>
+<style lang="less">
+
+</style>

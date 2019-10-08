@@ -1,0 +1,752 @@
+<template>
+  <view class="container">
+    <view class='posi_rela'>
+      <image src="" class="img backe5" mode="aspectFill"></image>
+      <view class='posi_abso'>
+        <view class='flex flex-j-c-sb'>
+                <view class='flex flex-a-i-center'>
+                  <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{star >= 1}}'></image>
+                  <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{star < 1}}'></image>
+                  <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{star >= 2}}'></image>
+                  <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{star < 2}}'></image>
+                  <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{star >= 3}}'></image>
+                  <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{star < 3}}'></image>
+                  <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{star >= 4}}'></image>
+                  <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{star < 4}}'></image>
+                  <image src="../images/icon_star_yellow@2x.png" class="star_icon" wx:if='{{star >= 5}}'></image>
+                  <image src="../images/icon_star_gray@2x.png" class="star_icon" wx:if='{{star < 5}}'></image>
+                  <view class='sell_star'>4.0</view>
+                </view>
+                <view class='sell_num'>203人评分</view>
+              </view>
+      </view>
+    </view>
+   <view class='title_out'>
+     <view class='title'>了解自己的爱情基因——助你找到自己的 “命中注定”！</view>
+     <view class='flex flex-j-c-sb mgt40'>
+       <view class='color37' wx:if='{{vip == 0}}'>¥0.0</view>
+       <view class='money' wx:if='{{vip == 1}}'>¥9.9</view>
+       <view class='time'>已听：599</view>
+     </view>
+   </view>
+   <view class='detail_out'>
+    <view class='detail_title'>课程简介</view>
+    <view class='detail_detail'>
+  当今社会，爱情正变得越来越普遍。他可能是一个人
+  能经历的最痛苦的情感状态之一。
+  心理学家认为，爱情是由于人们没有获得足够的、令
+  自己满意的社会连接，而导致的不舒服的情绪体验。
+  在最轻度的情况下，他可能只是让我们感到失望和不
+  愉快；但在最重度的情况下，它可以是一种完全无法
+  忍受的的挫折感。  当今社会，爱情正变得越来越普遍。他可能是一个人
+  能经历的最痛苦的情感状态之一。
+  心理学家认为，爱情是由于人们没有获得足够的、令
+  自己满意的社会连接，而导致的不舒服的情绪体验。
+  在最轻度的情况下，他可能只是让我们感到失望和不
+  愉快；但在最重度的情况下，它可以是一种完全无法
+  忍受的的挫折感。 当今社会，爱情正变得越来越普遍。他可能是一个人
+  能经历的最痛苦的情感状态之一。
+  心理学家认为，爱情是由于人们没有获得足够的、令
+  自己满意的社会连接，而导致的不舒服的情绪体验。
+  在最轻度的情况下，他可能只是让我们感到失望和不
+  愉快；但在最重度的情况下，它可以是一种完全无法
+  忍受的的挫折感。 当今社会，爱情正变得越来越普遍。他可能是一个人
+  能经历的最痛苦的情感状态之一。
+  心理学家认为，爱情是由于人们没有获得足够的、令
+  自己满意的社会连接，而导致的不舒服的情绪体验。
+  在最轻度的情况下，他可能只是让我们感到失望和不
+  愉快；但在最重度的情况下，它可以是一种完全无法
+  忍受的的挫折感。 当今社会，爱情正变得越来越普遍。他可能是一个人
+  能经历的最痛苦的情感状态之一。
+  心理学家认为，爱情是由于人们没有获得足够的、令
+  自己满意的社会连接，而导致的不舒服的情绪体验。
+  在最轻度的情况下，他可能只是让我们感到失望和不
+  愉快；但在最重度的情况下，它可以是一种完全无法
+  忍受的的挫折感。     
+    </view>
+   </view>
+   <view class='detail_out'>
+    <view class='detail_title'>全部评分</view>
+   <view class='mgb120'>
+     <view class='grade_this flex flex-a-i-center'>
+       <image class='this_img backe5' src="" />
+       <view class='flex1_ mgl40'>
+         <view>
+         <view class='flex flex-j-c-sb'>
+           <view class='this_name'>李云耀</view>
+           <view class='this_time'>2019/01/17</view>
+         </view>
+        </view>
+        <view class='pinfen_star flex flex-a-i-center'>
+          <view class='pinfen_title'>评分</view>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 1}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 1}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 2}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 2}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 3}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 3}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 4}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 4}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 5}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 5}}'></image>
+        </view>
+       </view>
+     </view>
+     <view class='grade_this flex flex-a-i-center'>
+       <image class='this_img backe5' src="" />
+       <view class='flex1_ mgl40'>
+         <view>
+         <view class='flex flex-j-c-sb'>
+           <view class='this_name'>李云耀</view>
+           <view class='this_time'>2019/01/17</view>
+         </view>
+        </view>
+        <view class='pinfen_star flex flex-a-i-center'>
+          <view class='pinfen_title'>评分</view>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 1}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 1}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 2}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 2}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 3}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 3}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 4}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 4}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 5}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 5}}'></image>
+        </view>
+       </view>
+     </view>
+     <view class='grade_this flex flex-a-i-center'>
+       <image class='this_img backe5' src="" />
+       <view class='flex1_ mgl40'>
+         <view>
+         <view class='flex flex-j-c-sb'>
+           <view class='this_name'>李云耀</view>
+           <view class='this_time'>2019/01/17</view>
+         </view>
+        </view>
+        <view class='pinfen_star flex flex-a-i-center'>
+          <view class='pinfen_title'>评分</view>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 1}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 1}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 2}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 2}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 3}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 3}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 4}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 4}}'></image>
+          <image src="../images/icon_star_yellow@2x.png" class="star_icon18" wx:if='{{star_person >= 5}}'></image>
+          <image src="../images/icon_star_gray@2x.png" class="star_icon18" wx:if='{{star_person < 5}}'></image>
+        </view>
+       </view>
+     </view>
+   </view>
+   </view>
+   <view class='abso_audio' wx:if='{{show_abso_audio}}'>
+     
+<view class='audiosBox'>
+    <view class="audioOpen" @tap="listenerButtonPlay" wx:if="{{!isOpen}}">
+      <image class='image2' src="../images/icon_bofang@2x.png" />
+    </view>
+    <view class="audioOpen" @tap="listenerButtonPause" wx:if="{{isOpen}}">
+      <image class='image2' src="../images/icon_zanting@2x.png" />
+    </view>
+    <view class='slid'>
+      <view class='slid_title'>从痛苦走向幸福的道路</view>
+      <slider bindchange="sliderChange"  block-size="22px" step="2" value="{{offset}}" max="{{max}}" selected-color="#FFB400" block-color='#FFB400'/>
+      <view>
+        <text class='times'>{{starttime}}</text> <!-- 进度时长 -->
+       
+        <text class='times'>{{duration}}</text>   <!-- 总时长 -->
+      </view>
+    </view>
+</view>
+
+   </view>
+   <view class='button_out'>
+     <view class='flex'>
+       <view class='text_center' @tap='grade'>
+         <image src="{{img_icon}}" class="img_icon"></image>
+         <view class='{{pinfen}}'>评分</view>
+       </view>
+       <view class='flex1' @tap='now_play'>{{now_play_title}}</view>
+     </view>
+   </view>
+
+   <!-- 评价 -->
+   <view class='modal flex' wx:if='{{show_modal}}'>
+     <view class='mask'></view>
+       <view class='mgat'>
+        <view class='pd60'>
+          <view class='kcjs'>课程结束</view>
+          <view class='gjdx'>赶紧点星星评分吧！</view>
+        </view>
+         <view class='flex flex-a-i-center h100 flex-j-c-sa'>
+            <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 1}}' @tap='to_grade(1)'></image>
+            <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 1}}' @tap='to_grade(1)'></image>
+            <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 2}}' @tap='to_grade(2)'></image>
+            <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 2}}' @tap='to_grade(2)'></image>
+            <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 3}}' @tap='to_grade(3)'></image>
+            <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 3}}' @tap='to_grade(3)'></image>
+            <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 4}}' @tap='to_grade(4)'></image>
+            <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 4}}' @tap='to_grade(4)'></image>
+            <image src="../images/icon_star_big_yellow@2x.png" class="img_star" wx:if='{{star_big >= 5}}' @tap='to_grade(5)'></image>
+            <image src="../images/icon_star_big_gray@2x.png" class="img_star" wx:if='{{star_big < 5}}' @tap='to_grade(5)'></image>
+         </view>
+         <view class='mgat_button flex'>
+           <view class='cancel' @tap='cancel'>取消</view>
+           <view class='submit' @tap='submit'>提交</view>
+         </view>
+       </view>
+   </view>
+  </view>
+</template>
+<script>
+  const bgMusic = wx.getBackgroundAudioManager()
+  import wepy from 'wepy'
+  import { goPath, checkInfo } from '../util.js'
+  import api from '../api.js'
+  export default class Confidences_detail_detail extends wepy.page {
+    config = {
+      navigationBarTitleText: '课程详情'
+    }
+    components = {} 
+    data = {
+     star:4,
+     star_person:4,
+     star_big:0,
+     button_name:'',
+     show_modal:false,
+     offset:'',
+     max:'',
+     pinfen:'pinfen',
+     buy:0,
+     img_icon:'../images/icon_pinfen_wei@2x.png',
+     now_play_title:'立即播放',
+     show_abso_audio:false,
+     isOpen: false,//播放开关
+    starttime: '00:00', //正在播放时长
+    duration: '06:41',   //总时长
+    src:"http://ws.stream.qqmusic.qq.com/M500001VfvsJ21xFqb.mp3?guid=ffffffff82def4af4b12b3cd9337d5e7&uin=346897220&vkey=6292F51E1E384E061FF02C31F716658E5C81F5594D561F2E88B854E81CAAB7806D5E4F103E55D33C16F3FAC506D1AB172DE8600B37E43FAD&fromtag=46"
+    }
+    computed = {}
+    listenerButtonStop(){
+    var that = this
+    bgMusic.stop()
+    }
+    methods = {
+      grade(){
+        this.show_modal = true;
+      },
+      submit(){
+        this.show_modal = false;
+        wx.showToast({
+          title: '评分成功',
+          icon: 'success',
+          duration: 2000
+        })
+        this.img_icon = '../images/icon_pingfen_yi@2x.png'
+        this.pinfen = 'pinfen1'
+      },
+      cancel(){
+        this.show_modal = false;
+      },
+      to_grade(e){
+        this.star_big = e
+      },
+      now_play(){
+     var that = this
+     if(that.now_play_title == '立即播放'){
+      that.now_play_title = '播放中...'
+      that.show_abso_audio = true
+      //bug ios 播放时必须加title 不然会报错导致音乐不播放
+      bgMusic.title = '此时此刻'  
+      bgMusic.epname = '此时此刻'
+      bgMusic.src = that.data.src;
+      bgMusic.onTimeUpdate(() => { 
+        var duration = bgMusic.duration; 
+        var offset = bgMusic.currentTime;  
+        var currentTime = parseInt(bgMusic.currentTime);
+        var min = "0" + parseInt(currentTime / 60);
+        var max = parseInt(bgMusic.duration);
+        var sec = currentTime % 60;
+        if (sec < 10) {
+          sec = "0" + sec;
+        };
+        var starttime = min + ':' + sec;   /*  00:00  */
+        that.setData({
+          offset: currentTime,
+          starttime: starttime,
+          max: max,
+          changePlay: true
+        })
+    })
+    //播放结束
+    bgMusic.onEnded(() => {
+      that.setData({
+        starttime: '00:00',
+        offset: 0
+      })
+      that.isOpen=false
+
+    })
+    bgMusic.play();
+    that.isOpen=true
+        }else{
+        }
+     
+      },
+       // 播放
+  listenerButtonPlay: function () {
+    var that = this
+    //bug ios 播放时必须加title 不然会报错导致音乐不播放
+    bgMusic.title = '此时此刻'  
+    bgMusic.epname = '此时此刻'
+    bgMusic.src = that.data.src;
+    bgMusic.onTimeUpdate(() => { 
+      var duration = bgMusic.duration; 
+      var offset = bgMusic.currentTime;  
+      var currentTime = parseInt(bgMusic.currentTime);
+      var min = "0" + parseInt(currentTime / 60);
+      var max = parseInt(bgMusic.duration);
+      var sec = currentTime % 60;
+      if (sec < 10) {
+        sec = "0" + sec;
+      };
+      var starttime = min + ':' + sec;   /*  00:00  */
+      that.setData({
+        offset: currentTime,
+        starttime: starttime,
+        max: max,
+        changePlay: true
+      })
+    })
+    //播放结束
+    bgMusic.onEnded(() => {
+      that.setData({
+        starttime: '00:00',
+        offset: 0
+      })
+      that.isOpen=false
+    })
+    bgMusic.play();
+    that.isOpen= true
+  },
+  //暂停播放
+  listenerButtonPause(){
+     var that = this
+    bgMusic.pause()
+    that.isOpen=false
+  },
+  
+  // 进度条拖拽
+  sliderChange(e) {
+    var that = this
+    var offset = parseInt(e.detail.value);
+    bgMusic.play();
+    bgMusic.seek(offset);
+    that.isOpen=true
+  },
+  
+    }
+    events = {}
+    async onLoad(option) {
+    }
+    // 页面卸载时停止播放
+  onUnload() {
+    var that = this
+    that.listenerButtonStop()//停止播放
+  }
+  }
+</script>
+<style lang="less">
+.img{
+  width: 100%;
+  height: 422rpx;
+  vertical-align: middle;
+}
+.posi_rela{
+  position: relative;
+  width: 100%;
+  height: 422rpx;
+}
+.posi_abso{
+  width:750rpx;
+  /*height:80rpx;*/
+  background:rgba(7,8,9,1);
+  opacity:0.6;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 28rpx 31rpx;
+}
+.title_out{
+  padding: 40rpx 33rpx;
+  background-color: #fff;
+}
+.title{
+  font-size:38rpx;
+  font-family:PingFang-SC-Bold;
+  font-weight:bold;
+  color:rgba(51,51,51,1);
+  line-height:58rpx;
+}
+.time{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(153,153,153,1);
+}
+.mgt40{
+  margin-top: 40rpx;
+}
+.detail_out{
+  margin-top: 20rpx;
+  background-color: #fff;
+}
+.detail_title{
+  padding: 36rpx 31rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.detail_detail{
+  padding: 40rpx 31rpx 120rpx;
+  font-size:30rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+}
+.button{
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  background:rgba(37,101,195,1);
+  border-radius:4rpx;
+  width:686rpx;
+  height:88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  margin-top: 5rpx;
+  margin-left: 32rpx;
+}
+.button_out{
+  width:100%;
+  height:98rpx;
+  background:rgba(255,255,255,1);
+  box-shadow:0rpx 1rpx 12rpx 0rpx rgba(3,3,3,0.11);
+  position: fixed;
+  bottom: 0;
+  left: 0
+}
+.money{
+  font-size:40rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+}
+.sell_num{
+  font-size:26rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+}
+.star_icon{
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 6rpx;
+}
+.star_icon18{
+  width: 18rpx;
+  height: 18rpx;
+  margin-right: 6rpx;
+}
+.sell_star{
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,180,0,1);
+  margin-left: 13rpx;
+}
+.color37{
+  color:rgba(37,101,195,1);
+}
+.img_icon{
+  width: 34rpx;
+  height: 34rpx;
+  margin-top: 17rpx;
+}
+.pinfen{
+  font-size:22rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(37,101,195,1);
+  }
+  .pinfen1{
+  font-size:22rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(153,153,153,1);
+  }
+  .text_center{
+    text-align: center;
+    width: 150rpx;
+    height: 98rpx;
+  }
+  .flex1{
+    flex: 1;
+    height:98rpx;
+    background:rgba(37,101,195,1);
+    font-size:32rpx;
+    font-family:PingFang-SC-Medium;
+    font-weight:500;
+    color:rgba(255,255,255,1);
+    text-align: center;
+    line-height: 98rpx;
+  }
+  .shiting{
+    width: 50%;
+    text-align: center;
+    height: 98rpx;
+    line-height: 98rpx;
+    background:rgba(255,255,255,1);
+    font-size:32rpx;
+    font-family:PingFang-SC-Medium;
+    font-weight:500;
+    color:rgba(37,101,195,1);
+  }
+  .goumai{
+    width: 50%;
+    text-align: center;
+    height: 98rpx;
+    line-height: 98rpx;
+    background:rgba(37,101,195,1);
+    font-size:32rpx;
+    font-family:PingFang-SC-Medium;
+    font-weight:500;
+    color:rgba(255,255,255,1);
+  }
+  .abso_audio{
+    position: fixed;
+    bottom: 98rpx;
+    width: 100%;
+    left: 0;
+  }
+
+
+  /**index.wxss**/
+.audiosBox{
+  padding: 17rpx 32rpx;
+  margin: auto;
+  height: 120rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background:rgba(7,8,9,1);
+  opacity:0.7;
+}
+/*按钮大小  */
+.audioOpen{
+  width: 70rpx;
+  height: 70rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.image2{
+  width: 60rpx;
+  height: 60rpx;
+}
+/*进度条长度  */
+.slid{
+  flex: 1;
+  position: relative;
+}
+.slid view{
+  display: flex;
+  justify-content: space-between;
+}
+.slid view>text:nth-child(1){
+  /*color: #4c9dee;*/
+  margin-left:13rpx; 
+}
+.slid view>text:nth-child(2){
+  margin-right:6rpx; 
+}
+slider{
+  width: 520rpx;
+  margin: 0;
+  margin-left: 35rpx;
+}
+/*横向布局  */
+.times{
+  width: 100rpx;
+  text-align: center;
+  display: inline-block;
+  font-size: 24rpx;
+  color:#999999;
+  margin-top: 5rpx;
+}
+.title view{
+  text-indent: 2em;
+ 
+}
+.slid_title{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(255,255,255,1);
+  margin-left: 35rpx;
+}
+
+
+/*dialog*/
+.modal{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+.modal1{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+.mask{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5)
+}
+.mgat{
+  margin: auto;
+  z-index: 999999;
+  background-color: #fff;
+  border-radius:24rpx;
+  width: 580rpx;
+  height: 380rpx;
+}
+.mgat1{
+  margin: auto;
+  z-index: 999999;
+  background-color: #fff;
+  border-radius:24rpx;
+  width: 580rpx;
+  height: 304rpx;
+}
+.pd60{
+  padding: 50rpx 0 37rpx;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.pd601{
+  padding: 92rpx;
+}
+.kcjs{
+  font-size:36rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  text-align: center;
+}
+.stjs{
+  font-size:32rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+  text-align: center;
+}
+.gjdx{
+  font-size:28rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+  text-align: center;
+  margin-top: 20rpx;
+}
+.h100{
+  height: 100rpx;
+  padding: 0 103rpx;
+}
+.img_star{
+  width: 46rpx;
+  height: 46rpx;
+}
+.mgat_button{
+  height: 88rpx;
+}
+.cancel{
+  width: 50%;
+  background:rgba(246,246,250,1);
+  border-radius:0rpx 0rpx 0rpx 24rpx;
+  text-align: center;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(51,51,51,1);
+  line-height: 88rpx;
+}
+.submit{
+  width: 50%;
+  background:rgba(37,101,195,1);
+  border-radius:0rpx 0rpx 24rpx 0rpx;
+  text-align: center;
+  font-size:30rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(248,248,248,1);
+  line-height: 88rpx;
+}
+.mgb120{
+  margin: 0 30rpx;
+  margin-bottom: 120rpx;
+}
+
+/*评分人*/
+.grade_this{
+  padding: 50rpx 0;
+  border-bottom: 1rpx solid rgba(238,238,238,1);
+}
+.this_img{
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+}
+.flex1_{
+  flex: 1;
+}
+.mgl40{
+  margin-left: 40rpx;
+}
+.this_name{
+  font-size:28rpx;
+  font-family:PingFang-SC-Medium;
+  font-weight:500;
+  color:rgba(0,0,0,1);
+}
+.this_time{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(153,153,153,1);
+}
+.pinfen_title{
+  font-size:24rpx;
+  font-family:PingFang-SC-Regular;
+  font-weight:400;
+  color:rgba(102,102,102,1);
+  margin-right: 13rpx;
+}
+.pinfen_star{
+  margin-top: 19rpx;
+}
+</style>

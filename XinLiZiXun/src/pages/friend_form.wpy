@@ -1,0 +1,825 @@
+<template>
+  <view class="container">
+    <view class='form_out'>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>服务对象</view>
+        <view>
+          <picker bindchange="bindChanges1" value="{{inde1}}" range="{{type1}}">
+            <view class='flex flex-a-i-center'>
+              <view class="{{time_small_1?'qxz':'qxz_true'}}">{{(type1[inde1])?type1[inde1]:'请选择...'}}</view>
+              <image src="../images/icon_xiala@2x.png" class="icon_xiala"></image>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>名称</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <input name="" placeholder="请输入..." value="{{username}}" bindinput='usernameInput' placeholder-style='color:#999;' />
+          </view>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>性别</view>
+        <view>
+          <picker bindchange="bindChanges2" value="{{inde2}}" range="{{type2}}">
+            <view class='flex flex-a-i-center'>
+              <view class="{{time_small_2?'qxz':'qxz_true'}}">{{(type2[inde2])?type2[inde2]:'请选择...'}}</view>
+              <image src="../images/icon_xiala@2x.png" class="icon_xiala"></image>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>年龄</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <input maxlength="3" type="number" name="" placeholder="请输入..." bindinput='age' placeholder-style='color:#999;' />
+          </view>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>职业</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <input type="text" name="" placeholder="请输入..." bindinput='work' placeholder-style='color:#999;' />
+          </view>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>称谓（自定义）</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <input type="text" name="" placeholder="如：鸡腿子/爸爸/姥姥等" bindinput='name' />
+          </view>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>陪伴类型</view>
+        <view>
+          <picker bindchange="bindChanges3" value="{{inde3}}" range="{{type3}}">
+            <view class='flex flex-a-i-center'>
+              <view class="{{time_small_3?'qxz':'qxz_true'}}">{{(type3[inde3])?type3[inde3]:'请选择...'}}</view>
+              <image src="../images/icon_xiala@2x.png" class="icon_xiala"></image>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>时间跨度</view>
+        <view>
+          <picker bindchange="bindChanges4" value="{{inde4}}" range="{{type4}}">
+            <view class='flex flex-a-i-center'>
+              <view class="{{time_small_4?'qxz':'qxz_true'}}">{{(type4[inde4])?type4[inde4]:'请选择...'}}</view>
+              <image src="../images/icon_xiala@2x.png" class="icon_xiala"></image>
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>附加节日</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <input type="text" name="" disabled placeholder="{{not_fill ? '*不可填写' : ''}}" placeholder-style="{{not_fill ? 'color:#2565C3;' : 'color:#999;'}}" />
+          </view>
+        </view>
+      </view>
+      <view>
+        <textarea value="{{festival1}}" bindinput='festival' wx:if="{{!not_fill}}" class="textarea">
+          <text wx:if="{{!festival1}}">
+            输入内容如以下范例：
+            生日：1月8日（农历）；
+            出门在外打工，未能回家看望父亲，惭愧。父亲喜欢蓝色的东西。
+          </text>
+         </textarea>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>手机号码</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <input maxlength="11" type="number" name="" placeholder="请输入..." bindinput='phone' placeholder-style='color:#999;' value="{{phone1}}" />
+          </view>
+        </view>
+      </view>
+      <view class='flex flex-j-c-sb yyxx_this flex-a-i-center'>
+        <view class='zxs'>收货地址</view>
+        <view>
+          <view class='flex flex-a-i-center'>
+            <!-- <input type="text" name="" placeholder="请输入..." bindinput='address' placeholder-style='color:#999;'> -->
+            <view bindtap='chooseLocation' class="address" style="{{address1 ? '' : 'color:#999;'}}">{{address1 ? address1 : '请输入...'}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class='bottom'>
+      <view class='flex1'>
+        <view class='flex'>
+          <view class='xzf'>需支付：</view>
+          <view class='money'>{{memberCustomizationList[inde4].price}}</view>
+          <view class='yuan'>元</view>
+        </view>
+      </view>
+      <view class='bottom_in' @tap='submit'>定制</view>
+    </view>
+    <!-- 弹框 -->
+    <view class='modal1 flex' wx:if='{{show_modal1}}'>
+      <view class='mask'></view>
+      <view class='mgat1'>
+        <view class='posi_rela'>
+          <view class='pay_title_out'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx'>
+              <text></text>
+              <view class='pay_title'>支付</view>
+              <image src='../images/icon_zhifu_quxiao@2x.png' class='x' @tap='x'></image>
+            </view>
+          </view>
+          <view class='pay_title_out'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='yfje'>应付金额：</view>
+              <view class='yfje_money'>¥{{memberCustomizationList[inde4].price}}</view>
+            </view>
+          </view>
+          <view class='pay_title_out'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='yfje'>支付方式：</view>
+              <view class='yfje_money'></view>
+            </view>
+          </view>
+          <view class='pay_title_out' @tap='icon_show1'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='flex flex-a-i-center'>
+                <image src='../images/icon_zhifu_yue@2x.png' class='ygzf_icon'></image>
+                <view class='yfje mgl20'>余额支付</view>
+              </view>
+              <image src='../images/icon_gou_blue@2x.png' class='icon_gou_gray' wx:if='{{icon_show1}}'></image>
+              <image src='../images/icon_gou_gray@2x.png' class='icon_gou_gray' wx:else></image>
+            </view>
+          </view>
+          <view class='pay_title_out' @tap='icon_show2'>
+            <view class='flex flex-j-c-sb flex-a-i-center pdsx1'>
+              <view class='flex flex-a-i-center'>
+                <image src='../images/icon_zhifu_weixin@2x.png' class='ygzf_icon'></image>
+                <view class='yfje mgl20'>微信支付</view>
+              </view>
+              <image src='../images/icon_gou_blue@2x.png' class='icon_gou_gray' wx:if='{{icon_show2}}'></image>
+              <image src='../images/icon_gou_gray@2x.png' class='icon_gou_gray' wx:else></image>
+            </view>
+
+          </view>
+          <view class='bottom1'>
+            <view class='flex1'>
+              <view class='flex'>
+                <view class='xzf1'>总计</view>
+                <view class='money1'>¥ {{memberCustomizationList[inde4].price}}</view>
+              </view>
+            </view>
+            <view class='bottom_in' @tap='pay'>支付</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo, sleep } from '../util.js'
+import api from '../api.js'
+// import Qs from 'qs'
+export default class Friend_form extends wepy.page {
+  config = {
+    navigationBarTitleText: '定制服务'
+  };
+  components = {};
+  bindChanges1(e) {
+    var that = this
+    console.log('picker发送选择改变，携带值为', e.detail.value)
+
+    this.inde1 = e.detail.value // 当前选项的索引值
+    if (e.detail.value == 0) {
+      console.log(this.$parent.globalData.userInfo.name, this.username)
+      // 选本人的时候
+      if (!this.username) {
+        this.username = this.$parent.globalData.userInfo.name
+      }
+    }
+    var inde1 = e.detail.value
+    var data = that.data.array
+    this.time_small_1 = false
+  }
+  bindChanges2(e) {
+    var that = this
+    console.log('picker发送选择改变，携带值为', e.detail.value)
+
+    this.inde2 = e.detail.value // 当前选项的索引值
+
+    var inde2 = e.detail.value
+    var data = that.data.array
+    this.time_small_2 = false
+  }
+  bindChanges3(e) {
+    var that = this
+    console.log('picker发送选择改变，携带值为', e.detail.value)
+
+    this.inde3 = e.detail.value // 当前选项的索引值
+
+    var inde3 = e.detail.value
+    var data = that.data.array
+    this.time_small_3 = false
+  }
+  bindChanges4(e) {
+    var that = this
+    console.log('picker发送选择改变，携带值为', e.detail.value)
+
+    this.inde4 = e.detail.value // 当前选项的索引值
+
+    var inde4 = e.detail.value
+    if (inde4 != 0) {
+      console.log(inde4, '选项的索引值')
+      this.not_fill = false
+    } else {
+      this.festival_content = ''
+      this.festival1 = ''
+      this.not_fill = true
+    }
+    var data = that.data.array
+    this.time_small_4 = false
+    // console.log(this.memberCustomizationList[type4].price);
+  }
+  usernameInput(e) {
+    this.username = e.detail.value
+  }
+  age(e) {
+    this.age1 = e.detail.value
+  }
+  work(e) {
+    this.work1 = e.detail.value
+  }
+  name(e) {
+    this.name1 = e.detail.value
+  }
+  festival(e) {
+    this.festival1 = e.detail.value
+  }
+  festival_content(e) {
+    this.festival_content = e.detail.value
+  }
+  phone(e) {
+    this.phone1 = e.detail.value
+  }
+  address(e) {
+    this.address1 = e.detail.value
+  }
+  data = {
+    username: '',
+    type1: ['本人', '他人'],
+    time_small_1: true,
+    type2: ['男', '女'],
+    time_small_2: true,
+    type3: ['父母', '恋人', '朋友', '子女'],
+    time_small_3: true,
+    type4: ['6月', '12月', '18月', '24月'],
+    time_small_4: true,
+    age1: '',
+    work1: '',
+    name1: '',
+    festival1: '',
+    phone1: '',
+    address1: '',
+    festival_content: '',
+    show_modal1: false,
+    icon_show1: true,
+    icon_show2: false,
+    not_fill: true,
+    inde1: '',
+    inde2: '',
+    inde3: '',
+    inde4: '',
+    memberCustomizationList: [],
+    payType: 1,
+    id: ''
+  };
+
+  computed = {};
+  methods = {
+    chooseLocation() {
+      let that = this
+      wx.chooseLocation({
+        success: function(res) {
+          console.log('success success success')
+
+          // 允许打开定位
+          that.address1 = res.address
+          that.$apply()
+          console.log(res, 'chooseLocation chooseLocation')
+        },
+        fail: () => {
+          console.log('fail fail fail')
+
+          // 不允许打开定位
+          wx.getSetting({
+            success: res => {
+              if (res.authSetting['scope.userLocation'] == true) {
+                // 打开提示框，提示前往设置页面
+                console.log('用户已开启定位授权')
+              } else {
+                wx.showModal({
+                  title: '位置信息授权',
+                  content: '位置授权暂未开启，无法完成选择',
+                  confirmText: '开启授权',
+                  confirmColor: '#2565c3',
+                  cancelText: '仍然拒绝',
+                  cancelColor: '#999999',
+                  success: function(res) {
+                    if (res.confirm) {
+                      wx.openSetting({
+                        fail: function() {
+                          console.log('openSetting.failed')
+                        }
+                      })
+                    }
+                  }
+                })
+              }
+            }
+          })
+        }
+      })
+    },
+    pay() {
+      this.createMemberCustomization()
+    },
+    x() {
+      this.show_modal1 = false
+    },
+    icon_show1() {
+      this.payType = 1
+      this.icon_show1 = true
+      this.icon_show2 = false
+    },
+    icon_show2() {
+      this.payType = 2
+      this.icon_show2 = true
+      this.icon_show1 = false
+    },
+    submit() {
+      var phoneReg = /(^1[3|4|5|7|8|9]\d{9}$)|(^09\d{8}$)/
+      console.log(this.data.inde4)
+
+      if (this.time_small_1) {
+        wx.showToast({
+          title: '请选择服务对象',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!this.username) {
+        wx.showToast({
+          title: '请输入姓名',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (this.time_small_2) {
+        wx.showToast({
+          title: '请选择性别',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!this.age1) {
+        wx.showToast({
+          title: '请输入年龄',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!this.work1) {
+        wx.showToast({
+          title: '请输入职业',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!this.name1) {
+        wx.showToast({
+          title: '请输入称谓',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (this.time_small_3) {
+        wx.showToast({
+          title: '请选择陪伴类型',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (this.time_small_4) {
+        wx.showToast({
+          title: '请选择时间跨度',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!this.phone1) {
+        wx.showToast({
+          title: '请输入手机号码',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!phoneReg.test(this.phone1)) {
+        wx.showToast({
+          title: '手机号有误',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (this.phone1.length < 11) {
+        wx.showToast({
+          title: '手机号有误',
+          icon: 'none',
+          duration: 2000
+        })
+      } else if (!this.address1) {
+        wx.showToast({
+          title: '请输入收货地址',
+          icon: 'none',
+          duration: 2000
+        })
+      } else {
+        if (this.inde4 != 0) {
+          if (!this.festival1) {
+            wx.showToast({
+              title: '请输入附加节日',
+              icon: 'none',
+              duration: 2000
+            })
+            return;
+          }
+          // if(!this.festival_content) {
+          //     wx.showToast({
+          //     title: '请输入附加节日的描述内容',
+          //     icon: 'none',
+          //     duration: 2000
+          //   })
+          //   return;
+          // }
+        }
+        console.log('提交定制')
+        this.show_modal1 = true
+      }
+    }
+  };
+  events = {};
+  async onLoad(option) {
+    this.phone1 = this.$parent.globalData.userInfo.mobile
+    this.getMemberCustomizationList()
+  }
+
+  getMemberCustomizationList() {
+    // 时间跨度列表 获取价格的
+    let { getMemberCustomizationList } = api
+    getMemberCustomizationList().then(res => {
+      console.log(res, '时间跨度列表 获取价格的')
+      this.memberCustomizationList = res.data.reverse()
+      this.$apply()
+      this.type4 = []
+      this.memberCustomizationList.forEach((item, i) => {
+        this.type4.push(item.span)
+      })
+      this.$apply()
+    })
+  }
+  createMemberCustomization(data) {
+    let that = this
+    // 定制服务
+    let { createMemberCustomization, closeMemberOrderCustomization } = api
+
+    let postData = {
+      serviceObject: this.type1[this.inde1], // 服务对象
+      sex: this.inde2, // 性别0男1女
+      age: this.age1, // 年龄
+      profession: this.work1, // 职业
+      appellation: this.name1, // 	称谓
+      companionTypeName: this.type3[this.inde3], // 陪伴类型
+      timeSpanId: this.memberCustomizationList[this.inde4].id, // 时间跨度id
+      mobile: this.phone1, // 手机号码
+      address: this.address1, // 	收货地址
+      festival: this.festival1, // 附加节日(可空)
+      payType: this.payType // 支付类型1余额 2微信
+    }
+    // console.log(Qs.stringify(postData));
+    // return
+    createMemberCustomization({
+      // serviceObject: this.type1[this.inde1], // 服务对象
+      serviceObject: this.username,
+      sex: this.inde2, // 性别0男1女
+      age: this.age1, // 年龄
+      profession: this.work1, // 职业
+      appellation: this.name1, // 称谓
+      companionTypeName: this.type3[this.inde3], // 陪伴类型
+      timeSpanId: this.memberCustomizationList[this.inde4].id, // 时间跨度id
+      mobile: this.phone1, // 手机号码
+      address: this.address1, // 收货地址
+      festival: this.festival1, // 附加节日(可空)
+      payType: this.payType // 支付类型1余额 2微信
+    }).then(res => {
+      console.log(res, '定制服务')
+      if (res) {
+        if (res.data.orderId && this.payType == 1) {
+          // 余额的
+          wx.showToast({
+            title: '支付成功',
+            duration: 2000,
+            mask: true
+          })
+          that.show_modal1 = false
+
+          that.searchMemberCustomizationInfo()
+        } else {
+          // 支付宝的
+          console.log(res.data, '支付后台返回来的')
+          let postData = {
+            timeStamp: '',
+            nonceStr: '',
+            package: '',
+            paySign: ''
+          }
+
+          postData.timeStamp = res.data.signature.timestamp + ''
+          postData.nonceStr = res.data.signature.nonce
+          postData.paySign = res.data.signature.signature
+          postData.package = res.data.signature.pack
+          let orderId = res.data.orderId // 删除订单 未支付成功的
+          console.log(postData, '处理后的数据')
+
+          let paymentObj = { ...postData, signType: 'MD5' }
+          wx.requestPayment({
+            ...paymentObj,
+            success(res) {
+              wx.showToast({
+                title: '支付成功',
+                duration: 2000,
+                mask: true
+              })
+
+              that.show_modal1 = false
+              that.searchMemberCustomizationInfo()
+              console.log(res, 'success')
+            },
+            complete(res) {
+              console.log(res, 'complete')
+            },
+            fail(res) {
+              closeMemberOrderCustomization({
+                orderId: orderId
+              }).then(res => {
+                console.log(res, 'closeMemberOrderCustomization')
+              })
+              wx.showToast({
+                title: '支付失败',
+                icon: 'none',
+                duration: 2000,
+                mask: true
+              })
+              console.log(res, 'fail')
+            }
+          })
+        }
+      }
+    })
+  }
+
+  searchMemberCustomizationInfo() {
+    let that = this
+
+    // 查询用户是否有定制
+    let { searchMemberCustomizationInfo } = api
+    searchMemberCustomizationInfo().then(res => {
+      console.log(res, '查询用户是否有定制')
+      this.id = res.data.customizationId
+      this.$parent.globalData.userInfo.hasCustomization =
+        res.data.customizationId
+      this.$apply()
+
+      sleep(2).then(res => {
+        wx.navigateBack({
+          delta: 2,
+          success() {
+            goPath('/pages/custom_detail?id=' + that.id)
+          }
+        })
+      })
+    })
+  }
+}
+</script>
+<style lang="less">
+.container {
+  padding-bottom: 230rpx;
+}
+.form_out {
+  background-color: #fff;
+  margin-top: 20rpx;
+  padding: 0 30rpx;
+}
+.yyxx_this {
+  padding: 25rpx 0;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+.zxs {
+  flex: none;
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+}
+.address {
+  font-size: 30rpx;
+  padding-left: 28rpx;
+}
+.qxz {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(153, 153, 153, 1);
+  margin-right: 15rpx;
+}
+.qxz_true {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  margin-right: 15rpx;
+}
+.icon_xiala {
+  width: 16rpx;
+  height: 10rpx;
+}
+.yyxx_this input {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+  text-align: right;
+}
+.textarea {
+  width: 100%;
+  height: 200rpx;
+  padding: 36rpx 30rpx;
+  font-size: 24rpx;
+  font-family: PingFang-SC-Regular;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 1);
+  line-height: 36rpx;
+  background: rgba(246, 246, 250, 1);
+  border-radius: 8rpx;
+  position: relative;
+  text {
+    color: #999999;
+    font-size: 24rpx;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0rpx 37rpx 0rpx 30rpx;
+  }
+}
+.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 98rpx;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+  box-shadow: 0rpx -3rpx 10rpx 0rpx rgba(204, 204, 204, 0.25);
+  z-index: 9999;
+}
+.bottom1 {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 98rpx;
+  width: 100%;
+  display: flex;
+  background-color: #fff;
+  box-shadow: 0rpx -3rpx 10rpx 0rpx rgba(204, 204, 204, 0.25);
+  z-index: 9999;
+}
+.bottom_in {
+  width: 240rpx;
+  height: 98rpx;
+  background: rgba(37, 101, 195, 1);
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  line-height: 98rpx;
+  text-align: center;
+}
+.flex1 {
+  flex: 1;
+  line-height: 98rpx;
+  padding-left: 30rpx;
+}
+.xzf {
+  font-size: 28rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(142, 142, 142, 1);
+}
+.xzf1 {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(34, 34, 34, 1);
+}
+.yuan {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: #333333;
+  margin-left: 10rpx;
+}
+.money {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: #f6ab00;
+}
+.money1 {
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(34, 34, 34, 1);
+  margin-left: 20rpx;
+}
+/*dialog*/
+.modal1 {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+}
+.mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.mgat1 {
+  z-index: 999999;
+  background-color: #fff;
+  border-radius: 24rpx;
+  width: 100%;
+  height: 649rpx;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+.pay_title_out {
+  padding: 0 32rpx;
+}
+.pay_title {
+  font-size: 34rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(34, 34, 34, 1);
+}
+.pdsx {
+  padding: 32rpx 0;
+  border-bottom: 2rpx solid rgba(238, 238, 238, 1);
+}
+.pdsx1 {
+  padding: 20rpx 0;
+}
+.x {
+  width: 26rpx;
+  height: 26rpx;
+}
+.yfje {
+  font-size: 30rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(51, 51, 51, 1);
+}
+.yfje_money {
+  font-size: 36rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 1);
+}
+.ygzf_icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+.icon_gou_gray {
+  width: 50rpx;
+  height: 50rpx;
+}
+.mgl20 {
+  margin-left: 20rpx;
+}
+.posi_rela {
+  position: relative;
+  height: 100%;
+}
+</style>

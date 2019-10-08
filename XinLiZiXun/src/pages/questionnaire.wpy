@@ -1,0 +1,507 @@
+<!--  -->
+<template>
+  <view class="container">
+    <!-- <wxs module="foo">
+      var selectIndex = function(answer, id, type) {
+        if(type == 1 || type == 4){
+          return answer == id ? true : false
+        }else {
+          return answer.indexOf(id) !== -1;
+        }
+      }
+      module.exports = {
+        selectIndex: selectIndex
+      }
+    </wxs> -->
+    <!-- <view class="info-box">
+      <view class="info-header">调查问卷</view>
+      <view class="info-content">
+        <block wx:for="{{list}}" wx:for-index='index' wx:key='index'>
+          <view
+            class="item flex flex-column flex-j-c-sb"
+            wx:if="{{item.type == 1 || item.type == 2 || item.type == 4 ||item.type == 5 }}"
+          > -->
+            <!-- 单选or多选 -->
+            <!-- <view
+              class="label"
+            >{{index+1 + '、' +item.title}}{{item.type == 5 || item.type == 2 ? '（多选）':''}}</view>
+            <view class="flex flex-wrap">
+              <view
+                wx:for="{{item.answers}}"
+                wx:for-item="answer"
+                wx:for-index="answerIndex"
+                wx:key="{{item}}"
+                class="group flex flex-a-i-center"
+                style="{{answer.answerType == 2 ? 'width:100%' : ''}}"
+              >
+                <view
+                  class="icon"
+                  @tap="hadleclick('{{index}}', '{{item.type}}', '{{answer.id}}','')"
+                >
+                  <icon
+                    type="success"
+                    size="18"
+                    color="rgba(37, 101, 195, 1)"
+                    wx:if="{{foo.selectIndex(item.answer,answer.id,item.type)}}"
+                  />
+                </view>
+                <view
+                  class="value"
+                  @tap="hadleclick('{{index}}', '{{item.type}}', '{{answer.id}}','')"
+                >{{answer.answer}}</view>
+                <input
+                  wx:if="{{answer.answerType == 2}}"
+                  class="other"
+                  placeholder="告诉我们吧~"
+                  placeholder-style="color:#999999;font-size:24rpx;font-family: 'PingFang-SC-Regular'"
+                  @blur="hadnleInput('{{index}}','{{answer.id}}')"
+                  @focus="hadleclick('{{index}}', '{{item.type}}', '{{answer.id}}', 1)"
+                />
+              </view>
+            </view>
+          </view>
+          <view class="item write-item flex flex-column flex-j-c-sb" wx:else>
+            <view class="label">{{index+1 + '、' +item.title}}</view>
+            <textarea
+              name
+              id
+              cols="30"
+              rows="10"
+              maxlength="250"
+              placeholder="告诉我们吧~"
+              placeholder-style="color:#999999;font-size:24rpx;font-family: 'PingFang-SC-Regular'"
+              @input="hadnleInput('{{index}}','')"
+            ></textarea>
+          </view>
+        </block>
+      </view>
+    </view>
+    <view class="button" @tap="result">查看结果</view> -->
+
+
+    <view class="info-box">
+      <view class="info-header">调查问卷</view>
+      <view class="info-content">
+        <block wx:for="{{list}}" wx:for-index='index' wx:key='index'>
+          <!-- 选择 -->
+          <view
+            class="item flex flex-column flex-j-c-sb"
+            wx:if="{{item.type == 1 || item.type == 2 || item.type == 4 ||item.type == 5 }}"
+          > 
+            <!-- 单选or多选 -->
+            <view
+              class="label"
+            >{{index+1 + '、' +item.title}}{{item.type == 5 || item.type == 2 ? '（多选）':''}}</view>
+            <view class="flex flex-wrap">
+              <view
+                wx:for="{{item.answers}}"
+                wx:for-item="answer"
+                wx:for-index="answerIndex"
+                wx:key="{{item}}"
+                class="group flex flex-a-i-center"
+                style="{{answer.answerType == 2 ? 'width:100%' : ''}}"
+              >
+                <!-- 图标 -->
+                <view class="icon" @tap="hadleclick('{{index}}','{{answerIndex}}')">
+                  <icon type="success" size="18" color="rgba(37, 101, 195, 1)" wx:if="{{answer.sel}}"/>
+                </view>
+                <!-- 答案选项 -->
+                <view class="value" @tap="hadleclick('{{index}}','{{answerIndex}}')" >{{answer.answer}}</view>
+                <!-- 其他选项 -->
+                <input
+                  wx:if="{{answer.answerType == 2}}"
+                  class="other"
+                  placeholder="告诉我们吧~"
+                  placeholder-style="color:#999999;font-size:24rpx;font-family: 'PingFang-SC-Regular'"
+                  @blur="hadnleInput('{{index}}','{{answerIndex}}')"
+                />
+              </view>
+            </view>
+          </view>
+
+          <!-- 填空 -->
+          <view class="item write-item flex flex-column flex-j-c-sb" wx:else>
+            <view class="label">{{index+1 + '、' +item.title}}</view>
+            <textarea
+              name
+              id
+              cols="30"
+              rows="10"
+              maxlength="250"
+              placeholder="告诉我们吧~"
+              placeholder-style="color:#999999;font-size:24rpx;font-family: 'PingFang-SC-Regular'"
+              @input="hadnleInput('{{index}}','')"
+            ></textarea>
+          </view>
+        </block>
+      </view>
+    </view>
+    <view class="button" @tap="result">查看结果</view>
+
+
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import api from '../api.js'
+
+export default class Questionnaire extends wepy.page {
+  config = {
+    navigationBarTitleText: '问卷调查'
+  };
+
+  // 问卷类型,1单选,2多选,3填空,4混合单选,5混合多选
+  // 答案类型,1选择题,2混合(其他)
+  //
+  data = {
+    clickFlag: false,
+    clickIndex: 0,
+    placeholderStyle:
+      'color:#999999;font-size:28rpx;font-family: "PingFang-SC-Regular"',
+    items: [
+      { name: 'USA', value: '美国' },
+      { name: 'CHN', value: '中国', checked: 'true' },
+      { name: 'ASD', value: '中国1', other: true }
+    ],
+    id: '',
+    answerIds: '',
+    list: null,
+    memberName: '',
+    age: '',
+    department: ''
+  };
+
+  components = {};
+
+  methods = {
+    hadnleInput(index, index2, e) {
+      let signList = this.list;
+      if(index2 != '' && index2 != undefined){
+        signList[index].answers[index2].text = e.detail.value;
+
+      }else{
+        signList[index].text = e.detail.value;
+      }
+      this.list = signList;
+
+
+      this.$apply();
+    },
+    hadleclick(index,index2) {
+      // this.clickIndex = index
+      // 问卷类型,1单选,2多选,3填空,4混合单选,5混合多选
+
+
+      let signList = this.list;
+      let idxOne = index;
+      let idxTwo = index2;
+      let selType = signList[idxOne].type;
+
+      //判断类型
+      //单选
+      if(selType == 1){
+        if(signList[idxOne].answers[idxTwo].sel){
+          signList[idxOne].answers[idxTwo].sel = false;
+        }else{
+          signList[idxOne].answers[idxTwo].sel = true;
+        }
+
+        for(let  x in signList[idxOne].answers){
+          if(x  != idxTwo){
+            signList[idxOne].answers[x].sel = false;
+          }else{
+          }
+        }
+        
+      }
+      //多选
+      else if(selType == 2){
+        if(signList[idxOne].answers[idxTwo].sel){
+          signList[idxOne].answers[idxTwo].sel = false;
+        }else{
+          signList[idxOne].answers[idxTwo].sel = true;
+        }
+      }
+
+      this.list = signList;
+
+
+      this.$apply();
+
+    },
+    //提交
+    result() {
+      var signArr = [];
+      var signList = this.list;
+
+      
+      for(var x in signList){
+        var num = 0;
+        for(var y in signList[x].answers){
+          //单选、多选
+          if(signList[x].type == 1 || signList[x].type == 2){
+            if(signList[x].answers[y].sel){ 
+              var signObj = {};
+              num += 1;
+              //选择题
+              if(signList[x].answers[y].answerType == 1){
+                signObj[signList[x].id] = signList[x].answers[y].id;
+              }else{
+                signObj[signList[x].id] = signList[x].answers[y].id + '-' +signList[x].answers[y].text;
+              }
+              signArr.push(signObj);
+            }
+          }
+        }
+
+        //填空题
+       if(signList[x].type == 3){
+          if(signList[x].text != '' && signList[x].text != undefined){
+            num += 1; 
+            let signObj = {};
+            signObj[signList[x].id] = signList[x].text;
+            signArr.push(signObj);
+          }
+        }
+
+        if(num < 1){
+          wepy.showToast({
+            title: '第'+(parseInt(x)+1)+'题未选择/填空',
+            icon: 'none',
+          })
+          return false;
+        }
+      }
+
+      var qresult = signArr;
+
+      // // 清除storage
+      var testStorageArr = wx.getStorageSync('testStorageArr')
+      delete testStorageArr[this.id]
+      wx.setStorageSync('testStorageArr', testStorageArr)
+
+      // 答题次数
+      var testPay = wx.getStorageSync('testPay')
+
+
+      var pages = getCurrentPages();
+      // var prevPage = pages[pages.length - 2] // 上一个页面
+      // prevPage.setStorage();
+
+      let that = this;
+      let { submitSurvey } = api;
+      let params = {
+        scoreId:that.scoreId,
+        evaluationId:that.evaluationId,
+        jsonAnswers:JSON.stringify(qresult)
+      }
+
+      wepy.showLoading({
+          title: '提交中...', //提示的内容,
+          mask: true, //显示透明蒙层，防止触摸穿透,
+      });
+      submitSurvey(params)
+        .then((res) => {
+          console.log(res)
+          if(res.code == 0){
+            wepy.hideLoading();
+            wx.redirectTo({
+              url:'/pages/test_result?scoreId='+that.scoreId
+            });
+          }else{
+            wepy.hideLoading();
+            wepy.showToast({
+              title: JSON.stringify(res.message),
+              icon: 'none',
+              duration: 5000
+            })
+          }
+        });
+
+
+
+      // let skipUrl = '/pages/test_result?id='+this.id+'&answerIds='+this.answerIds+'&qresult='+JSON.stringify(qresult)+'&memberName='+ this.memberName+'&age='+this.age+'&department='+this.department+'&clickFlag=111';
+
+
+      // wx.redirectTo({
+      //   url: `/pages/test_result?id=${this.id}&answerIds=${
+      //     this.answerIds
+      //   }&qresult=${JSON.stringify(qresult)}&memberName=${
+      //     this.memberName
+      //   }&age=${this.age}&department=${this.department}&clickFlag=111`
+      // })
+
+      // wx.redirectTo({
+      //   url:skipUrl
+      // });
+
+    }
+  };
+  onLoad(options) {
+    // this.answerIds = options.answerIds
+    // // this.answerIds = '719,726,731,737,747,752,756,761,767,771,777,781'
+    this.scoreId = options.scoreId;
+    this.evaluationId = options.evaluationId;
+    // this.memberName = options.memberName
+    // this.age = options.age
+    // this.department = options.department
+
+    // this.id = 38
+    // 719,726,731,737,747,752,756,761,767,771,777,781
+    this.getQuesteList()
+  }
+  getQuesteList() {
+    let { getQuesteList } = api
+    getQuesteList({
+      evaluationId: this.evaluationId
+    }).then(res => {
+      if (res) {
+
+        for(let x in  res.data){
+          for(let y in res.data[x].answers){
+             res.data[x].answers[y].sel = false;
+          }
+        }
+
+        this.list = res.data;
+
+        this.$apply()
+      }
+    })
+  }
+  onShow() {}
+}
+</script>
+
+<style lang='scss'>
+page {
+  background: #fff;
+}
+radio .wx-radio-input {
+  border-radius: 50%;
+  width: 36rpx;
+  height: 36rpx;
+  // padding: 20rpx;
+}
+radio .wx-radio-input.wx-radio-input-checked {
+  border-color: rgba(37, 101, 195, 1) !important;
+  background: rgba(37, 101, 195, 1) !important;
+}
+radio .wx-radio-input.wx-radio-input-checked::before {
+  border-radius: 50%;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  text-align: center;
+  font-size: 15px;
+  color: #fff;
+  background: transparent;
+  transform: translate(-50%, -50%) scale(1);
+  -webkit-transform: translate(-50%, -50%) scale(1);
+}
+.radio-group {
+  display: flex;
+  display: inline;
+  .radio {
+    display: inline-block;
+    width: 50%;
+    flex: 0;
+    margin-bottom: 50rpx;
+    radio {
+      // padding-right: 20rpx;
+    }
+  }
+}
+.container {
+  padding: 0 32rpx;
+  padding-bottom: 1rpx;
+}
+.info-box {
+  .info-header {
+    padding: 60rpx;
+    color: #333333;
+    font-size: 34rpx;
+    font-weight: Bold;
+    text-align: center;
+  }
+  .info-content {
+    color: #333333;
+    font-size: 32rpx;
+    .item {
+      // height: 150rpx;
+      // margin-bottom: 60rpx;
+
+      .group {
+        flex: none;
+        width: 50%;
+        margin-bottom: 50rpx;
+        text {
+          vertical-align: middle;
+        }
+        .icon {
+          flex: none;
+          width: 35rpx;
+          height: 35rpx;
+          position: relative;
+          margin-right: 16rpx;
+          background: #eeeeee;
+          border-radius: 50%;
+          icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
+        }
+      }
+      .label {
+        margin-bottom: 48rpx;
+        font-weight: bold;
+      }
+      .value {
+        font-size: 30rpx;
+        color: #666666;
+        padding-right: 20rpx;
+      }
+      textarea {
+        border: 2rpx solid #cccccc;
+        padding: 26rpx;
+        width: 100%;
+        border-radius: 6rpx;
+      }
+    }
+    .write-item {
+      margin-bottom: 40rpx;
+    }
+    // input {
+    //   box-sizing: content-box;
+    //   border: 2rpx solid #cccccc;
+    //   padding: 8rpx 26rpx;
+    //   font-size: 26rpx;
+    // }
+    .other {
+      box-sizing: content-box;
+      display: inline-block;
+      border: 2rpx solid #cccccc;
+      width: 360rpx;
+      vertical-align: middle;
+      font-size: 24rpx;
+      padding-left: 8rpx;
+    }
+  }
+}
+.button {
+  width: 686rpx;
+  height: 80rpx;
+  background: rgba(37, 101, 195, 1);
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  text-align: center;
+  line-height: 80rpx;
+  color: rgba(246, 246, 250, 1);
+  margin: 0 auto 92rpx;
+}
+</style>

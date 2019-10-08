@@ -1,0 +1,296 @@
+<template>
+  <view class="container" @tap="hide_del">
+    <view class="back246" wx:if="{{false}}">
+      <view class="flex flex-wrap">
+        <repeat for="{{top_tags}}">
+          <view :class="{ this:1, select_this: item.show_del }" @longpress="del_tag" data-index="{{index}}">
+            {{item.name}}
+            <view class="del_eltag" wx:if="{{item.show_del}}">
+              <view class="del" @tap="binddel({{item.id}}, {{index}})">删除</view>
+              <view class="triangle"></view>
+            </view>
+          </view>
+        </repeat>
+        <input class="enter_input" wx:if="{{enter_input.show}}" maxlength="6" @blur="handle_blur" focus />
+        <view class="this_no" wx:if="{{!enter_input.show}}" @tap="enter_tag">输入标签</view>
+      </view>
+    </view>
+    <view class="cybq">常用标签</view>
+    <view class="content flex flex-wrap">
+      <repeat for="{{common_tags}}" item="tag">
+        <view :class="{ this_no:true, select_this: tag.checked } " @tap="select_tag({{tag.id}})" data-index="{{index}}">{{tag.name}}</view>
+      </repeat>
+    </view>
+    <view class="fix_button">
+      <view class="button" @tap="submit_evaluation">提交评价</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { goPath, checkInfo, prevPageOnLoad, sleep } from '../util.js'
+import api from '../api.js'
+export default class Evaluate extends wepy.page {
+  config = {
+    navigationBarTitleText: '评价咨询师'
+  };
+
+  components = {};
+
+  data = {
+    enter_input: {
+      show: false,
+      el: []
+    },
+    select_tag_id: [], // 选择标签的 id
+    top_tags: [],
+    common_tags: [
+      {
+        name: '他很棒A',
+        checked: false
+      },
+      {
+        name: '他很B',
+        checked: false
+      },
+      {
+        name: '他很他很项C',
+        checked: false
+      },
+      {
+        name: '他很他很他很D',
+        checked: false
+      },
+      {
+        name: '他很他很E',
+        checked: false
+      },
+      {
+        name: '他很项F',
+        checked: false
+      }
+    ],
+    id: ''
+  };
+
+  computed = {};
+
+  methods = {
+    del_tag(e) {
+      let index = e.target.dataset.index
+      this.top_tags.forEach((e, i) => (this.top_tags[i].show_del = false))
+      this.top_tags[index].show_del = true
+    },
+    hide_del() {
+      this.top_tags.forEach((e, i) => (this.top_tags[i].show_del = false))
+    },
+    select_tag(tagId, e) {
+      let index = e.target.dataset.index
+      // let index = tagId
+      if (this.select_tag_id.indexOf(tagId) === -1) {
+        this.select_tag_id.push(tagId)
+        this.common_tags[index].checked = true // css 样式显示的
+      } else {
+        // 已经存在的
+        this.select_tag_id = this.select_tag_id.filter(idx => {
+          // 去掉已经存在的 元素
+          return idx !== tagId
+        })
+        this.common_tags[index].checked = false
+      }
+    },
+    binddel(id, index) {
+      this.delTag(id).then(res => {
+        if (res) {
+          this.top_tags.splice(index, 1)
+          this.select_tag_id = this.select_tag_id.filter(idx => {
+            // 去掉已经存在的 元素
+            return idx !== id
+          })
+          this.$apply()
+        }
+      })
+    },
+
+    enter_tag() {
+      this.enter_input.show = true
+      // this.enter_tags.push(1)
+    },
+    handle_blur(e) {
+      let value = e.detail.value
+      if (value) {
+        // todo 发起请求之后修改
+        this.addMemberScheduleTags(value).then(res => {
+          this.top_tags.push({
+            id: res.data.id,
+            name: res.data.name,
+            show_del: false
+          }) // 推进去 显示的数组
+          this.select_tag_id.push(res.data.id) // 将 标签id 推进去 postData
+          this.$apply()
+        })
+      }
+      this.enter_input.show = false
+    },
+    submit_evaluation() {
+      //  提交评价 todo
+      // return;
+      this.commentMemberSchedule()
+    }
+  };
+  delTag(id) {
+    let { delTag } = api
+    return delTag(id)
+  }
+  getMemberScheduleTags() {
+    // 获取常用标签
+    let { getMemberScheduleTags } = api
+    getMemberScheduleTags().then(res => {
+      this.common_tags = res.data
+      this.common_tags.forEach((item, i) => {
+        this.common_tags[i].checked = false
+      })
+
+      this.$apply()
+    })
+  }
+
+  addMemberScheduleTags(tagName) {
+    // 添加标签
+    let { addMemberScheduleTags } = api
+    return addMemberScheduleTags({ tagName })
+  }
+
+  commentMemberSchedule() {
+    // 评价咨询师
+    let { commentMemberSchedule } = api
+    commentMemberSchedule({
+      subscribeId: this.id,
+      tagIds: this.select_tag_id.join(',')
+    }).then(res => {
+      wepy.showToast({
+        title: '评论成功',
+        icon: 'none',
+        duration: 3000,
+        mask: true
+      })
+      sleep(2).then(res => {
+        prevPageOnLoad()
+      })
+    })
+  }
+
+  events = {};
+
+  async onLoad(option) {
+    let { id } = option
+    this.id = id
+    this.getMemberScheduleTags()
+  }
+}
+</script>
+<style lang='less'>
+page {
+  height: 100%;
+  background-color: #fff;
+  font-family: PingFang-SC-Regular;
+}
+.container {
+  height: 100%;
+}
+.back246 {
+  background-color: rgba(246, 247, 250, 1);
+  padding: 18rpx 32rpx 0;
+}
+.this {
+  border: 1rpx solid rgba(37, 101, 195, 1);
+  border-radius: 32rpx;
+  padding: 7rpx 30rpx;
+  font-size: 28rpx;
+  font-weight: 400;
+  color: rgba(37, 101, 195, 1);
+  margin: 0 20rpx 18rpx 0;
+  position: relative;
+}
+.cybq {
+  padding: 17rpx 32rpx 24rpx;
+  font-size: 30rpx;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+}
+.content {
+  padding: 0 32rpx;
+}
+.this_no {
+  border-radius: 32rpx;
+  padding: 7rpx 30rpx;
+  font-size: 28rpx;
+  font-weight: 400;
+  color: rgba(51, 51, 51, 1);
+  margin: 0 20rpx 18rpx 0;
+  background: rgba(246, 247, 250, 1);
+}
+.select_this {
+  background: #1462aa;
+  color: #fff;
+}
+.del_eltag {
+  z-index: 9999;
+  border-radius: 10rpx;
+  position: absolute;
+  text-align: center;
+  font-size: 26rpx;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+  transform: translateX(50%) rotate(180deg);
+  right: 50%;
+  bottom: -50rpx;
+  white-space: nowrap;
+  padding: 8rpx 30rpx;
+}
+.triangle {
+  z-index: 9999;
+  width: 0;
+  height: 0;
+  border-width: 10rpx;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.75) transparent transparent transparent;
+  position: absolute;
+  bottom: -16rpx;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.del {
+  z-index: 9999;
+  transform: rotate(-180deg);
+}
+.enter_input {
+  float: left;
+  font-size: 28rpx;
+  width: 142rpx;
+  border-bottom: 1rpx solid #1462aa;
+  margin: 0 20rpx 18rpx 0;
+}
+
+.fix_button {
+  position: fixed;
+  bottom: 36rpx;
+  left: 0;
+  background-color: #fff;
+  width: 100%;
+  height: 98rpx;
+}
+.button {
+  width: 686rpx;
+  height: 88rpx;
+  background: rgba(37, 101, 195, 1);
+  border-radius: 88rpx;
+  text-align: center;
+  line-height: 88rpx;
+  margin: 5rpx auto;
+  font-size: 32rpx;
+  font-family: PingFang-SC-Medium;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+}
+</style>
